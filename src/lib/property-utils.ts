@@ -113,6 +113,49 @@ export interface RentBreakdown {
 
 export type LockInPeriod = 6 | 9 | 11;
 
+const parseRentValue = (value: string | number | undefined): number => {
+    if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+    if (!value) return 0;
+    const normalized = value.replace(/,/g, "").trim();
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+};
+
+export const getRoomRentForLockIn = (
+    room: Room,
+    lockIn: LockInPeriod = 11
+): number => {
+    if (lockIn === 6) {
+        return parseRentValue(room.fieldData["room-rent"]);
+    }
+    if (lockIn === 9) {
+        return (
+            parseRentValue(room.fieldData["3-month-cost-2"]) ||
+            parseRentValue(room.fieldData["room-rent"])
+        );
+    }
+    return (
+        parseRentValue(room.fieldData["6-month-cost-2"]) ||
+        parseRentValue(room.fieldData["room-rent"])
+    );
+};
+
+/**
+ * Returns the lowest room rent for a given lock-in period.
+ * Includes all rooms (available or not) to keep "From" price stable.
+ */
+export const getLowestRoomRentForLockIn = (
+    rooms: Room[],
+    lockIn: LockInPeriod = 11
+): number => {
+    if (rooms.length === 0) return 0;
+    const roomRents = rooms
+        .map((room) => getRoomRentForLockIn(room, lockIn))
+        .filter((rent) => rent > 0);
+    if (roomRents.length === 0) return 0;
+    return Math.min(...roomRents);
+};
+
 export const getRoomRentBreakdown = (room: Room, lockIn: LockInPeriod = 11): RentBreakdown => {
     // Base rent from HubSpot response
     const baseRent = room.fieldData["base-rent"] ?? null;

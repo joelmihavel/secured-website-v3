@@ -28,6 +28,7 @@ import {
   propertyHasDiscount,
   getRibbonDiscountSavings,
   getDiscountEndDateFormatted,
+  getLowestRoomRentForLockIn,
 } from "@/lib/property-utils";
 import { getCompanyLogo } from "@/lib/company-logos";
 
@@ -392,6 +393,20 @@ export const PropertyCard = ({
     () => totalRooms > 0 && availableRooms === totalRooms,
     [availableRooms, totalRooms]
   );
+  const lowestRoomRent = React.useMemo(
+    () => getLowestRoomRentForLockIn(propertyRooms, 11),
+    [propertyRooms]
+  );
+  const propertyLevelRent = React.useMemo(() => {
+    const rawRent = property.fieldData["rent-in-rupees"];
+    if (typeof rawRent === "number") {
+      return Number.isFinite(rawRent) ? rawRent : 0;
+    }
+    if (!rawRent) return 0;
+    const parsedRent = Number(rawRent.replace(/,/g, "").trim());
+    return Number.isFinite(parsedRent) ? parsedRent : 0;
+  }, [property]);
+  const displayedRent = lowestRoomRent > 0 ? lowestRoomRent : propertyLevelRent;
 
   // Get companies
   const companies = React.useMemo(() => {
@@ -691,9 +706,7 @@ export const PropertyCard = ({
               <div className="pt-2">
                 <span className="text-fluid-h3 font-zin text-text-main">
                   From ₹
-                  {parseInt(
-                    property.fieldData["rent-in-rupees"] || "0"
-                  ).toLocaleString()}
+                  {displayedRent.toLocaleString("en-IN")}
                 </span>
                 <span className="text-[10px] text-text-main/60 font-body ml-1">
                   / month (per room)
