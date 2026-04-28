@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   AREA_DEFAULTS,
   DEPOSIT_MONTHS_TRAD,
@@ -21,38 +21,80 @@ import {
   VACANCY_DAYS,
 } from "../constants";
 import type { ComparisonMode, FurnitureMode } from "../types";
+import type { RentCalculatorUrlStateOverrides } from "../utils/urlState";
 
-export const useRentCalculator = () => {
-  const [area, setArea] = useState("HSR Layout");
-  const [mode, setMode] = useState<ComparisonMode>("roommate");
-  const [furnitureMode, setFurnitureMode] = useState<FurnitureMode>("rent");
-  const [flentRent, setFlentRent] = useState(AREA_DEFAULTS["HSR Layout"]);
-  const [tradRent, setTradRent] = useState<number | null>(null);
-  const [tradMaint, setTradMaint] = useState<number | null>(null);
-  const [tradDeposit, setTradDeposit] = useState<number | null>(null);
-  const [tradBrokerage, setTradBrokerage] = useState<number | null>(null);
-  const [tradPainting, setTradPainting] = useState(TRAD_PAINTING);
+const DEFAULT_AREA = "HSR Layout";
+const DEFAULT_MODE: ComparisonMode = "roommate";
+const DEFAULT_FURNITURE_MODE: FurnitureMode = "rent";
+
+const toNonNegativeRoundedNumber = (value: number): number => Math.max(0, Math.round(value));
+
+export const useRentCalculator = (initialState?: RentCalculatorUrlStateOverrides) => {
+  const initialMode = initialState?.mode ?? DEFAULT_MODE;
+  const requestedInitialArea = initialState?.area ?? DEFAULT_AREA;
+  const initialArea = Object.prototype.hasOwnProperty.call(AREA_DEFAULTS, requestedInitialArea)
+    ? requestedInitialArea
+    : DEFAULT_AREA;
+  const initialFurnitureMode = initialState?.furnitureMode ?? DEFAULT_FURNITURE_MODE;
+
+  const initialFlentRent = toNonNegativeRoundedNumber(
+    initialState?.flentRent ?? AREA_DEFAULTS[initialArea]
+  );
+  const initialTradRent = toNonNegativeRoundedNumber(
+    initialState?.tradRent ??
+      Math.round(initialFlentRent * (initialMode === "1bhk" ? TRAD_1BHK_FACTOR : TRAD_ROOM_FACTOR))
+  );
+  const initialTradMaint = toNonNegativeRoundedNumber(
+    initialState?.tradMaint ?? Math.round(initialTradRent * TRAD_MAINT_FACTOR)
+  );
+  const initialTradDeposit = toNonNegativeRoundedNumber(
+    initialState?.tradDeposit ?? initialTradRent * DEPOSIT_MONTHS_TRAD
+  );
+  const initialTradBrokerage = toNonNegativeRoundedNumber(initialState?.tradBrokerage ?? initialTradRent);
+  const initialTradPainting = toNonNegativeRoundedNumber(initialState?.tradPainting ?? TRAD_PAINTING);
+
+  const [area, setArea] = useState(initialArea);
+  const [mode, setMode] = useState<ComparisonMode>(initialMode);
+  const [furnitureMode, setFurnitureMode] = useState<FurnitureMode>(initialFurnitureMode);
+  const [flentRent, setFlentRent] = useState(initialFlentRent);
+  const [tradRent, setTradRent] = useState(initialTradRent);
+  const [tradMaint, setTradMaint] = useState(initialTradMaint);
+  const [tradDeposit, setTradDeposit] = useState(initialTradDeposit);
+  const [tradBrokerage, setTradBrokerage] = useState(initialTradBrokerage);
+  const [tradPainting, setTradPainting] = useState(initialTradPainting);
 
   const derivedTradRent = Math.round(
     mode === "1bhk" ? flentRent * TRAD_1BHK_FACTOR : flentRent * TRAD_ROOM_FACTOR
   );
-  const derivedMaint = Math.round(derivedTradRent * TRAD_MAINT_FACTOR);
-  const derivedDeposit = derivedTradRent * DEPOSIT_MONTHS_TRAD;
-  const derivedBrokerage = derivedTradRent;
 
-  const effTradRent = tradRent ?? derivedTradRent;
-  const effMaint = tradMaint ?? derivedMaint;
-  const effDeposit = tradDeposit ?? derivedDeposit;
-  const effBrokerage = tradBrokerage ?? derivedBrokerage;
+  const effTradRent = tradRent;
+  const effMaint = tradMaint;
+  const effDeposit = tradDeposit;
+  const effBrokerage = tradBrokerage;
 
-  useEffect(() => {
-    setFlentRent(AREA_DEFAULTS[area]);
-    setTradRent(null);
-    setTradMaint(null);
-    setTradDeposit(null);
-    setTradBrokerage(null);
+  const resetInputsFromAreaAndMode = (nextArea: string, nextMode: ComparisonMode) => {
+    setFlentRent(AREA_DEFAULTS[nextArea]);
+    const nextTradRent = Math.round(
+      AREA_DEFAULTS[nextArea] * (nextMode === "1bhk" ? TRAD_1BHK_FACTOR : TRAD_ROOM_FACTOR)
+    );
+    setTradRent(nextTradRent);
+    setTradMaint(Math.round(nextTradRent * TRAD_MAINT_FACTOR));
+    setTradDeposit(nextTradRent * DEPOSIT_MONTHS_TRAD);
+    setTradBrokerage(nextTradRent);
     setTradPainting(TRAD_PAINTING);
-  }, [area, mode]);
+  };
+
+  const handleSetArea = (nextArea: string) => {
+    if (nextArea === area) return;
+    setArea(nextArea);
+    resetInputsFromAreaAndMode(nextArea, mode);
+  };
+
+  const handleSetMode = (nextMode: ComparisonMode) => {
+    if (nextMode === mode) return;
+    setMode(nextMode);
+    resetInputsFromAreaAndMode(area, nextMode);
+  };
 
   const calculations = useMemo(() => {
     const flentDeposit = flentRent * FLENT_DEPOSIT_MULT;
@@ -108,25 +150,17 @@ export const useRentCalculator = () => {
       isRentLow,
       affordItems,
     };
-  }, [effBrokerage, effDeposit, effMaint, effTradRent, flentRent, furnitureMode, mode, tradPainting]);
-
-  const resetTradInputsFromFlent = (value: number) => {
-    setFlentRent(value);
-    setTradRent(null);
-    setTradMaint(null);
-    setTradDeposit(null);
-    setTradBrokerage(null);
-  };
+  }, [derivedTradRent, effBrokerage, effDeposit, effMaint, effTradRent, flentRent, furnitureMode, mode, tradPainting]);
 
   return {
     area,
-    setArea,
+    setArea: handleSetArea,
     mode,
-    setMode,
+    setMode: handleSetMode,
     furnitureMode,
     setFurnitureMode,
     flentRent,
-    setFlentRent: resetTradInputsFromFlent,
+    setFlentRent,
     tradPainting,
     setTradPainting,
     effTradRent,

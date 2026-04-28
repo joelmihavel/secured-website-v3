@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { IconMenu2 as Menu, IconArrowLeft as ArrowLeft, IconArrowRight as ArrowRight } from "@tabler/icons-react";
 import { Button } from "@/components/ui/Button";
 import {
@@ -48,32 +48,45 @@ const NavbarContent = ({ variant, activeTab, onTabChange }: NavbarProps) => {
     const pathname = usePathname();
     const isSecurePath = pathname.startsWith("/secured");
     const isRenewalGuidePath = pathname.startsWith("/renewal-guide");
-
-    // If it's a secure path BUT variant is not secure, it means it's the global Navbar in layout.tsx.
-    // We hide it because the secure page provides its own Navbar instance with the correct variant and state.
-    if (isSecurePath && variant !== "secure") return null;
-    if (isRenewalGuidePath) return null;
+    const shouldHideNavbar = (isSecurePath && variant !== "secure") || isRenewalGuidePath;
 
     const [isOpen, setIsOpen] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
-    const [canHover, setCanHover] = useState(false);
+    const [canHover, setCanHover] = useState(() =>
+        typeof window !== "undefined" ? window.matchMedia("(hover: hover)").matches : false
+    );
+    const [isMobileViewport, setIsMobileViewport] = useState(() =>
+        typeof window !== "undefined" ? window.matchMedia("(max-width: 767px)").matches : false
+    );
+    const [isComparisonInView, setIsComparisonInView] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        if (shouldHideNavbar) return;
+
         const mediaQuery = window.matchMedia("(hover: hover)");
-        setCanHover(mediaQuery.matches);
 
         const handler = (e: MediaQueryListEvent) => setCanHover(e.matches);
         mediaQuery.addEventListener("change", handler);
         return () => mediaQuery.removeEventListener("change", handler);
-    }, []);
+    }, [shouldHideNavbar]);
+
+    useEffect(() => {
+        if (shouldHideNavbar) return;
+
+        const mediaQuery = window.matchMedia("(max-width: 767px)");
+
+        const handler = (e: MediaQueryListEvent) => setIsMobileViewport(e.matches);
+        mediaQuery.addEventListener("change", handler);
+        return () => mediaQuery.removeEventListener("change", handler);
+    }, [shouldHideNavbar]);
 
     const router = useRouter();
     const searchParams = useSearchParams();
     const { trackCTAClick } = useCTATracking();
     const isHome = pathname === "/";
     const isPropertyDetail = pathname.startsWith('/homes/') && pathname.split('/').length === 3;
-    const { neighborhoodName, neighborhoodId } = useBreadcrumb();
+    const { neighborhoodName } = useBreadcrumb();
 
     // Determine effective variant:
     // - If variant is explicitly set, use it
@@ -81,9 +94,16 @@ const NavbarContent = ({ variant, activeTab, onTabChange }: NavbarProps) => {
     // - Otherwise default to expanded (shows hamburger on mobile via CSS)
     const effectiveVariant = variant ?? (isPropertyDetail ? "hamburger" : "expanded");
     const showExpandedNav = effectiveVariant === "expanded";
+    const shouldShowComparisonMorph =
+        pathname === "/rent-calculator" &&
+        isMobileViewport &&
+        isComparisonInView &&
+        !isOpen &&
+        !isHovered;
 
     // Close menu on outside click
     useEffect(() => {
+        if (shouldHideNavbar) return;
         if (!isOpen) return; // Only listen when menu is open
 
         const handleClickOutside = (event: MouseEvent) => {
@@ -108,7 +128,58 @@ const NavbarContent = ({ variant, activeTab, onTabChange }: NavbarProps) => {
             clearTimeout(timeoutId);
             document.removeEventListener('click', handleClickOutside);
         };
-    }, [isOpen]);
+    }, [isOpen, shouldHideNavbar]);
+
+    useEffect(() => {
+        if (shouldHideNavbar) return;
+        if (pathname !== "/rent-calculator" || !isMobileViewport) {
+            return;
+        }
+
+        let observer: IntersectionObserver | null = null;
+        let frameId: number | null = null;
+        let retries = 0;
+        const maxRetries = 10;
+
+        const setupObserver = () => {
+            const target = document.getElementById("rent-calculator-comparison");
+
+            if (!target && retries < maxRetries) {
+                retries += 1;
+                frameId = window.requestAnimationFrame(setupObserver);
+                return;
+            }
+
+            if (!target) {
+                setIsComparisonInView(false);
+                return;
+            }
+
+            observer = new IntersectionObserver(
+                ([entry]) => {
+                    setIsComparisonInView(entry.isIntersecting);
+                },
+                { threshold: 0, rootMargin: "-30% 0px -30% 0px" }
+            );
+
+            observer.observe(target);
+        };
+
+        setupObserver();
+
+        return () => {
+            if (frameId !== null) {
+                window.cancelAnimationFrame(frameId);
+            }
+            if (observer) {
+                observer.disconnect();
+            }
+        };
+    }, [isMobileViewport, pathname, shouldHideNavbar]);
+
+    // If it's a secure path BUT variant is not secure, it means it's the global Navbar in layout.tsx.
+    // We hide it because the secure page provides its own Navbar instance with the correct variant and state.
+    if (shouldHideNavbar) return null;
 
     const getLinkHref = (link: { href: string; sectionId: string }) => {
         if (isHome && link.sectionId) {
@@ -242,6 +313,7 @@ const NavbarContent = ({ variant, activeTab, onTabChange }: NavbarProps) => {
             // Non-homepage: Show back arrow + logo
             return (
                 <motion.div
+                    layout
                     className="flex items-center bg-white rounded-full shadow-lg border h-11 md:h-14 border-text-main overflow-hidden pointer-events-auto px-2"
                     initial="collapsed"
                     whileHover="expanded"
@@ -249,11 +321,27 @@ const NavbarContent = ({ variant, activeTab, onTabChange }: NavbarProps) => {
                         collapsed: { width: "auto" },
                         expanded: { width: "auto" }
                     }}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    transition={{ type: "spring", stiffness: 420, damping: 34, mass: 0.7 }}
                 >
-                    <Button variant="ghost" size="sm" onClick={() => router.push('/')} data-cta-id={CTA_IDS.NAVBAR_BACK} data-cta-context="navbar">
-                        <ArrowLeft />
-                    </Button>
+                    <AnimatePresence initial={false}>
+                        <motion.div
+                            key="navbar-back-arrow"
+                            initial={{ opacity: 0, scale: 0.92, filter: "blur(6px)" }}
+                            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                            exit={{ opacity: 0, scale: 0.96, filter: "blur(4px)" }}
+                            transition={{ duration: 0.22, ease: "easeOut" }}
+                        >
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => router.push('/')}
+                                data-cta-id={CTA_IDS.NAVBAR_BACK}
+                                data-cta-context="navbar"
+                            >
+                                <ArrowLeft />
+                            </Button>
+                        </motion.div>
+                    </AnimatePresence>
                     <Button variant="ghost" size="sm" onClick={() => router.push('/')} data-cta-id={CTA_IDS.NAVBAR_LOGO} data-cta-context="navbar">
                         <Image
                             src="/images/flentinbengaluru.svg"
@@ -342,38 +430,81 @@ const NavbarContent = ({ variant, activeTab, onTabChange }: NavbarProps) => {
         <div
             ref={menuRef}
             className={cn(
-                "relative pointer-events-auto h-11 w-11 md:h-14 md:w-14 flex-shrink-0 z-50",
+                "relative pointer-events-auto h-11 md:h-14 flex-shrink-0 z-50",
                 // For expanded variant, hide hamburger on desktop (lg+)
-                showExpandedNav && "lg:hidden"
+                showExpandedNav && "lg:hidden",
+                shouldShowComparisonMorph ? "w-full min-w-0 flex-1" : "w-11 md:w-14"
             )}
             onMouseEnter={() => canHover && setIsHovered(true)}
             onMouseLeave={() => canHover && setIsHovered(false)}
         >
+            {(() => {
+                const collapsedSize = isMobileViewport ? 44 : 56;
+                return (
+                    <>
             <div className="absolute -inset-4 bg-transparent z-[-1]" />
             <motion.div
-                className="absolute right-0 top-0 bg-white shadow-lg border border-text-main flex flex-col items-start overflow-hidden origin-top-right z-50"
+                layout
+                className={cn(
+                    "absolute right-0 top-0 shadow-lg border border-text-main flex flex-col items-start overflow-hidden origin-top-right z-50",
+                    shouldShowComparisonMorph ? "bg-pastel-orange" : "bg-white"
+                )}
                 initial="collapsed"
                 variants={{
                     collapsed: {
-                        height: typeof window !== 'undefined' && window.innerWidth < 768 ? 44 : 56,
-                        width: typeof window !== 'undefined' && window.innerWidth < 768 ? 44 : 56,
-                        borderRadius: '100%'
+                        height: collapsedSize,
+                        width: shouldShowComparisonMorph ? "100%" : collapsedSize,
+                        borderRadius: "9999px"
                     },
                     expanded: { height: 'auto', width: 220, borderRadius: '12%' }
                 }}
                 animate={isOpen || isHovered ? "expanded" : "collapsed"}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                transition={{ type: "spring", stiffness: 420, damping: 34, mass: 0.7 }}
             >
                 <div className="flex flex-col items-stretch w-full">
-                    <button
+                    <motion.button
+                        layout
                         onClick={() => setIsOpen(!isOpen)}
                         className={cn(
-                            "flex items-center justify-center h-11 md:h-14 flex-shrink-0",
+                            "flex min-w-[44px] items-center justify-center h-11 md:h-14 md:min-w-[56px] flex-shrink-0",
+                            shouldShowComparisonMorph ? "w-full px-4 py-2" : "",
                             canHover && "pointer-events-none"
                         )}
+                        aria-label="Open menu"
                     >
-                        <Menu className="w-6 h-6 md:w-7 md:h-7 text-text-main" />
-                    </button>
+                        <AnimatePresence mode="wait" initial={false}>
+                            {shouldShowComparisonMorph ? (
+                                <motion.div
+                                    key="flenting-vs-renting-label"
+                                    initial={{ opacity: 0, scale: 0.92, filter: "blur(6px)" }}
+                                    animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                                    exit={{ opacity: 0, scale: 0.96, filter: "blur(4px)" }}
+                                    transition={{ duration: 0.22, ease: "easeOut" }}
+                                    className="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 whitespace-nowrap text-center"
+                                >
+                                    <span className="text-base font-heading font-bold leading-none text-text-main">
+                                        Flenting
+                                    </span>
+                                    <span className="text-subtitle-sm font-semibold uppercase tracking-wide text-text-main/70">
+                                        vs
+                                    </span>
+                                    <span className="text-base font-heading font-bold leading-none text-text-main">
+                                        Renting
+                                    </span>
+                                </motion.div>
+                            ) : (
+                                <motion.span
+                                    key="menu-icon"
+                                    initial={{ opacity: 0, scale: 0.9, rotate: -8 }}
+                                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                                    exit={{ opacity: 0, scale: 0.85, rotate: 8 }}
+                                    transition={{ duration: 0.18, ease: "easeOut" }}
+                                >
+                                    <Menu className="w-6 h-6 md:w-7 md:h-7 text-text-main" />
+                                </motion.span>
+                            )}
+                        </AnimatePresence>
+                    </motion.button>
                     <motion.div
                         variants={{
                             collapsed: { opacity: 0, height: 0 },
@@ -468,6 +599,9 @@ const NavbarContent = ({ variant, activeTab, onTabChange }: NavbarProps) => {
                     </motion.div>
                 </div>
             </motion.div>
+                    </>
+                );
+            })()}
         </div>
     );
 
@@ -517,12 +651,17 @@ const NavbarContent = ({ variant, activeTab, onTabChange }: NavbarProps) => {
             variant === "secure" ? "px-4 md:px-8 lg:px-12" : "px-3 sm:px-4 md:px-6 lg:px-8"
         )}>
             <div className={cn(
-                "mx-auto flex items-center justify-between h-16 md:h-20",
+                "relative mx-auto flex items-center justify-between h-16 md:h-20",
                 variant === "secure" ? "max-w-7xl" : "max-w-12xl"
             )}>
-                {renderLeftSection()}
+                <div className={cn(shouldShowComparisonMorph && "invisible pointer-events-none absolute left-0")}>
+                    {renderLeftSection()}
+                </div>
 
-                <div className="flex justify-end gap-2 md:gap-3 items-center">
+                <div className={cn(
+                    "flex justify-end gap-2 md:gap-3 items-center",
+                    shouldShowComparisonMorph && "w-full flex-1 min-w-0 justify-center"
+                )}>
                     {renderSecureTabs()}
                     {renderExpandedNav()}
                     {/* Mobile Get App Button - Only for secured page */}

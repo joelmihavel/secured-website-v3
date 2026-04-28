@@ -44,6 +44,7 @@ cta_clicked,rent_calculator_back,desktop and mobile,Global,Rent calculator: Back
 cta_clicked,rent_calculator_breakdown_toggle,desktop and mobile,Global,Rent calculator: Show/Hide breakdown
 cta_clicked,rent_calculator_book_tour,desktop and mobile,Global,Rent calculator: Book a Tour
 cta_clicked,rent_calculator_talk_to_us,desktop and mobile,Global,Rent calculator: Talk to us / Get a Call Back
+cta_clicked,rent_calculator_home_inventory_chat,desktop and mobile,Rent calculator,Home inventory: Chat with us (WhatsApp)
 cta_clicked,form_get_started_button,desktop and mobile,/owners,Owners form: Get Started button click
 cta_clicked,form_get_started_submit,desktop and mobile,/owners,Owners form: Form submitted successfully
 cta_clicked,form_submit_another,desktop and mobile,/owners,Owners form: Submit Another (after success)

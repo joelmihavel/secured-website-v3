@@ -259,7 +259,24 @@ export async function getCollectionItems<T extends WebflowItem>(
       return allItems;
     }
 
-    const data = await response.json();
+    let data: {
+      items?: T[];
+      pagination?: { total?: number };
+    };
+    try {
+      data = (await response.json()) as {
+        items?: T[];
+        pagination?: { total?: number };
+      };
+    } catch (error) {
+      // Webflow occasionally returns malformed JSON for specific content rows.
+      // Fail soft and return data fetched so far instead of breaking build.
+      console.error(
+        `[Webflow] Invalid JSON while fetching collection ${collectionId}. Returning items fetched so far (${allItems.length}).`,
+        error
+      );
+      return allItems;
+    }
 
     if (data.items) {
       allItems = allItems.concat(data.items as T[]);

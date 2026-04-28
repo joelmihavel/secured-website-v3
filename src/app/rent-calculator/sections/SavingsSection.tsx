@@ -19,12 +19,10 @@ export function SavingsSection({
 }: SavingsSectionProps) {
   return (
     <section
-      className={`flent-neo-card mb-5 rounded-[20px] px-6 py-7 text-left text-bg-white ${
-        flentWins ? "bg-forest-green" : "bg-ground-brown"
-      }`}
+      className="mb-5 rounded-2xl bg-ground-brown px-6 py-7 text-left text-bg-white"
     >
       <div
-        className={`mb-1 font-zin-italic text-6xl leading-none ${
+        className={`mb-1 font-zin text-fluid-h1 ${
           flentWins ? "text-bg-white" : "text-brand-orange"
         }`}
       >
@@ -35,13 +33,13 @@ export function SavingsSection({
       </p>
 
       {flentWins ? (
-        <p className="mb-4 max-w-[460px] text-subtitle-sm font-body text-bg-white/85">
+        <p className="mb-4 max-w-xl text-subtitle-sm font-body text-bg-white/85">
           by choosing Flent over{" "}
           {mode === "1bhk" ? `a 1BHK in ${area}` : `finding flatmates in ${area}`} - and
           you move into a fully furnished, designer home from day one.
         </p>
       ) : (
-        <p className="mb-4 max-w-[460px] text-subtitle-sm font-body text-bg-white/85">
+        <p className="mb-4 max-w-xl text-subtitle-sm font-body text-bg-white/85">
           That&apos;s {formatCurrency(Math.round(Math.abs(savings) / DURATION))}/mo for a fully
           furnished designer home - zero brokerage, no deposit drama, move-in ready.
         </p>

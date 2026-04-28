@@ -19,16 +19,22 @@ export function ComparisonRow({
   divider = false,
   rowClassName,
 }: ComparisonRowProps) {
+  const dividerClassName = divider ? "border-t border-border/10" : "";
+
   return (
     <TableRow className={cn(divider ? "bg-secondary-background" : "", rowClassName)}>
-      <TableCell className="px-4 py-3 text-xs text-foreground md:text-base">
-        <div className="text-[13px] font-medium text-text-main md:text-[16px]">{label}</div>
-        {sub ? <div className="mt-0.5 text-[11px] text-muted-foreground md:text-[13px]">{sub}</div> : null}
+      <TableCell className={cn("px-4 py-3 text-xs text-foreground md:text-base", dividerClassName)}>
+        <div className="text-sm font-medium text-text-main md:text-base">{label}</div>
+        {sub ? <div className="mt-0.5 text-xs text-muted-foreground md:text-sm">{sub}</div> : null}
       </TableCell>
-      <TableCell className="px-2.5 py-3 text-center text-xs text-foreground md:text-base">
+      <TableCell
+        className={cn("px-2.5 py-3 text-center text-xs text-foreground md:text-base", dividerClassName)}
+      >
         {flent}
       </TableCell>
-      <TableCell className="px-2.5 py-3 text-center text-xs text-foreground md:text-base">
+      <TableCell
+        className={cn("px-2.5 py-3 text-center text-xs text-foreground md:text-base", dividerClassName)}
+      >
         {trad}
       </TableCell>
     </TableRow>

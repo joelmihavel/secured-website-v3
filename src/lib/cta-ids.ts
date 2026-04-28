@@ -91,6 +91,7 @@ export const CTA_IDS = {
   RENT_CALCULATOR_BREAKDOWN_TOGGLE: "rent_calculator_breakdown_toggle",
   RENT_CALCULATOR_BOOK_TOUR: "rent_calculator_book_tour",
   RENT_CALCULATOR_TALK_TO_US: "rent_calculator_talk_to_us",
+  RENT_CALCULATOR_HOME_INVENTORY_CHAT: "rent_calculator_home_inventory_chat",
 
   // --- Owners / Get started form ---
   FORM_GET_STARTED_BUTTON: "form_get_started_button",
