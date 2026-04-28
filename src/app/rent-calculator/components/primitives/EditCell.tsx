@@ -59,8 +59,8 @@ export function EditCell({
           }}
           className={`${
             isMobileFlat
-              ? "h-8 w-auto min-w-[7ch] max-w-[12ch] rounded-none border-0 border-b border-border/40 bg-transparent pl-6 pr-7 text-center text-base font-bold text-text-main [field-sizing:content] focus:border-border"
-              : "h-9 w-auto min-w-[7ch] max-w-[12ch] rounded-l-none rounded-r-xl border border-border/40 bg-bg-white px-7 text-center text-base font-bold text-text-main [field-sizing:content] focus:border-border"
+              ? "h-8 w-auto min-w-[7ch] max-w-[12ch] rounded-none border-0 border-b border-border/40 bg-transparent pl-5 pr-7 text-center text-base font-bold text-text-main [field-sizing:content] focus:border-border"
+              : "h-9 w-auto min-w-[7ch] max-w-[12ch] rounded-l-none rounded-r-xl border border-border/40 bg-bg-white pl-6 pr-7 text-center text-base font-bold text-text-main [field-sizing:content] focus:border-border"
           } outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${inputClassName ?? ""}`}
           step="500"
         />
