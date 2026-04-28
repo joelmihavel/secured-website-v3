@@ -5,10 +5,8 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   IconBed as Bed,
-  IconBath as Bath,
   IconSquare as Square,
   IconMapPin as MapPin,
-  IconArrowRight as ArrowRight,
   IconArrowUpRight as ArrowUpRight,
   IconCalendar as Calendar,
   IconDoor as DoorOpen,
@@ -54,7 +52,7 @@ const CompanyPill = ({
 
   return (
     <motion.div
-      className="relative flex items-center gap-2 rounded-xl overflow-hidden cursor-default h-[34px] max-w-[12ch]"
+      className="relative flex items-center gap-2 rounded-xl overflow-hidden cursor-default h-9 max-w-24"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       initial={false}
@@ -81,13 +79,13 @@ const CompanyPill = ({
             style={{ borderRadius: "100%" }}
           />
         ) : (
-          <Building2 size={16} className="text-gray-600" />
+          <Building2 size={16} className="text-text-main/70" />
         )}
       </div>
 
       {/* Company Name - Animated */}
       <motion.span
-        className="text-xs font-medium text-gray-700 font-body truncate"
+        className="text-xs font-medium text-text-main/80 font-body truncate"
         initial={false}
         animate={{
           maxWidth: isHovered ? "200px" : "0px",
@@ -149,7 +147,7 @@ const PropertyCardDiscountRibbon = ({
 }) => {
   if (!showRibbon) return null;
   return (
-    <div className="bg-forest-green text-white text-center py-2 text-xs md:text-sm font-heading font-bold min-h-[2.5rem] flex items-center justify-center">
+    <div className="bg-forest-green text-text-invert text-center py-2 text-xs md:text-sm font-heading font-bold min-h-10 flex items-center justify-center">
       <AnimatePresence mode="wait">
         {ribbonPhase === 0 && (
           <motion.span
@@ -200,8 +198,6 @@ const PropertyCardImageCarousel = ({
   isOccupied,
   isComingSoon,
   currentImageIndex,
-  setCurrentImageIndex,
-  setIsHovering,
   imageUrl,
   showRibbon,
   ribbonPhase,
@@ -216,8 +212,6 @@ const PropertyCardImageCarousel = ({
   isOccupied: boolean;
   isComingSoon: boolean;
   currentImageIndex: number;
-  setCurrentImageIndex: React.Dispatch<React.SetStateAction<number>>;
-  setIsHovering: (v: boolean) => void;
   imageUrl: string;
   showRibbon: boolean;
   ribbonPhase: number;
@@ -229,19 +223,14 @@ const PropertyCardImageCarousel = ({
 
   return (
     <div
-      className={`group/card rounded-t-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col relative bg-white h-full ${
+      className={`group/card rounded-t-3xl overflow-hidden shadow-[0_6px_18px_rgba(21,16,46,0.12)] hover:shadow-[0_12px_30px_rgba(21,16,46,0.2)] transition-all duration-300 flex flex-col relative bg-bg-white h-full ${
         isOccupied ? "pointer-events-none" : ""
       }`}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => {
-        setIsHovering(false);
-        setCurrentImageIndex(0);
-      }}
     >
       {/* Debug Info Badge */}
       {isDebugMode && (
         <div
-          className="absolute top-3 md:top-4 left-3 md:left-4 z-10 px-2 py-1 rounded bg-black/80 text-white text-[10px] font-mono cursor-pointer hover:bg-black active:bg-green-700 transition-colors"
+          className="absolute top-3 md:top-4 left-3 md:left-4 z-10 px-2 py-1 rounded bg-text-main/80 text-text-invert text-xs font-mono cursor-pointer hover:bg-text-main active:bg-green-700 transition-colors"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -257,9 +246,9 @@ const PropertyCardImageCarousel = ({
       {/* Location Tag in Top Right */}
       {locationName && (
         <div
-          className={`absolute top-3 md:top-4 right-3 md:right-4 z-10 px-2 md:px-4 py-1 md:py-2 rounded-t-[1rem] border border-text-main ${locationColors.bg} ${locationColors.text} flex items-center gap-1 md:gap-1`}
+          className={`absolute top-3 md:top-4 right-3 md:right-4 z-10 px-2 md:px-4 py-1 md:py-2 rounded-t-xl border border-text-main ${locationColors.bg} ${locationColors.text} flex items-center gap-1 md:gap-1`}
         >
-          <MapPin size={12} className="md:w-[14px] md:h-[14px]" />
+          <MapPin size={12} className="md:w-3.5 md:h-3.5" />
           <span className="text-subtitle-sm font-medium font-body">
             {locationName}
           </span>
@@ -267,7 +256,7 @@ const PropertyCardImageCarousel = ({
       )}
 
       {/* Image Section + Discount Ribbon Overlay */}
-      <div className="relative h-[300px] md:h-[340px] w-full bg-gray-100 overflow-hidden shrink-0">
+      <div className="relative h-72 md:h-80 w-full bg-secondary-background overflow-hidden shrink-0">
         <AnimatePresence initial={false}>
           <motion.div
             key={currentImageIndex}
@@ -290,9 +279,7 @@ const PropertyCardImageCarousel = ({
               src={imageUrl}
               alt={property.fieldData.name}
               fill
-              className={`object-cover transition-transform duration-700 ${
-                !isComingSoon ? "group-hover/card:scale-110" : ""
-              } pointer-events-none`}
+              className="object-cover pointer-events-none"
             />
           </motion.div>
         </AnimatePresence>
@@ -321,8 +308,7 @@ export const PropertyCard = ({
   rooms = [],
   occupants = [],
 }: PropertyCardProps) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isHovering, setIsHovering] = useState(false);
+  const currentImageIndex = 0;
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [mapJourneySessionId, setMapJourneySessionId] = useState<string | undefined>(
@@ -344,16 +330,6 @@ export const PropertyCard = ({
   );
 
   const imageUrl = images[currentImageIndex] || "/images/placeholder.jpg";
-
-  useEffect(() => {
-    if (isHovering && images.length > 1 && variant !== "coming-soon") {
-      const interval = setInterval(() => {
-        setCurrentImageIndex((prev) => (prev + 1) % images.length);
-      }, 2000);
-
-      return () => clearInterval(interval);
-    }
-  }, [isHovering, images.length, variant]);
 
   const isComingSoon = variant === "coming-soon";
   const isOccupied = !isComingSoon && !property.fieldData.available;
@@ -427,7 +403,7 @@ export const PropertyCard = ({
   // Use uniform pastel-pink background with black text/icon for all locations
   const locationColors = {
     bg: "bg-pastel-pink",
-    text: "text-black",
+    text: "text-text-main",
   };
 
   return (
@@ -436,7 +412,7 @@ export const PropertyCard = ({
         isOccupied ? "opacity-60" : ""
       }`}
     >
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full border border-text-main/20 rounded-t-3xl overflow-hidden">
         <PropertyCardImageCarousel
           isDebugMode={isDebugMode}
           property={property}
@@ -445,8 +421,6 @@ export const PropertyCard = ({
           isOccupied={isOccupied}
           isComingSoon={isComingSoon}
           currentImageIndex={currentImageIndex}
-          setCurrentImageIndex={setCurrentImageIndex}
-          setIsHovering={setIsHovering}
           imageUrl={imageUrl}
           showRibbon={showRibbon}
           ribbonPhase={ribbonPhase}
@@ -456,7 +430,7 @@ export const PropertyCard = ({
         />
 
         {/* Content Section */}
-        <div className="p-4 md:p-6 flex flex-col gap-2 md:gap-3 bg-white flex-grow">
+        <div className="p-4 md:p-6 flex flex-col gap-2 md:gap-3 bg-bg-white flex-grow">
           {/* Title */}
           <div className="flex items-center gap-2 pb-2">
             <h3 className="text-fluid-h3 font-zin text-text-main leading-tight line-clamp-1">
@@ -523,16 +497,16 @@ export const PropertyCard = ({
                       }}
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98, y: 0 }}
-                      className="w-full rounded-tr-[1rem] rounded-tl-none rounded-bl-none rounded-br-[1rem] inline-flex items-center justify-center font-bold transition-colors duration-200 cursor-pointer font-heading tracking-wide whitespace-nowrap px-3 py-3 text-button-link gap-2 border border-text-main shadow-[-3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[-1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[-3px] active:translate-y-[3px]"
+                      className="w-full rounded-tr-xl rounded-tl-none rounded-bl-none rounded-br-xl inline-flex items-center justify-center font-bold transition-colors duration-200 cursor-pointer font-heading tracking-wide whitespace-nowrap px-3 py-3 text-button-link gap-2 border border-text-main shadow-[-3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-[-1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[-3px] active:translate-y-[3px]"
                       style={{
-                        backgroundColor: "#ffffff",
+                        backgroundColor: "var(--color-bg-white)",
                         borderColor: "var(--color-text-main)",
                         color: "var(--color-text-main)",
                       }}
                       data-cta-id={CTA_IDS.VIEW_ON_MAPS_COMING_SOON}
                       data-cta-context="coming-soon-section"
                     >
-                      <span className="flex items-center justify-center flex-shrink-0 w-5 h-5 [&>svg]:w-5 [&>svg]:h-5">
+                      <span className="flex items-center justify-center flex-shrink-0 w-5 h-5">
                         <IconMap size={18} />
                       </span>
                       <span className="flex-shrink-0">View on Maps</span>
@@ -545,7 +519,7 @@ export const PropertyCard = ({
                   variant="primary"
                   pastelColor="violet"
                   size="md"
-                  className="w-full rounded-tr-[1rem] rounded-tl-none rounded-bl-none rounded-br-[1rem]"
+                  className="w-full rounded-tr-xl rounded-tl-none rounded-bl-none rounded-br-xl"
                   data-cta-id={CTA_IDS.PROPERTY_GET_LAUNCH_INVITE}
                   data-cta-context="property_card"
                   onClick={() => {
@@ -616,7 +590,7 @@ export const PropertyCard = ({
             /* Default Variant Content */
             <>
               {/* Availability & Tags */}
-              <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-3 flex-wrap border-b border-text-main/20 pb-2">
                 <Available
                     rooms={propertyRooms}
                 />
@@ -627,12 +601,10 @@ export const PropertyCard = ({
                 )}
               </div>
 
-              <div className="h-px bg-gray-100 w-full" />
-
               {/* Stats Row */}
-              <div className="flex items-center justify-between text-text-main/80">
+              <div className="flex items-center justify-between text-text-main/80 border-b border-text-main/20 pb-2">
                 <div className="flex items-center gap-1 md:gap-2">
-                  <Bed size={16} className="md:w-[18px] md:h-[18px]" />
+                  <Bed size={16} className="md:w-5 md:h-5" />
                   <span className="font-body text-xs font-medium">
                     {property.fieldData["property-bedrooms"]} BHK
                   </span>
@@ -640,28 +612,26 @@ export const PropertyCard = ({
                 <div className="flex items-center gap-1 md:gap-2">
                   <Square
                     size={16}
-                    className="rotate-45 md:w-[18px] md:h-[18px]"
+                    className="rotate-45 md:w-5 md:h-5"
                   />
                   <span className="font-body text-xs font-medium">
                     {property.fieldData["carpet-area"]} Sq. Ft
                   </span>
                 </div>
                 <div className="flex items-center gap-1 md:gap-2">
-                  <DoorOpen size={16} className="md:w-[18px] md:h-[18px]" />
+                  <DoorOpen size={16} className="md:w-5 md:h-5" />
                   <span className="font-body text-xs font-medium">
                     {availableRooms}/{totalRooms} Available
                   </span>
                 </div>
               </div>
 
-              <div className="h-px bg-gray-100 w-full" />
-
               {/* Flatmates Section with CompanyPill */}
-              <div className="flex items-center gap-2 md:gap-3 min-w-0 overflow-hidden min-h-[34px]">
+              <div className="flex items-center gap-2 md:gap-3 min-w-0 overflow-hidden min-h-9 border-b border-text-main/20 pb-2">
                 <div className="flex items-center gap-1 md:gap-2 text-text-main/80 flex-shrink-0">
                   <Users
                     size={16}
-                    className="md:w-[18px] md:h-[18px] flex-shrink-0"
+                    className="md:w-5 md:h-5 flex-shrink-0"
                   />
                   {allRoomsAvailable ? (
                     /* All rooms available */
@@ -692,7 +662,7 @@ export const PropertyCard = ({
                         );
                       })
                     ) : (
-                      <span className="text-xs text-gray-400 font-body italic leading-tight">
+                      <span className="text-xs text-muted-foreground font-body italic leading-tight">
                         --
                       </span>
                     )}
@@ -700,15 +670,13 @@ export const PropertyCard = ({
                 )}
               </div>
 
-              <div className="h-px bg-gray-100 w-full mt-auto" />
-
               {/* Price */}
               <div className="pt-2">
                 <span className="text-fluid-h3 font-zin text-text-main">
                   From ₹
                   {displayedRent.toLocaleString("en-IN")}
                 </span>
-                <span className="text-[10px] text-text-main/60 font-body ml-1">
+                <span className="text-xs text-text-main/60 font-body ml-1">
                   / month (per room)
                 </span>
               </div>
@@ -728,7 +696,7 @@ const Available = ({
   const availableFromText = getAvailabilityDateForProperty(rooms);
   return (
     <div className="flex items-center gap-1 md:gap-2 text-text-main/80">
-      <Calendar size={16} className="md:w-[18px] md:h-[18px]" />
+      <Calendar size={16} className="md:w-5 md:h-5" />
       <span className="font-body font-medium text-xs">{availableFromText}</span>
     </div>
   );

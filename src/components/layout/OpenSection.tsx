@@ -8,7 +8,7 @@ interface OpenSectionProps extends React.HTMLAttributes<HTMLElement> {
 export const OpenSection = ({ children, className, id, style, ...props }: OpenSectionProps) => {
     return (
         <section
-            className={cn("relative w-full max-w-[100vw] mx-auto overflow-hidden", className)}
+            className={cn("relative w-full max-w-full mx-auto overflow-hidden", className)}
             id={id}
             style={style}
             {...props}

@@ -6,7 +6,9 @@ import {
   type Property,
   type Room,
 } from "@/lib/webflow";
+import { MarqueeSection, MARQUEE_DEFAULT_PROPS } from "@/components/sections/MarqueeSection";
 import { RentCalculatorClient } from "./RentCalculatorClient";
+import { Suspense } from "react";
 
 export default async function RentCalculatorPage() {
   const [properties, locations, rooms, occupants] = await Promise.all([
@@ -17,11 +19,16 @@ export default async function RentCalculatorPage() {
   ]);
 
   return (
-    <RentCalculatorClient
-      properties={properties}
-      locations={locations}
-      rooms={rooms}
-      occupants={occupants}
-    />
+    <>
+      <MarqueeSection {...MARQUEE_DEFAULT_PROPS} />
+      <Suspense fallback={null}>
+        <RentCalculatorClient
+          properties={properties}
+          locations={locations}
+          rooms={rooms}
+          occupants={occupants}
+        />
+      </Suspense>
+    </>
   );
 }

@@ -7,14 +7,9 @@ import {
   Amenity,
   Room,
   Occupant,
-  WEBFLOW_BACKGROUND_COLOUR_MAP,
 } from "@/lib/webflow";
 import {
-  getPropertyImagesData,
-  propertyHasDiscount,
   isPropertyActive,
-  getRibbonDiscountSavings,
-  getDiscountEndDateFormatted,
 } from "@/lib/property-utils";
 import { PropertyPageViewTracker } from "./PropertyPageViewTracker";
 import { Header } from "./sections/Header";
@@ -29,7 +24,7 @@ import {
 import { Rating } from "@/components/ui/Rating";
 import { FAQ } from "./sections/FAQ";
 import { MoreOptions } from "./sections/MoreOptions";
-import { MarqueeSection } from "@/app/(Homepage)/sections/MarqueeSection";
+import { MarqueeSection, MARQUEE_DEFAULT_PROPS } from "@/components/sections/MarqueeSection";
 import { BottomNavigation } from "@/components/ui/BottomNavigation";
 import { DrawerOpenProvider } from "@/context/DrawerOpenContext";
 import { BreadcrumbSetter } from "@/components/utils/BreadcrumbSetter";
@@ -151,7 +146,6 @@ export default async function PropertyPage({
     hasDiscount,
     discountSavings,
     discountEndDate,
-    marqueeStarFill,
   } = ctx;
 
   return (
@@ -317,7 +311,7 @@ export default async function PropertyPage({
         <HowItWorks propertyName={property.fieldData.name} />
       </section>
 
-      <MarqueeSection />
+      <MarqueeSection {...MARQUEE_DEFAULT_PROPS} />
 
       <section id="reviews">
         <Rating reviews={reviews} />

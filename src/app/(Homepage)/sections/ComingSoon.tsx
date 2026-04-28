@@ -10,7 +10,7 @@ import { useSectionViewTracking } from "@/hooks/useSectionViewTracking";
 
 const DEFAULT_TITLE = (
   <>
-    See what's<br className="md:hidden" /> <br className="hidden md:block" />
+    See what&apos;s<br className="md:hidden" /> <br className="hidden md:block" />
     <span className="font-zin-italic"> coming next</span>
   </>
 );
@@ -68,11 +68,11 @@ export const ComingSoon = ({
     >
       {/* Top Section - Centered */}
       <div className="flex flex-col items-center text-center mb-12 px-4 sm:px-6 lg:px-8 relative z-10">
-        <h2 className="font-heading text-fluid-h2 text-white mb-6">
+        <h2 className="font-heading text-fluid-h2 text-text-invert mb-6">
           {title}
         </h2>
 
-        <p className="text-subtitle !text-white/90 font-body font-medium max-w-2xl">
+        <p className="text-subtitle !text-text-invert/90 font-body font-medium max-w-2xl">
           {subtitle}
         </p>
       </div>
@@ -102,8 +102,8 @@ export const ComingSoon = ({
       </div>
 
       {/* Newsletter Section */}
-      <div className=" rounded-[2rem] py-12 px-2 text-center relative z-10">
-        <h3 className="font-heading text-fluid-h3 text-white mb-8">
+      <div className=" rounded-3xl py-12 px-2 text-center relative z-10">
+        <h3 className="font-heading text-fluid-h3 text-text-invert mb-8">
           {newsletterHeading}
         </h3>
 
@@ -118,19 +118,19 @@ export const ComingSoon = ({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 text-center">
           <div>
-            <p className="text-subtitle-sm !text-white/80 font-body leading-relaxed">
+            <p className="text-subtitle-sm !text-text-invert/80 font-body leading-relaxed">
               “Everything I liked kept getting rented out. Early access finally
               gave me a chance”
             </p>
           </div>
           <div className="hidden md:block">
-            <p className="text-subtitle-sm !text-white/80 font-body leading-relaxed">
+            <p className="text-subtitle-sm !text-text-invert/80 font-body leading-relaxed">
               “I just subscribed because all their homes are aesthetically
               pleasing”
             </p>
           </div>
           <div className="hidden md:block">
-            <p className="text-subtitle-sm !text-white/80 font-body leading-relaxed">
+            <p className="text-subtitle-sm !text-text-invert/80 font-body leading-relaxed">
               “I used to check the website every day. Now I don’t have FOMO
               anymore”
             </p>

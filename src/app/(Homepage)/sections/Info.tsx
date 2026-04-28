@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { motion, useInView } from "framer-motion";
-import { IconPlayerPlay as Play } from "@tabler/icons-react";
 import { OpenSection } from "@/components/layout/OpenSection";
 
 export interface InfoStat {
@@ -18,7 +16,7 @@ const defaultStats: InfoStat[] = [
   {
     value: "10%",
     label: "Homes qualify our evaluation criteria",
-    color: "text-white",
+    color: "text-text-invert",
     bgColor: "bg-brick-red",
     rotation: -2,
   },
@@ -26,14 +24,14 @@ const defaultStats: InfoStat[] = [
     value: "58",
     label:
       "Quality checks across utilities and safety",
-    color: "text-white",
+    color: "text-text-invert",
     bgColor: "bg-forest-green",
     rotation: 3,
   },
   {
     value: "₹5L",
     label: "Avg. invested in design, furnishings & setup per home.",
-    color: "text-white",
+    color: "text-text-invert",
     bgColor: "bg-ground-brown",
     rotation: -1,
   },
@@ -51,9 +49,15 @@ interface InfoProps {
   heading?: React.ReactNode;
   stats?: InfoStat[];
   showVideo?: boolean;
+  topContent?: React.ReactNode;
+  topClassName?: string;
+  numberClassName?: string;
+  showTopTear?: boolean;
   showHeading?: boolean;
+  hideHeadingOnMobile?: boolean;
   showStats?: boolean;
   rightColumn?: React.ReactNode;
+  contentContainerClassName?: string;
 }
 
 // CountUp component for animating numbers
@@ -61,9 +65,15 @@ interface CountUpProps {
   end: string;
   color: string;
   duration?: number;
+  className?: string;
 }
 
-const CountUp: React.FC<CountUpProps> = ({ end, color, duration = 2 }) => {
+const CountUp: React.FC<CountUpProps> = ({
+  end,
+  color,
+  duration = 2,
+  className,
+}) => {
   const [count, setCount] = useState<string>("");
   const ref = useRef<HTMLParagraphElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -73,11 +83,7 @@ const CountUp: React.FC<CountUpProps> = ({ end, color, duration = 2 }) => {
 
     // Extract numeric value from the string
     const numericMatch = end.match(/[\d,]+/);
-    if (!numericMatch) {
-      // If no number found, just show the text
-      setCount(end);
-      return;
-    }
+    if (!numericMatch) return;
 
     const numericStr = numericMatch[0].replace(/,/g, "");
     const targetValue = parseInt(numericStr, 10);
@@ -121,7 +127,7 @@ const CountUp: React.FC<CountUpProps> = ({ end, color, duration = 2 }) => {
   return (
     <p
       ref={ref}
-      className={`font-zin text-5xl md:text-6xl lg:text-7xl font-extrabold ${color}`}
+      className={`font-zin font-extrabold ${className ?? "text-fluid-h1"} ${color}`}
     >
       {count || end}
     </p>
@@ -132,20 +138,30 @@ export const Info = ({
   heading,
   stats,
   showVideo = true,
+  topContent,
+  topClassName,
+  numberClassName,
+  showTopTear = true,
   showHeading,
+  hideHeadingOnMobile = false,
   showStats,
   rightColumn,
+  contentContainerClassName,
 }: InfoProps) => {
   const displayHeading = heading ?? defaultHeading;
   const displayStats = stats ?? defaultStats;
   const shouldShowHeading = showHeading ?? true;
   const shouldShowStats = showStats ?? true;
+  const hasCustomTop = Boolean(topContent);
+  const shouldShowTop = hasCustomTop || showVideo;
+  const shouldShowVideo = showVideo && !hasCustomTop;
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const desktopVideoRef = useRef<HTMLVideoElement>(null);
   const mobileVideoRef = useRef<HTMLVideoElement>(null);
   const isInView = useInView(videoContainerRef, { margin: "0px" });
 
   useEffect(() => {
+    if (!shouldShowVideo) return;
     if (isInView) {
       desktopVideoRef.current?.play().catch(() => {});
       mobileVideoRef.current?.play().catch(() => {});
@@ -153,84 +169,90 @@ export const Info = ({
       desktopVideoRef.current?.pause();
       mobileVideoRef.current?.pause();
     }
-  }, [isInView]);
+  }, [isInView, shouldShowVideo]);
 
   return (
     <OpenSection className="bg-bg-white">
-      {/* Video (Edge to Edge) */}
-      {showVideo && (
+      {/* Top media/content (Edge to Edge) */}
+      {shouldShowTop && (
       <div
         ref={videoContainerRef}
-        className="w-full bg-white overflow-hidden flex items-center justify-center relative md:aspect-[2.5/1] aspect-[16/9]"
+        className={`w-full overflow-hidden flex items-center justify-center relative ${
+          shouldShowVideo ? "bg-bg-white md:aspect-[2.5/1] aspect-video" : `py-12 md:py-16 ${topClassName ?? "bg-bg-white"}`
+        }`}
       >
         {/* Torn Paper Edge - Top */}
-        <div className="absolute top-0 left-0 w-full h-8 md:h-16 z-20 -translate-y-2 pointer-events-none">
-          <svg className="w-full h-full text-bg-white fill-current">
-            <defs>
-              <filter
-                id="paper-tear-top"
-                x="-20%"
-                y="-20%"
-                width="140%"
-                height="140%"
-              >
-                <feTurbulence
-                  type="fractalNoise"
-                  baseFrequency="0.012"
-                  numOctaves="3"
-                  seed="42"
-                  result="noise"
-                />
-                <feDisplacementMap
-                  in="SourceGraphic"
-                  in2="noise"
-                  scale="12"
-                  xChannelSelector="R"
-                  yChannelSelector="G"
-                />
-              </filter>
-            </defs>
-            <rect
-              x="-10%"
-              y="0"
-              width="120%"
-              height="18"
-              filter="url(#paper-tear-top)"
-              className="md:hidden"
-            />
-            <rect
-              x="-10%"
-              y="0"
-              width="120%"
-              height="36"
-              filter="url(#paper-tear-top)"
-              className="hidden md:block"
-            />
-          </svg>
-        </div>
+        {showTopTear && (
+          <div className="absolute top-0 left-0 w-full h-8 md:h-16 z-20 -translate-y-2 pointer-events-none">
+            <svg className="w-full h-full text-bg-white fill-current">
+              <defs>
+                <filter
+                  id="paper-tear-top"
+                  x="-20%"
+                  y="-20%"
+                  width="140%"
+                  height="140%"
+                >
+                  <feTurbulence
+                    type="fractalNoise"
+                    baseFrequency="0.012"
+                    numOctaves="3"
+                    seed="42"
+                    result="noise"
+                  />
+                  <feDisplacementMap
+                    in="SourceGraphic"
+                    in2="noise"
+                    scale="12"
+                    xChannelSelector="R"
+                    yChannelSelector="G"
+                  />
+                </filter>
+              </defs>
+              <rect
+                x="-10%"
+                y="0"
+                width="120%"
+                height="18"
+                filter="url(#paper-tear-top)"
+                className="md:hidden"
+              />
+              <rect
+                x="-10%"
+                y="0"
+                width="120%"
+                height="36"
+                filter="url(#paper-tear-top)"
+                className="hidden md:block"
+              />
+            </svg>
+          </div>
+        )}
 
-        {/* <div className="w-16 h-16 bg-brand-yellow border border-black flex items-center justify-center shadow-sm z-10">
-          <Play className="w-6 h-6 text-black fill-current" />
-        </div> */}
-        {/* Video cover image */}
-        {/* desktop */}
-        <video
-          ref={desktopVideoRef}
-          src="https://video.gumlet.io/6937b930eed47e91a76c4acd/69419d7f9c03c66ee7ce9353/download.mp4"
-          className="object-cover w-full h-full hidden md:block"
-          muted
-          loop
-          playsInline
-        />
-        {/* mobile */}
-        <video
-          ref={mobileVideoRef}
-          src="https://video.gumlet.io/6937b930eed47e91a76c4acd/69419d98616d7c8c6a7b5465/download.mp4"
-          className="object-cover w-full h-full block md:hidden"
-          muted
-          loop
-          playsInline
-        />
+        {shouldShowVideo ? (
+          <>
+            {/* desktop */}
+            <video
+              ref={desktopVideoRef}
+              src="https://video.gumlet.io/6937b930eed47e91a76c4acd/69419d7f9c03c66ee7ce9353/download.mp4"
+              className="object-cover w-full h-full hidden md:block"
+              muted
+              loop
+              playsInline
+            />
+            {/* mobile */}
+            <video
+              ref={mobileVideoRef}
+              src="https://video.gumlet.io/6937b930eed47e91a76c4acd/69419d98616d7c8c6a7b5465/download.mp4"
+              className="object-cover w-full h-full block md:hidden"
+              muted
+              loop
+              playsInline
+            />
+          </>
+        ) : (
+          <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8">{topContent}</div>
+        )}
 
         {/* Torn Paper Edge */}
         <div className="absolute bottom-0 left-0 w-full h-8 md:h-16 z-20 translate-y-2 pointer-events-none">
@@ -280,12 +302,16 @@ export const Info = ({
       </div>
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className={contentContainerClassName ?? "mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8"}>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-start">
           {/* Heading */}
           {shouldShowHeading && (
-            <div className="lg:col-span-5 text-center lg:text-left">
-              <h2 className="font-heading text-text-main leading-[1.1] text-4xl md:text-5xl lg:text-6xl tracking-tight font-bold">
+            <div
+              className={`lg:col-span-5 text-center lg:text-left ${
+                hideHeadingOnMobile ? "hidden md:block" : ""
+              }`}
+            >
+              <h2 className="font-heading text-fluid-h2 font-bold leading-tight tracking-tight text-text-main">
                 {displayHeading}
               </h2>
             </div>
@@ -322,8 +348,9 @@ export const Info = ({
                     >
                       <CountUp
                         end={stat.value}
-                        color={stat.color ?? "text-white"}
+                        color={stat.color ?? "text-text-invert"}
                         duration={2.5}
+                        className={numberClassName}
                       />
                       <p className="text-sm text-text-invert/80 font-heading leading-relaxed line-clamp-none sm:line-clamp-3">
                         {stat.label}

@@ -1,7 +1,7 @@
 import { Hero } from "./sections/Hero";
 import { Homes } from "./sections/Homes";
 import { Info } from "./sections/Info";
-import { MarqueeSection } from "./sections/MarqueeSection";
+import { MarqueeSection, MARQUEE_DEFAULT_PROPS } from "@/components/sections/MarqueeSection";
 import { Neighborhoods } from "./sections/Neighborhoods";
 import { Community } from "./sections/Community";
 import { ComingSoon } from "./sections/ComingSoon";
@@ -26,7 +26,7 @@ export default async function Home() {
       <AsSeenIn />
       <Homes properties={properties} locations={locations} rooms={rooms} occupants={occupants} />
       <Info />
-      <MarqueeSection />
+      <MarqueeSection {...MARQUEE_DEFAULT_PROPS} />
       <Neighborhoods locations={locations} properties={activeProperties} />
       <Community />
       <ComingSoon properties={properties} locations={locations} rooms={rooms} occupants={occupants} />

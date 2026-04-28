@@ -61,7 +61,7 @@ export function LocalityHomesSection({
             <Link
               key={property.id}
               href={`/homes/${property.fieldData.slug}`}
-              className="block w-full min-h-[500px]"
+              className="block w-full min-h-96"
               draggable={false}
               onClick={() =>
                 trackPropertyCardClick({
@@ -99,7 +99,7 @@ export function LocalityHomesSection({
           size="lg"
           data-cta-id={CTA_IDS.CAMPAIGN_VIEW_MORE}
           data-cta-context="rent_calculator_locality_homes"
-          className="min-w-[280px] justify-center px-8"
+          className="min-w-72 justify-center px-8"
         >
           View more in {area}
         </Button>
