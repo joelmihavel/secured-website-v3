@@ -1,137 +1,80 @@
 "use client";
 
-import Image from "next/image";
-import { SectionWrapper } from "./ui/SectionWrapper";
+import { SlideUp } from "./ui/TextReveal";
 import { FadeIn } from "./ui/FadeIn";
-import { WordReveal, SlideUp } from "./ui/TextReveal";
 import type { StatsContent } from "@/lib/secured/types";
 
 export function Stats({ data }: { data: StatsContent }) {
   return (
-    <section className="bg-[#1a1a1a] py-8 md:py-20">
-      <SectionWrapper>
-        {/* Inner container */}
-        <div className="relative flex flex-col gap-8 overflow-hidden rounded-3xl p-6 md:flex-row md:items-center md:p-10">
-          {/* Left side — brand info + stats */}
-          <div className="relative z-10 flex flex-col gap-8 md:flex-row md:items-center md:gap-16 md:pr-[40px]" style={{ flex: "1 1 auto" }}>
-            {/* Brand info */}
-            <div className="flex flex-col gap-3 md:gap-4">
-                <div className="flex items-center gap-3">
-                  <h3 className="font-display text-[24px] leading-[1.5] tracking-[-0.5px] text-white md:text-[32px] md:tracking-[-0.704px] xl:text-[38px] 2xl:text-[42px] 3xl:text-[50px] 4xl:text-[60px] 5xl:text-[80px]">
-                    <WordReveal delay={0.1}>{data.brandHeading}</WordReveal>
-                  </h3>
-                  <div className="flex items-center gap-2 self-center">
-                    <span
-                      className="text-sm leading-[1.5] text-white md:text-base 3xl:text-lg 4xl:text-xl 5xl:text-2xl"
-                      style={{ fontFamily: "var(--font-ui)" }}
-                    >
-                      by
-                    </span>
-                    <Image
-                      src="/assets/logos/flent-logo-stats.svg"
-                      alt="Flent"
-                      width={66}
-                      height={24}
-                      className="3xl:w-[88px] 3xl:h-[32px] 4xl:w-[110px] 4xl:h-[40px] 5xl:w-[154px] 5xl:h-[56px]"
-                    />
-                  </div>
-                </div>
-                <SlideUp delay={0.2}>
-                  <p
-                    className="text-sm font-medium leading-[1.6] text-white md:whitespace-nowrap md:text-base 3xl:text-lg 4xl:text-xl 5xl:text-2xl"
-                    style={{ fontFamily: "var(--font-ui)" }}
-                  >
-                    {data.brandSubheading}
-                  </p>
-                </SlideUp>
-              </div>
+    <section className="bg-[#131313]">
+      {/* Stats content */}
+      <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
+        <div className="py-12 md:py-20 lg:px-[120px] lg:py-[80px]">
+          <div className="flex flex-col gap-8 lg:gap-[40px]">
+            {/* Eyebrow + heading */}
+            <div className="flex flex-col gap-3 text-center lg:gap-[16px] lg:text-left">
+              <SlideUp>
+                <p
+                  className="text-sm leading-[1.6] text-[#797979] md:text-base lg:text-[20px] lg:leading-[32px]"
+                  style={{ fontFamily: "var(--font-ui)" }}
+                >
+                  {data.brandSubheading}
+                </p>
+              </SlideUp>
+              <h2
+                className="text-[28px] leading-[1.4] tracking-[-0.5px] text-white md:text-[36px] lg:text-[40px] lg:leading-[1.5] lg:tracking-[-0.88px]"
+                style={{ fontFamily: "var(--font-ui)" }}
+              >
+                <span className="text-white">Built </span>
+                <span className="text-[#ff9a6d]">with </span>
+                <span className="text-[#ff9a6d]">🧡</span>
+                <span className="text-white"> by flent</span>
+              </h2>
+            </div>
 
-            {/* Stats */}
+            {/* Divider */}
+            <div style={{ height: "0.3px", backgroundColor: "#4D4D4D" }} />
+
+            {/* Stats row — horizontal on desktop, stacked on mobile */}
             <FadeIn delay={0.2}>
-              <div className="flex flex-row flex-wrap gap-6 md:flex-col md:gap-4">
+              <div className="flex flex-col gap-6 md:flex-row md:items-center md:gap-10 lg:gap-[64px]">
                 {data.stats.map((stat, i) => (
-                  <div key={i} className="flex flex-col gap-1 md:gap-[10px]">
-                    <p
-                      className="text-[24px] font-medium leading-[36px] tracking-[-0.5px] md:whitespace-nowrap md:text-[32px] md:leading-[48px] md:tracking-[-1px] 3xl:text-[40px] 3xl:leading-[60px] 4xl:text-[48px] 4xl:leading-[72px] 5xl:text-[64px] 5xl:leading-[96px]"
-                      style={{ fontFamily: "var(--font-ui)" }}
-                    >
-                      {stat.prefix ? (
-                        <>
-                          <span className="text-[#ff9a6d]">{stat.prefix}</span>
-                          <span className="text-white">{stat.value}</span>
-                        </>
-                      ) : stat.separator ? (
-                        <>
-                          <span className="text-white">{stat.value}</span>
-                          <span className="text-[#ff9a6d]">{stat.separator}</span>
-                          <span className="text-white">{stat.suffix}</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-white">{stat.value}</span>
-                          <span className="text-[#ff9a6d]">{stat.suffix}</span>
-                        </>
-                      )}
-                    </p>
-                    <p
-                      className="text-sm font-medium leading-[1.6] text-[#999] md:whitespace-nowrap md:text-base 3xl:text-lg 4xl:text-xl 5xl:text-2xl"
-                      style={{ fontFamily: "var(--font-ui)" }}
-                    >
-                      {stat.label}
-                    </p>
+                  <div key={i} className="flex items-center gap-3">
+                    {/* Check icon */}
+                    <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[#ff9a6d]">
+                      <svg className="h-3.5 w-3.5" viewBox="0 0 14 14" fill="none">
+                        <path d="M2.5 7L5.5 10L11.5 4" stroke="#131313" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+
+                    {/* Stat text */}
+                    <div className="flex items-baseline gap-1.5">
+                      <span
+                        className="text-[16px] font-medium leading-[1.4] text-[#ff9a6d] md:text-[18px]"
+                        style={{ fontFamily: "var(--font-ui)" }}
+                      >
+                        {stat.prefix && <>{stat.prefix}</>}
+                        {stat.value}
+                        {stat.separator && <>{stat.separator}</>}
+                        {stat.suffix && <>{stat.suffix}</>}
+                      </span>
+                      <span
+                        className="text-[14px] leading-[1.4] text-[#797979] md:text-[16px]"
+                        style={{ fontFamily: "var(--font-ui)" }}
+                      >
+                        {stat.label}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
             </FadeIn>
-          </div>
 
-          {/* Right side — image collage, hidden on mobile */}
-          <div className="hidden lg:block lg:absolute lg:right-0 lg:top-1/2 lg:-translate-y-1/2 xl:scale-110 2xl:scale-125 3xl:scale-150 4xl:scale-[1.8] 5xl:scale-[2.4]" style={{ transformOrigin: "right center" }}>
-            <FadeIn>
-              <div className="relative flex items-center">
-                {/* Gradient */}
-                <div
-                  className="pointer-events-none absolute z-10"
-                  style={{
-                    width: 120,
-                    top: 0,
-                    bottom: 0,
-                    left: -1,
-                    background: "linear-gradient(to right, #1A1A1A 0%, rgba(26, 26, 26, 0) 100%)",
-                  }}
-                />
-
-                {/* Image container */}
-                <div
-                  className="relative overflow-hidden"
-                  style={{ width: 403, height: 373 }}
-                >
-                  {/* Col 1 top */}
-                  <div className="absolute overflow-hidden" style={{ left: 0, top: 0, width: 200, height: 183 }}>
-                    <Image src="/assets/illustrations/stats-img-1.jpg" alt="" fill className="object-cover" />
-                  </div>
-                  {/* Col 2 top */}
-                  <div className="absolute overflow-hidden" style={{ left: 203, top: 0, width: 200, height: 183 }}>
-                    <Image src="/assets/illustrations/stats-img-4.jpg" alt="" fill className="object-cover" />
-                  </div>
-                  {/* Col 1 bottom */}
-                  <div className="absolute overflow-hidden" style={{ left: 0, top: 186, width: 200, height: 187 }}>
-                    <Image src="/assets/illustrations/stats-img-2.jpg" alt="" fill className="object-cover" />
-                  </div>
-                  {/* Col 2 middle */}
-                  <div className="absolute overflow-hidden" style={{ left: 203, top: 186, width: 200, height: 93 }}>
-                    <Image src="/assets/illustrations/stats-img-5.png" alt="" fill className="object-cover" />
-                  </div>
-                  {/* Col 2 bottom */}
-                  <div className="absolute overflow-hidden" style={{ left: 203, top: 282, width: 200, height: 91 }}>
-                    <Image src="/assets/illustrations/stats-img-6.png" alt="" fill className="object-cover" />
-                  </div>
-                </div>
-              </div>
-            </FadeIn>
+            {/* Bottom divider */}
+            <div style={{ height: "0.3px", backgroundColor: "#4D4D4D" }} />
           </div>
         </div>
-      </SectionWrapper>
+      </div>
     </section>
   );
 }

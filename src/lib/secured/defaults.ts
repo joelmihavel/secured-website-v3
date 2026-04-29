@@ -16,19 +16,19 @@ import type {
 export const HERO_DEFAULTS: HeroContent = {
   headingPrefix: "Earn ",
   headingHighlight: "1% back",
-  subheading: "on every rent payment",
-  description: "You already pay rent on time every month\nNow it actually works for you",
-  ctaButtonText: "Download the app",
+  subheading: "On every timely rent payment",
+  description: "Because habits like yours should be rewarded,\nnot overlooked.",
+  ctaButtonText: "Request an Invite",
   ctaDisclaimer: "",
 };
 
 export const HERO_LANDLORD_DEFAULTS: HeroContent = {
-  headingPrefix: "Get paid ",
-  headingHighlight: "even if your tenant leaves",
-  subheading: "Protect your rental income from empty months and sudden exits",
-  description: "You invested crores into your home\n\nBut your rent is still not guaranteed\n\nSecured fixes that",
-  ctaButtonText: "Get a callback",
-  ctaDisclaimer: "Free forever | ₹1.5 lakh protection | Instant payouts",
+  headingPrefix: "You ",
+  headingHighlight: "get paid",
+  subheading: "even after your tenants vacate",
+  description: "Protect your rental income from empty months and sudden exits — free of cost.",
+  ctaButtonText: "Request a Callback",
+  ctaDisclaimer: "",
 };
 
 export const TRUST_DEFAULTS: TrustContent = {
@@ -42,74 +42,73 @@ export const TRUST_DEFAULTS: TrustContent = {
 };
 
 export const TRUST_LANDLORD_DEFAULTS: TrustContent = {
-  heading: "Already used by homeowners across Bangalore",
-  description: "Landlords across the city already use Secured to protect their rent",
-  points: [
-    "No fees ever",
-    "Works with your current tenants",
-    "Simple setup",
-  ],
+  heading: "Yet, your rental income is just one event away from disruption",
+  description: "Secured is a protection stack built around your rental asset. It starts with vacancy cover today and expands into smarter tools that future-proof your rental income for whatever comes next.",
+  points: [],
 };
 
 export const COMMITMENT_DEFAULTS: CommitmentContent = {
-  subtitle: "",
-  heading: "Rent is your biggest monthly expense",
-  description: "You've been paying it every month\nAnd getting nothing back\n\nNo returns\nNo leverage\nNo advantage\n\nSecured changes that",
+  subtitle: "Rent is your biggest monthly commitment.",
+  heading: "You've handled it responsibly,\nbut it's never really led to anything",
+  description: "Secured changes that with a simple cashback today, and ultimately opens doors to renting benefits that you truly deserve.",
   benefitCards: [
-    { text: "Earn cashback every time you pay rent", icon: "/assets/dither/icon-cashback.png", iconKey: "cashback" },
-    { text: "Know if you're overpaying", icon: "/assets/dither/icon-zero-deposit.png", iconKey: "zero-deposit" },
-    { text: "Build a renter profile that actually matters", icon: "/assets/dither/icon-renter-profile.png", iconKey: "renter-profile" },
-    { text: "Unlock better homes and lower deposits over time", icon: "/assets/dither/icon-better-homes.png", iconKey: "better-homes" },
+    { text: "on timely rental payment", icon: "/assets/dither/icon-cashback.png", iconKey: "cashback", accentText: "1% cashback", tag: "live" },
+    { text: "security deposits", icon: "/assets/dither/icon-zero-deposit.png", iconKey: "zero-deposit", accentText: "Zero", tag: "coming-soon" },
+    { text: "cash when you move out", icon: "/assets/dither/icon-moveout.png", iconKey: "moveout-cash", accentText: "Get ₹15,000", tag: "live" },
+    { text: "upcoming flent homes", icon: "/assets/dither/icon-renter-profile.png", iconKey: "renter-profile", accentText: "First dibs on", tag: "coming-soon" },
+    { text: "@ zero service fee", icon: "/assets/dither/icon-better-homes.png", iconKey: "better-homes", accentText: "Home design", tag: "coming-soon" },
   ],
-  marqueeText1: "Welcome to the side where rent actually works for you",
-  marqueeText2: "Welcome to the side where rent actually works for you",
+  marqueeText1: "Welcome to the right side of renting",
+  marqueeText2: "Because responsibility should feel rewarding",
 };
 
 export const COMMITMENT_LANDLORD_DEFAULTS: CommitmentContent = {
   subtitle: "",
-  heading: "Rent is your biggest monthly dependency",
-  description: "One tenant leaves\nOne empty month\n\nAnd you lose real money\n\nSecured makes sure that doesn't happen",
+  heading: "",
+  description: "",
   benefitCards: [
-    { text: "Get paid even if your home stays vacant", icon: "/assets/dither/icon-vacancy-cover.png", iconKey: "vacancy-cover" },
-    { text: "Protection from sudden tenant exits", icon: "/assets/dither/icon-tenant-exit.png", iconKey: "tenant-exit" },
-    { text: "Zero-cost tenant verification", icon: "/assets/dither/icon-verification.png", iconKey: "verification" },
-    { text: "Better control over your rental income", icon: "/assets/dither/icon-growth.png", iconKey: "growth" },
+    { text: "vacancy cover", icon: "/assets/dither/icon-vacancy-cover.png", iconKey: "vacancy-cover", accentText: "Zero cost" },
+    { text: "tenant background verification", icon: "/assets/dither/icon-verification.png", iconKey: "verification", accentText: "Zero-cost" },
+    { text: "Rental Income", icon: "/assets/dither/icon-growth.png", iconKey: "growth", accentText: "Loan Against" },
+    { text: "Damage Cover", icon: "/assets/dither/icon-tenant-exit.png", iconKey: "tenant-exit", accentText: "Property" },
   ],
   marqueeText1: "High value property needs proper protection",
   marqueeText2: "High value property needs proper protection",
 };
 
 export const CREDIT_CARD_DEFAULTS: CreditCardContent = {
-  heading: "Yes, you can pay rent using your credit card",
-  subheading: "And yes, you still earn cashback",
-  ctaButtonText: "Join the waitlist",
+  heading: "Yes, you can pay rent\nusing your credit card here",
+  subheading: "And yes, you still earn 1% back",
+  ctaButtonText: "",
   ctaDisclaimer: "",
   featureCards: [
-    { text: "Setup once, pay in seconds", icon: "/assets/dither/icon-setup-fast.png", iconKey: "setup-fast" },
-    { text: "Earn card points + cashback", icon: "/assets/dither/icon-card-points.png", iconKey: "card-points" },
-    { text: "Up to 45 days breathing room", icon: "/assets/dither/icon-breathing-room.png", iconKey: "breathing-room" },
-    { text: "Lower fees than most platforms", icon: "/assets/dither/icon-low-fees.png", iconKey: "low-fees" },
+    { text: "lightning fast payments", icon: "/assets/dither/icon-setup-fast.png", iconKey: "setup-fast", accentText: "One-time setup," },
+    { text: "on every rent payment", icon: "/assets/dither/icon-card-points.png", iconKey: "card-points", accentText: "Collect points" },
+    { text: "of interest free breathing room", icon: "/assets/dither/icon-breathing-room.png", iconKey: "breathing-room", accentText: "Get upto 45 days" },
+    { text: "net effective convenience fee", icon: "/assets/dither/icon-low-fees.png", iconKey: "low-fees", accentText: "Industry low" },
   ],
 };
 
 export const CREDIT_CARD_LANDLORD_DEFAULTS: CreditCardContent = {
-  heading: "Get paid on time. Every month",
-  subheading: "Even when things don't go as planned",
-  ctaButtonText: "Get a callback",
+  heading: "",
+  subheading: "",
+  ctaButtonText: "",
   ctaDisclaimer: "",
   featureCards: [
-    { text: "Free tenant credit report", icon: "/assets/dither/icon-verification.png", iconKey: "verification" },
-    { text: "Instant payouts", icon: "/assets/dither/icon-cashback.png", iconKey: "cashback" },
-    { text: "No operational changes", icon: "/assets/dither/icon-growth.png", iconKey: "growth" },
+    { text: "tenant credit report", icon: "/assets/dither/icon-verification.png", iconKey: "credit-report", accentText: "Complimentary" },
+    { text: "one-click signup", icon: "/assets/dither/icon-cashback.png", iconKey: "simple-signup", accentText: "Simple," },
+    { text: "zero paperwork", icon: "/assets/dither/icon-growth.png", iconKey: "instant-payouts", accentText: "Instant payouts," },
   ],
 };
 
 export const COVERAGE_LANDLORD_DEFAULTS: CoverageContent = {
-  heading: "You get paid. No matter what.",
-  points: [
-    "Tenant leaves → get one month's rent",
-    "Tenant exits without notice → get compensated",
-    "No paperwork. No chasing",
+  heading: "Tenant or Not.\nGet paid on time, every month.",
+  subheading: "No questions-asked coverage up to ₹1.5 lakh",
+  points: [],
+  detailCards: [
+    { text: "If the tenant leaves, you can collect one month's rent if the home is vacant for 30 days.", highlight: "collect one month's rent", iconKey: "vacancy-calendar" },
+    { text: "If a tenant leaves without notice, you can collect up to one month's rent after adjusting the deposit.", highlight: "up to one month's rent", iconKey: "exit-notice" },
+    { text: "Complimentary tenant BGV report", highlight: "Complimentary", iconKey: "bgv-report" },
   ],
 };
 
@@ -154,31 +153,31 @@ export const GETTING_STARTED_LANDLORD_DEFAULTS: GettingStartedContent = {
   steps: [
     {
       number: 1,
-      title: "Upload agreement",
-      description: "Upload agreement",
-      phone: "/assets/illustrations/how-it-works-phone-landlord-1.png",
-      connector: "/assets/backgrounds/connector-1.svg",
+      title: "Sign up & verify",
+      description: "Sign up & verify\nyour tenant's details",
+      phone: "",
+      connector: "",
     },
     {
       number: 2,
-      title: "We verify property",
-      description: "We verify property",
-      phone: "/assets/illustrations/how-it-works-phone-landlord-2.png",
-      connector: "/assets/backgrounds/connector-2.svg",
+      title: "Pay via Secured",
+      description: "Ask tenants to pay\nvia Secured for\nthree consecutive months (atleast)",
+      phone: "",
+      connector: "",
     },
     {
       number: 3,
-      title: "Invite tenant",
-      description: "Invite tenant",
-      phone: "/assets/illustrations/how-it-works-phone-landlord-3.png",
-      connector: "/assets/backgrounds/connector-3.svg",
+      title: "Stay active",
+      description: "Ensure continued rent\npayment through Secured\napp for active coverage.",
+      phone: "",
+      connector: "",
     },
     {
       number: 4,
-      title: "You're covered",
-      description: "You're covered",
-      phone: "/assets/illustrations/how-it-works-phone-landlord-4.png",
-      connector: "/assets/backgrounds/connector-4.svg",
+      title: "Claim if needed",
+      description: "Claim directly through the\nSecured app in case of\nvacancy or sudden exits",
+      phone: "",
+      connector: "",
     },
   ],
 };
@@ -204,8 +203,9 @@ export const WHY_JOIN_LANDLORD_DEFAULTS: WhyJoinContent = {
 };
 
 export const DOWNLOAD_APP_DEFAULTS: DownloadAppContent = {
-  heading: "Get the app",
-  description: "Make renting simpler, faster, and actually rewarding",
+  heading: "Get the Flent app to make renting",
+  headingHighlight: "simpler, faster, and stress-free.",
+  description: "Scan the QR or tap below to download and get started.",
   appStoreButtonText: "Download on App Store",
   playStoreButtonText: "Coming soon",
 };
@@ -248,11 +248,11 @@ export const FAQ_LANDLORD_DEFAULTS: FaqItem[] = [
 
 export const STATS_DEFAULTS: StatsContent = {
   brandHeading: "Built with care",
-  brandSubheading: "Curating some of Bangalore's best rental homes",
+  brandSubheading: "Curating India's Top 1% Rental Homes",
   stats: [
-    { value: "150", suffix: "+ ", label: "Apartments" },
-    { value: "4.8", separator: "/", suffix: "5", label: "Rating" },
-    { prefix: "₹", value: "27 Cr", label: "Raised" },
+    { value: "150", suffix: "+", label: "Apartments in Bangalore" },
+    { value: "4.8", separator: "/", suffix: "5", label: "Avg. Rating from Residents" },
+    { prefix: "INR ", value: "27", suffix: " Cr", label: "Raised since inception" },
   ],
 };
 

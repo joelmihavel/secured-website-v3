@@ -13,7 +13,7 @@ export interface CommitmentContent {
   subtitle: string;
   heading: string;
   description: string;
-  benefitCards: { text: string; icon: string; iconKey: string }[];
+  benefitCards: { text: string; icon: string; iconKey: string; accentText?: string; tag?: "live" | "coming-soon" }[];
   marqueeText1: string;
   marqueeText2: string;
 }
@@ -23,7 +23,7 @@ export interface CreditCardContent {
   subheading: string;
   ctaButtonText: string;
   ctaDisclaimer: string;
-  featureCards: { text: string; icon: string; iconKey: string }[];
+  featureCards: { text: string; icon: string; iconKey: string; accentText?: string }[];
 }
 
 export interface StepItem {
@@ -42,6 +42,7 @@ export interface GettingStartedContent {
 
 export interface DownloadAppContent {
   heading: string;
+  headingHighlight?: string;
   description: string;
   appStoreButtonText: string;
   playStoreButtonText: string;
@@ -88,7 +89,9 @@ export interface WhyJoinContent {
 
 export interface CoverageContent {
   heading: string;
+  subheading?: string;
   points: string[];
+  detailCards?: { text: string; highlight?: string; iconKey?: string }[];
 }
 
 export interface CallbackContent {

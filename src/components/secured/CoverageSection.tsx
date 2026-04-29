@@ -5,6 +5,7 @@ import { motion, useInView } from "framer-motion";
 import { SectionWrapper } from "./ui/SectionWrapper";
 import { FadeIn } from "./ui/FadeIn";
 import { WordReveal } from "./ui/TextReveal";
+import { ICON_COMPONENTS } from "./AnimatedCardIcons";
 import type { CoverageContent } from "@/lib/secured/types";
 
 function AnimatedSafetyNet() {
@@ -125,7 +126,7 @@ function AnimatedSafetyNet() {
           opacity: [0, 0.7, 0.7, 0],
           y: [10, 0, 0, -10],
         } : {}}
-        transition={{ duration: 3, repeat: Infinity, delay: 2 }}
+        transition={{ duration: 3, repeat: 2, delay: 2 }}
       >
         ₹
       </motion.text>
@@ -140,7 +141,7 @@ function AnimatedSafetyNet() {
           opacity: [0, 0.5, 0.5, 0],
           y: [10, 0, 0, -10],
         } : {}}
-        transition={{ duration: 3, repeat: Infinity, delay: 2.5 }}
+        transition={{ duration: 3, repeat: 2, delay: 2.5 }}
       >
         ₹
       </motion.text>
@@ -191,38 +192,107 @@ function CoveragePoint({ text, index }: { text: string; index: number }) {
 }
 
 export function CoverageSection({ data }: { data: CoverageContent }) {
+  const hasDetailCards = data.detailCards && data.detailCards.length > 0;
+  const hasPoints = data.points && data.points.length > 0;
+
   return (
-    <section className="relative bg-[#131313] py-12 md:py-24">
-      {/* Subtle radial gradient bg */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
-        aria-hidden="true"
-        style={{
-          backgroundImage: "radial-gradient(circle at 50% 30%, rgba(255,154,109,0.3) 0%, transparent 60%)",
-        }}
-      />
-
-      <SectionWrapper className="relative z-10">
-        <div className="flex flex-col items-center gap-10 md:flex-row md:items-center md:gap-16 lg:gap-24">
-          {/* Left — illustration */}
-          <FadeIn className="flex flex-shrink-0 items-center justify-center md:order-1">
-            <AnimatedSafetyNet />
-          </FadeIn>
-
-          {/* Right — content */}
-          <div className="flex flex-1 flex-col gap-6 md:order-2">
-            <h2 className="font-display text-[28px] leading-[1.3] tracking-[-0.5px] text-white md:text-[34px] lg:text-[40px] xl:text-[48px] 3xl:text-[60px] 4xl:text-[72px] 5xl:text-[96px]">
-              <WordReveal>{data.heading}</WordReveal>
+    <section className="relative bg-[#131313]">
+      {/* Heading */}
+      <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
+        <div className="py-12 md:py-16 lg:px-[120px] lg:pb-[64px] lg:pt-[64px]">
+          <div className="text-center">
+            <h2
+              className="mx-auto max-w-[850px] text-[28px] leading-[1.3] tracking-[-0.5px] md:text-[36px] lg:text-[40px] lg:leading-[1.4] lg:tracking-[-0.88px]"
+              style={{ fontFamily: "var(--font-ui)", whiteSpace: "pre-line" }}
+            >
+              {data.heading.split("\n").map((line, i) => {
+                const isOrangeLine = /get paid/i.test(line);
+                return (
+                  <span key={i}>
+                    {i > 0 && <br />}
+                    <span className={isOrangeLine ? "text-[#ff9a6d]" : "text-white"}>{line}</span>
+                  </span>
+                );
+              })}
             </h2>
+            {data.subheading && (
+              <FadeIn delay={0.2} className="mt-3 lg:mt-[16px]">
+                <p
+                  className="text-base leading-[1.6] text-[#797979] md:text-lg lg:text-[20px] lg:leading-[32px]"
+                  style={{ fontFamily: "var(--font-ui)" }}
+                >
+                  {data.subheading}
+                </p>
+              </FadeIn>
+            )}
+          </div>
+        </div>
+      </div>
 
-            <div className="flex flex-col gap-3 md:gap-4">
+      {/* Coverage points */}
+      {hasPoints && (
+        <SectionWrapper className="relative z-10">
+          <div className="flex flex-col items-center gap-10 md:flex-row md:items-center md:gap-16 lg:gap-24">
+            <FadeIn className="flex flex-shrink-0 items-center justify-center md:order-1">
+              <AnimatedSafetyNet />
+            </FadeIn>
+            <div className="flex flex-1 flex-col gap-3 md:order-2 md:gap-4">
               {data.points.map((point, i) => (
                 <CoveragePoint key={i} text={point} index={i} />
               ))}
             </div>
           </div>
+        </SectionWrapper>
+      )}
+
+      {/* Detail cards — 3-column grid */}
+      {hasDetailCards && (
+        <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:gap-0">
+            {data.detailCards!.map((card, i) => (
+              <DetailCard key={i} text={card.text} highlight={card.highlight} iconKey={card.iconKey} index={i} />
+            ))}
+          </div>
         </div>
-      </SectionWrapper>
+      )}
     </section>
+  );
+}
+
+function DetailCard({ text, highlight, iconKey, index }: { text: string; highlight?: string; iconKey?: string; index: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: false, margin: "-40px" });
+  const Icon = iconKey ? ICON_COMPONENTS[iconKey] : null;
+
+  const parts = highlight ? text.split(highlight) : [text];
+
+  return (
+    <motion.div
+      ref={ref}
+      className="flex flex-col gap-4 border-[0.3px] border-[#4d4d4d] p-5 md:p-6 lg:-ml-[0.3px] lg:-mt-[0.3px] lg:px-[48px] lg:py-[48px]"
+      initial={{ opacity: 0, y: 24 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+      transition={{ duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {Icon && (
+        <div className="aspect-[4/3] w-full">
+          {isInView && <Icon className="h-full w-full" />}
+        </div>
+      )}
+      <p
+        className="text-center text-[16px] leading-[24px] text-[#a9a9a9] md:text-[16px]"
+        style={{ fontFamily: "var(--font-ui)" }}
+      >
+        {highlight && parts.length > 1 ? (
+          <>
+            {parts[0]}
+            <span className="text-[#ff9a6d]">{highlight}</span>
+            {parts[1]}
+          </>
+        ) : (
+          text
+        )}
+      </p>
+    </motion.div>
   );
 }
