@@ -6,6 +6,7 @@ import { SlideUp } from "./ui/TextReveal";
 import { Button } from "./ui/Button";
 import { ICON_COMPONENTS } from "./AnimatedCardIcons";
 import type { CreditCardContent } from "@/lib/secured/types";
+import { downloadAppCta } from "@/lib/secured/cta";
 
 function FeatureCard({
   text,
@@ -113,14 +114,7 @@ export function CreditCard({ data }: { data: CreditCardContent }) {
         <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
           <div className="lg:px-[120px]">
             <div className="mx-auto mt-10 max-w-[480px] text-center md:mt-16 lg:mx-0 lg:mt-[64px] lg:max-w-[480px] lg:text-left">
-              <Button
-                fullWidth
-                onClick={() =>
-                  document
-                    .getElementById("download-app")
-                    ?.scrollIntoView({ behavior: "smooth" })
-                }
-              >
+              <Button fullWidth onClick={downloadAppCta}>
                 {data.ctaButtonText}
               </Button>
               {data.ctaDisclaimer && (

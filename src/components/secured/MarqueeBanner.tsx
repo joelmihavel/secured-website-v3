@@ -35,7 +35,7 @@ function MarqueeStrip({
         {Array.from({ length: REPEAT }).map((_, i) => (
           <span
             key={i}
-            className="mx-5 text-[12px] font-medium tracking-[0.02em] md:mx-7 md:text-[13px] 3xl:text-sm 4xl:text-base 5xl:text-lg"
+            className="mx-5 text-[12px] font-bold tracking-[0.02em] md:mx-7 md:text-[13px] 3xl:text-sm 4xl:text-base 5xl:text-lg"
             style={{ fontFamily: "var(--font-ui)", color: textColor }}
           >
             {text}

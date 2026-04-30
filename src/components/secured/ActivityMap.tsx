@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
@@ -111,67 +111,111 @@ export interface SelectedBuilding {
 
 export { type BuildingData };
 
-export function ActivityMap({ onBuildingSelect, onMapReady }: { onBuildingSelect?: (b: SelectedBuilding | null) => void; onMapReady?: (flyTo: (area: string) => void) => void }) {
+export function ActivityMap({
+  buildings,
+  onBuildingSelect,
+  onMapReady,
+}: {
+  buildings: BuildingData[];
+  onBuildingSelect?: (b: SelectedBuilding | null) => void;
+  onMapReady?: (flyTo: (area: string) => void) => void;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
-  const markersRef = useRef<maplibregl.Marker[]>([]);
+  // Cache markers per building id so panning doesn't rebuild DOM nodes
+  const markersRef = useRef<Map<number, maplibregl.Marker>>(new Map());
   const selectedBuildingRef = useRef<BuildingData | null>(null);
-  const [buildings, setBuildings] = useState<BuildingData[]>([]);
-  const buildingsRef = useRef<BuildingData[]>([]);
+  const buildingsRef = useRef<BuildingData[]>(buildings);
+  const onBuildingSelectRef = useRef(onBuildingSelect);
+  const onMapReadyRef = useRef(onMapReady);
 
-  useEffect(() => {
-    fetch("/api/properties")
-      .then((r) => r.json())
-      .then((data: BuildingData[]) => {
-        AREA_NAMES = [...new Set(data.map((b) => b.area))];
-        AREA_COORDS = Object.fromEntries(data.map((b) => [b.area, [b.lng, b.lat] as [number, number]]));
-        buildingsRef.current = data;
-        setBuildings(data);
-      });
+  useEffect(() => { onBuildingSelectRef.current = onBuildingSelect; }, [onBuildingSelect]);
+  useEffect(() => { onMapReadyRef.current = onMapReady; }, [onMapReady]);
+
+  const buildMarker = useCallback((b: BuildingData): maplibregl.Marker => {
+    const glowColor = "rgba(255, 154, 109, 0.4)";
+    const dotColor = "#ff9a6d";
+
+    const el = document.createElement("div");
+    el.className = "secured-3d-marker";
+    el.innerHTML = `
+      <div class="secured-3d-pulse" style="background: ${glowColor}"></div>
+      <div class="secured-3d-dot" style="background: ${dotColor}; box-shadow: 0 0 10px ${glowColor}, 0 0 20px ${glowColor}"></div>
+      <div class="secured-3d-label">${formatINR(b.rent)} · ${b.bhk}</div>
+    `;
+
+    el.addEventListener("click", (e) => {
+      e.stopPropagation();
+      selectedBuildingRef.current = b;
+      const map = mapRef.current;
+      if (!map) return;
+      const point = map.project([b.lng, b.lat]);
+      onBuildingSelectRef.current?.({ data: b, x: point.x, y: point.y });
+    });
+
+    el.addEventListener("mouseenter", () => el.classList.add("secured-3d-marker-hover"));
+    el.addEventListener("mouseleave", () => el.classList.remove("secured-3d-marker-hover"));
+
+    return new maplibregl.Marker({ element: el, anchor: "center" }).setLngLat([b.lng, b.lat]);
   }, []);
 
-  const renderMarkers = useCallback((map: maplibregl.Map, buildings: BuildingData[]) => {
-    markersRef.current.forEach((m) => m.remove());
-    markersRef.current = [];
-    selectedBuildingRef.current = null;
-    onBuildingSelect?.(null);
+  // Mount only the markers within the current viewport (plus 30% padding).
+  // With 100+ buildings, only the ~30-50 in view consume DOM/animation cost.
+  const syncVisibleMarkers = useCallback((map: maplibregl.Map, list: BuildingData[]) => {
+    const bounds = map.getBounds();
+    const padX = (bounds.getEast() - bounds.getWest()) * 0.3;
+    const padY = (bounds.getNorth() - bounds.getSouth()) * 0.3;
+    const minLng = bounds.getWest() - padX;
+    const maxLng = bounds.getEast() + padX;
+    const minLat = bounds.getSouth() - padY;
+    const maxLat = bounds.getNorth() + padY;
 
-    for (const b of buildings) {
-      const glowColor = "rgba(255, 154, 109, 0.4)";
-      const dotColor = "#ff9a6d";
-
-      const el = document.createElement("div");
-      el.className = "secured-3d-marker";
-      el.innerHTML = `
-        <div class="secured-3d-pulse" style="background: ${glowColor}"></div>
-        <div class="secured-3d-dot" style="background: ${dotColor}; box-shadow: 0 0 10px ${glowColor}, 0 0 20px ${glowColor}"></div>
-        <div class="secured-3d-label">${formatINR(b.rent)} · ${b.bhk}</div>
-      `;
-
-      const marker = new maplibregl.Marker({ element: el, anchor: "center" })
-        .setLngLat([b.lng, b.lat])
-        .addTo(map);
-
-      el.addEventListener("click", (e) => {
-        e.stopPropagation();
-        selectedBuildingRef.current = b;
-        const point = map.project([b.lng, b.lat]);
-        onBuildingSelect?.({ data: b, x: point.x, y: point.y });
-      });
-
-      el.addEventListener("mouseenter", () => el.classList.add("secured-3d-marker-hover"));
-      el.addEventListener("mouseleave", () => el.classList.remove("secured-3d-marker-hover"));
-
-      markersRef.current.push(marker);
+    const knownIds = new Set(list.map((b) => b.id));
+    const visibleIds = new Set<number>();
+    for (const b of list) {
+      if (
+        b.lng >= minLng && b.lng <= maxLng &&
+        b.lat >= minLat && b.lat <= maxLat
+      ) {
+        visibleIds.add(b.id);
+      }
     }
-  }, []);
 
-  /* ── Render markers when buildings load or map is ready ── */
+    for (const [id, marker] of markersRef.current) {
+      if (!visibleIds.has(id) || !knownIds.has(id)) {
+        marker.remove();
+        markersRef.current.delete(id);
+      }
+    }
+
+    for (const b of list) {
+      if (visibleIds.has(b.id) && !markersRef.current.has(b.id)) {
+        const marker = buildMarker(b);
+        marker.addTo(map);
+        markersRef.current.set(b.id, marker);
+      }
+    }
+
+    const sel = selectedBuildingRef.current;
+    if (sel && !markersRef.current.has(sel.id)) {
+      selectedBuildingRef.current = null;
+      onBuildingSelectRef.current?.(null);
+    }
+  }, [buildMarker]);
+
+  // Seed module-level area lookup tables and resync markers when prop changes
   useEffect(() => {
-    if (mapRef.current && buildings.length > 0) {
-      renderMarkers(mapRef.current, buildings);
+    buildingsRef.current = buildings;
+    if (buildings.length > 0) {
+      AREA_NAMES = [...new Set(buildings.map((b) => b.area))];
+      AREA_COORDS = Object.fromEntries(
+        buildings.map((b) => [b.area, [b.lng, b.lat] as [number, number]])
+      );
     }
-  }, [buildings, renderMarkers]);
+    if (mapRef.current) {
+      syncVisibleMarkers(mapRef.current, buildings);
+    }
+  }, [buildings, syncVisibleMarkers]);
 
   /* ── Init map ── */
   useEffect(() => {
@@ -189,14 +233,34 @@ export function ActivityMap({ onBuildingSelect, onMapReady }: { onBuildingSelect
       maxBounds: [[77.35, 12.75], [77.85, 13.20]],
       attributionControl: false,
       scrollZoom: false,
+      dragRotate: false,
+      pitchWithRotate: false,
+      refreshExpiredTiles: false,
     });
+
+    if (map.touchZoomRotate) {
+      map.touchZoomRotate.disableRotation();
+    }
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
+    let moveSyncRaf: number | null = null;
+    const scheduleSync = () => {
+      if (moveSyncRaf !== null) return;
+      moveSyncRaf = requestAnimationFrame(() => {
+        moveSyncRaf = null;
+        if (mapRef.current) {
+          syncVisibleMarkers(mapRef.current, buildingsRef.current);
+        }
+      });
+    };
+
     map.on("load", () => {
       mapRef.current = map;
-      if (buildingsRef.current.length > 0) renderMarkers(map, buildingsRef.current);
-      onMapReady?.((area: string) => {
+      if (buildingsRef.current.length > 0) {
+        syncVisibleMarkers(map, buildingsRef.current);
+      }
+      onMapReadyRef.current?.((area: string) => {
         const coords = AREA_COORDS[area];
         if (!coords || !mapRef.current) return;
         mapRef.current.flyTo({
@@ -210,26 +274,40 @@ export function ActivityMap({ onBuildingSelect, onMapReady }: { onBuildingSelect
       });
     });
 
+    map.on("moveend", scheduleSync);
+
     map.on("move", () => {
       const b = selectedBuildingRef.current;
       if (b) {
         const point = map.project([b.lng, b.lat]);
-        onBuildingSelect?.({ data: b, x: point.x, y: point.y });
+        onBuildingSelectRef.current?.({ data: b, x: point.x, y: point.y });
       }
     });
 
     map.on("click", () => {
       selectedBuildingRef.current = null;
-      onBuildingSelect?.(null);
+      onBuildingSelectRef.current?.(null);
     });
 
     return () => {
-      markersRef.current.forEach((m) => m.remove());
+      if (moveSyncRaf !== null) cancelAnimationFrame(moveSyncRaf);
+      for (const marker of markersRef.current.values()) marker.remove();
+      markersRef.current.clear();
       map.remove();
       mapRef.current = null;
     };
-  }, [renderMarkers]);
+  }, [syncVisibleMarkers]);
 
+  /* ── Pause marker pulse animation when offscreen + honor prefers-reduced-motion ── */
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+    const io = new IntersectionObserver(([entry]) => {
+      node.classList.toggle("secured-pulse-paused", !entry.isIntersecting);
+    });
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
 
   return (
     <div className="relative h-full w-full">
@@ -240,8 +318,6 @@ export function ActivityMap({ onBuildingSelect, onMapReady }: { onBuildingSelect
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[10] h-12 bg-gradient-to-t from-[#131313] to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 left-0 z-[10] w-12 bg-gradient-to-r from-[#131313] to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-[10] w-12 bg-gradient-to-l from-[#131313] to-transparent" />
-
-      {/* Area fly-to — removed, now rendered in parent (Hero.tsx) */}
     </div>
   );
 }

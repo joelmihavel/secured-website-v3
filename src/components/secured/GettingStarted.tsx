@@ -280,27 +280,58 @@ function TenantGettingStarted({ data }: { data: GettingStartedContent }) {
                   </AnimatePresence>
                 </IPhoneFrame>
 
-                <div className="-mx-6 flex w-[100vw] gap-2 overflow-x-auto px-6 pb-2 scrollbar-none" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
-                  {STEPS.map((step, i) => (
-                    <button
-                      key={i}
-                      ref={(el) => { stepButtonRefs.current[i] = el; }}
-                      onClick={() => scrollToStep(i)}
-                      className={`flex-shrink-0 rounded-xl px-4 py-2.5 text-left transition-all duration-300 ${
-                        activeStep === i
-                          ? "bg-[#cc7b57] text-[#060606]"
-                          : "bg-[#1a1a1a] text-[#a9a9a9]"
-                      }`}
-                      style={{ maxWidth: "200px" }}
-                    >
-                      <p
-                        className="text-xs leading-5"
-                        style={{ fontFamily: "var(--font-ui)" }}
+                <div
+                  className="-mx-6 flex w-[100vw] gap-3 overflow-x-auto px-6 pb-3 pt-1 scrollbar-none"
+                  style={{
+                    scrollbarWidth: "none",
+                    WebkitOverflowScrolling: "touch",
+                    scrollSnapType: "x mandatory",
+                  }}
+                >
+                  {STEPS.map((step, i) => {
+                    const isActive = activeStep === i;
+                    return (
+                      <button
+                        key={i}
+                        ref={(el) => { stepButtonRefs.current[i] = el; }}
+                        onClick={() => scrollToStep(i)}
+                        className="relative flex-shrink-0 overflow-hidden rounded-2xl border border-white/[0.06] bg-[#1a1a1a] text-left transition-shadow duration-300"
+                        style={{
+                          width: 220,
+                          scrollSnapAlign: "center",
+                          boxShadow: isActive
+                            ? "0 8px 24px rgba(255, 154, 109, 0.18)"
+                            : "0 2px 8px rgba(0, 0, 0, 0.25)",
+                        }}
                       >
-                        {step.number}. {step.description}
-                      </p>
-                    </button>
-                  ))}
+                        {isActive && (
+                          <motion.div
+                            layoutId="step-active-mobile"
+                            className="absolute inset-0 bg-[#ff9a6d]"
+                            transition={{ type: "spring", stiffness: 320, damping: 32 }}
+                          />
+                        )}
+                        <div className="relative px-4 py-3">
+                          <span
+                            className={`block text-[10px] font-bold uppercase tracking-[0.18em] transition-colors duration-200 ${
+                              isActive ? "text-[#1a1a1a]/70" : "text-[#777]"
+                            }`}
+                            style={{ fontFamily: "var(--font-ui)" }}
+                          >
+                            Step {step.number}
+                          </span>
+                          <p
+                            className={`mt-1 text-[12px] font-medium leading-[18px] transition-colors duration-200 ${
+                              isActive ? "text-[#131313]" : "text-[#cfcfcf]"
+                            }`}
+                            style={{ fontFamily: "var(--font-ui)" }}
+                          >
+                            {step.description}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -327,32 +358,50 @@ function TenantGettingStarted({ data }: { data: GettingStartedContent }) {
                     </h2>
                   </div>
 
-                  <div className="flex flex-col gap-[8px]">
-                    {STEPS.map((step, i) => (
-                      <motion.button
-                        key={i}
-                        onClick={() => scrollToStep(i)}
-                        animate={{
-                          backgroundColor: activeStep === i ? "#cc7b57" : "#1a1a1a",
-                        }}
-                        transition={{ duration: 0.4 }}
-                        className="w-full cursor-pointer rounded-[16px] px-[32px] py-[20px] text-left"
-                      >
-                        <ol
-                          className={`list-decimal text-[16px] leading-[24px] transition-colors duration-300 ${
-                            activeStep === i
-                              ? "text-[#060606]"
-                              : "text-[#a9a9a9]"
-                          }`}
-                          style={{ fontFamily: "var(--font-ui)" }}
-                          start={step.number}
+                  <div className="flex flex-col gap-[10px]">
+                    {STEPS.map((step, i) => {
+                      const isActive = activeStep === i;
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => scrollToStep(i)}
+                          className="relative w-full cursor-pointer overflow-hidden rounded-[16px] border border-white/[0.06] bg-[#1a1a1a] text-left transition-shadow duration-300"
+                          style={{
+                            boxShadow: isActive
+                              ? "0 12px 32px rgba(255, 154, 109, 0.18)"
+                              : "0 2px 12px rgba(0, 0, 0, 0.25)",
+                          }}
                         >
-                          <li className="ms-[24px]">
-                            <span>{step.description}</span>
-                          </li>
-                        </ol>
-                      </motion.button>
-                    ))}
+                          {isActive && (
+                            <motion.div
+                              layoutId="step-active-desktop"
+                              className="absolute inset-0 bg-[#ff9a6d]"
+                              transition={{ type: "spring", stiffness: 280, damping: 30 }}
+                            />
+                          )}
+                          <div className="relative flex items-start gap-[20px] px-[28px] py-[20px]">
+                            <span
+                              className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border text-[13px] font-bold leading-none transition-colors duration-200 ${
+                                isActive
+                                  ? "border-[#131313]/30 bg-[#131313]/10 text-[#131313]"
+                                  : "border-white/10 bg-white/[0.04] text-[#cfcfcf]"
+                              }`}
+                              style={{ fontFamily: "var(--font-ui)" }}
+                            >
+                              {step.number}
+                            </span>
+                            <p
+                              className={`mt-[3px] text-[16px] leading-[24px] transition-colors duration-200 ${
+                                isActive ? "text-[#131313]" : "text-[#cfcfcf]"
+                              }`}
+                              style={{ fontFamily: "var(--font-ui)" }}
+                            >
+                              {step.description}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 

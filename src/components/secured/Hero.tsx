@@ -8,6 +8,7 @@ import { Button } from "./ui/Button";
 import { useAsciiGlitch } from "./useAsciiGlitch";
 import type { HeroContent } from "@/lib/secured/types";
 import { getSecuredSupabase } from "@/lib/secured/supabase";
+import { downloadAppCta } from "@/lib/secured/cta";
 
 /* ── iPhone Frame (shared) ── */
 const FRAME = "/assets/illustrations/iphone-frame";
@@ -103,7 +104,7 @@ function TenantHero({ data }: { data: HeroContent }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.45 }}
             >
-              <Button fullWidth href="#download-app">
+              <Button fullWidth onClick={downloadAppCta}>
                 {data.ctaButtonText}
               </Button>
             </motion.div>
@@ -490,7 +491,9 @@ function BhkPicker({ types, value, onChange }: { types: BhkType[]; value: BhkTyp
 }
 
 export function RentMapSection() {
-  const [mounted, setMounted] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const [shouldMount, setShouldMount] = useState(false);
+  const [buildings, setBuildings] = useState<BuildingData[]>([]);
   const [step, setStep] = useState<EligibilityStep>("form");
   const [rentInput, setRentInput] = useState("");
   const [selectedArea, setSelectedArea] = useState("");
@@ -521,14 +524,33 @@ export function RentMapSection() {
     handleFlyTo(area);
   }, [handleFlyTo, allBuildingCoords]);
 
+  // Defer mounting map + form + Maps SDK until the section is near the viewport.
+  // Saves: maplibre WebGL init, /api/properties fetch, Google Maps SDK script + init.
   useEffect(() => {
-    setMounted(true);
+    const node = sectionRef.current;
+    if (!node) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldMount(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "300px" }
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!shouldMount) return;
     import("./ActivityMap").then((m) => {
       setBhkTypes(m.BHK_TYPES);
     });
     fetch("/api/properties")
       .then((r) => r.json())
-      .then((data: { area: string; bhk: string; rent: number; lat: number; lng: number }[]) => {
+      .then((data: BuildingData[]) => {
+        setBuildings(data);
         const names = [...new Set(data.map((b) => b.area))];
         const coords: Record<string, [number, number]> = Object.fromEntries(
           data.map((b) => [b.area, [b.lng, b.lat] as [number, number]])
@@ -539,7 +561,7 @@ export function RentMapSection() {
         setAreaRentRanges([]);
         setSelectedArea("");
       });
-  }, []);
+  }, [shouldMount]);
 
   const rent = parseInt(rentInput.replace(/,/g, ""), 10) || 0;
   const monthlyCashback = Math.round(rent * CASHBACK_RATE);
@@ -589,10 +611,11 @@ export function RentMapSection() {
   const mapsApiKey = process.env.NEXT_PUBLIC_SECURED_GOOGLE_MAPS_API_KEY || "";
 
   return (
-    <APIProvider apiKey={mapsApiKey} libraries={["places"]}>
-    <section data-section="rent-map" className="relative z-[31] flex w-full flex-col overflow-hidden bg-[#131313]" style={{ height: "100vh", minHeight: 700 }}>
+    <section ref={sectionRef} data-section="rent-map" className="relative z-[31] flex w-full flex-col overflow-hidden bg-[#131313]" style={{ height: "100vh", minHeight: 700 }}>
+      {shouldMount && (
+        <APIProvider apiKey={mapsApiKey} libraries={["places"]}>
       <div className="absolute inset-0 z-0 overflow-hidden lg:left-[120px] lg:right-[120px]">
-        {mounted && <LazyActivityMap onBuildingSelect={handleBuildingSelect} onMapReady={handleMapReady} />}
+        <LazyActivityMap buildings={buildings} onBuildingSelect={handleBuildingSelect} onMapReady={handleMapReady} />
       </div>
 
       {selectedBuilding && (
@@ -651,8 +674,8 @@ export function RentMapSection() {
               </div>
               <div className="mt-5 hidden md:block"><Button fullWidth onClick={handleCheck} disabled={rent < 5000 || !selectedArea || checking}>{checking ? "Checking…" : "Check eligibility"}</Button></div>
               <div className="mt-2 flex items-center justify-center gap-1.5 md:mt-3">
-                <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#4ade80] shadow-[0_0_4px_rgba(74,222,128,0.5)]" />
-                <p className="text-[9px] tracking-[0.02em] text-white/30" style={{ fontFamily: "var(--font-ui)" }}>I agree to share my rent details with Secured</p>
+                <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#ff9a6d] shadow-[0_0_4px_rgba(255,154,109,0.5)]" />
+                <p className="text-[9px] tracking-[0.02em] text-white/30" style={{ fontFamily: "var(--font-ui)" }}>You consent to share your rental data</p>
               </div>
             </div>
           ) : step === "eligible" ? (
@@ -728,8 +751,9 @@ export function RentMapSection() {
           )}
         </div>
       </div>
+        </APIProvider>
+      )}
     </section>
-    </APIProvider>
   );
 }
 
@@ -761,9 +785,9 @@ function BuildingPopup({ building, x, y, onClose }: { building: BuildingData; x:
   );
 }
 
-function LazyActivityMap({ onBuildingSelect, onMapReady }: { onBuildingSelect?: (b: SelectedBuilding | null) => void; onMapReady?: (flyTo: (area: string) => void) => void }) {
-  const [ActivityMap, setActivityMap] = useState<React.ComponentType<{ onBuildingSelect?: (b: SelectedBuilding | null) => void; onMapReady?: (flyTo: (area: string) => void) => void }> | null>(null);
+function LazyActivityMap({ buildings, onBuildingSelect, onMapReady }: { buildings: BuildingData[]; onBuildingSelect?: (b: SelectedBuilding | null) => void; onMapReady?: (flyTo: (area: string) => void) => void }) {
+  const [ActivityMap, setActivityMap] = useState<React.ComponentType<{ buildings: BuildingData[]; onBuildingSelect?: (b: SelectedBuilding | null) => void; onMapReady?: (flyTo: (area: string) => void) => void }> | null>(null);
   useEffect(() => { import("./ActivityMap").then((m) => setActivityMap(() => m.ActivityMap)); }, []);
   if (!ActivityMap) return null;
-  return <ActivityMap onBuildingSelect={onBuildingSelect} onMapReady={onMapReady} />;
+  return <ActivityMap buildings={buildings} onBuildingSelect={onBuildingSelect} onMapReady={onMapReady} />;
 }

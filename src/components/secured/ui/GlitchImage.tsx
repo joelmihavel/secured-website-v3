@@ -9,8 +9,13 @@ export function GlitchImage({ src, alt = "" }: { src: string; alt?: string }) {
   const imgRef = useRef<HTMLImageElement | null>(null);
   const frameRef = useRef<number>(0);
   const lastGlitchRef = useRef<number>(0);
+  const inViewRef = useRef(false);
 
   const render = useCallback((time: number) => {
+    if (!inViewRef.current) {
+      frameRef.current = 0;
+      return;
+    }
     const canvas = canvasRef.current;
     const img = imgRef.current;
     if (!canvas || !img) return;
@@ -58,9 +63,11 @@ export function GlitchImage({ src, alt = "" }: { src: string; alt?: string }) {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
+      if (cancelled) return;
       imgRef.current = img;
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -68,11 +75,40 @@ export function GlitchImage({ src, alt = "" }: { src: string; alt?: string }) {
       const cropAspect = img.naturalWidth / (img.naturalHeight * 0.55);
       canvas.width = Math.min(img.naturalWidth, 1500);
       canvas.height = Math.round(canvas.width / cropAspect);
-      frameRef.current = requestAnimationFrame(render);
+      if (inViewRef.current && !frameRef.current) {
+        frameRef.current = requestAnimationFrame(render);
+      }
     };
     img.src = src;
-    return () => cancelAnimationFrame(frameRef.current);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = 0;
+    };
   }, [src, render]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        inViewRef.current = entry.isIntersecting;
+        if (entry.isIntersecting) {
+          if (imgRef.current && !frameRef.current) {
+            frameRef.current = requestAnimationFrame(render);
+          }
+        } else {
+          if (frameRef.current) {
+            cancelAnimationFrame(frameRef.current);
+            frameRef.current = 0;
+          }
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, [render]);
 
   return (
     <div aria-hidden="true" style={{ width: "100%", overflow: "hidden" }}>
