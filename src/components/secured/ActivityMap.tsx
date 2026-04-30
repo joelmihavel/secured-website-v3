@@ -128,6 +128,7 @@ export function ActivityMap({
   const buildingsRef = useRef<BuildingData[]>(buildings);
   const onBuildingSelectRef = useRef(onBuildingSelect);
   const onMapReadyRef = useRef(onMapReady);
+  const flewToDefaultRef = useRef(false);
 
   useEffect(() => { onBuildingSelectRef.current = onBuildingSelect; }, [onBuildingSelect]);
   useEffect(() => { onMapReadyRef.current = onMapReady; }, [onMapReady]);
@@ -214,6 +215,12 @@ export function ActivityMap({
     }
     if (mapRef.current) {
       syncVisibleMarkers(mapRef.current, buildings);
+      if (!flewToDefaultRef.current && buildings.length > 0) {
+        flewToDefaultRef.current = true;
+        const avgLng = buildings.reduce((s, b) => s + b.lng, 0) / buildings.length;
+        const avgLat = buildings.reduce((s, b) => s + b.lat, 0) / buildings.length;
+        mapRef.current.jumpTo({ center: [avgLng, avgLat] });
+      }
     }
   }, [buildings, syncVisibleMarkers]);
 
@@ -259,6 +266,13 @@ export function ActivityMap({
       mapRef.current = map;
       if (buildingsRef.current.length > 0) {
         syncVisibleMarkers(map, buildingsRef.current);
+        if (!flewToDefaultRef.current) {
+          flewToDefaultRef.current = true;
+          const bs = buildingsRef.current;
+          const avgLng = bs.reduce((s, b) => s + b.lng, 0) / bs.length;
+          const avgLat = bs.reduce((s, b) => s + b.lat, 0) / bs.length;
+          map.jumpTo({ center: [avgLng, avgLat] });
+        }
       }
       onMapReadyRef.current?.((area: string) => {
         const coords = AREA_COORDS[area];
