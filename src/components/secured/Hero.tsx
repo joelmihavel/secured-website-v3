@@ -7,7 +7,7 @@ import Image from "next/image";
 import { Button } from "./ui/Button";
 import { useAsciiGlitch } from "./useAsciiGlitch";
 import type { HeroContent } from "@/lib/secured/types";
-import { securedSupabase } from "@/lib/secured/supabase";
+import { getSecuredSupabase } from "@/lib/secured/supabase";
 
 /* ── iPhone Frame (shared) ── */
 const FRAME = "/assets/illustrations/iphone-frame";
@@ -477,7 +477,7 @@ export function RentMapSection() {
   const handleRentChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { const raw = e.target.value.replace(/[^0-9]/g, ""); if (raw === "") { setRentInput(""); return; } setRentInput(parseInt(raw, 10).toLocaleString("en-IN")); }, []);
   const handleNotifySubmit = useCallback(async () => {
     if (!phone && !email) return;
-    await securedSupabase.from("website_leads").insert({ email, phone, area: selectedArea, bhk: selectedBhk, rent });
+    await getSecuredSupabase()?.from("website_leads").insert({ email, phone, area: selectedArea, bhk: selectedBhk, rent });
     setNotifySubmitted(true);
   }, [phone, email, selectedArea, selectedBhk, rent]);
 
