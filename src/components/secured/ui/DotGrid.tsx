@@ -47,9 +47,10 @@ export function DotGrid({ flipped = false }: { flipped?: boolean }) {
       const cellW = rect.width / COLS;
       const cellH = rect.height / ROW_OPACITIES.length;
       const col = Math.floor(x / cellW);
-      const row = Math.floor(y / cellH);
+      const rawRow = Math.floor(y / cellH);
+      const row = flipped ? (ROW_OPACITIES.length - 1 - rawRow) : rawRow;
 
-      if (row >= 0 && row < ROW_OPACITIES.length && col >= 0 && col < COLS) {
+      if (rawRow >= 0 && rawRow < ROW_OPACITIES.length && col >= 0 && col < COLS) {
         setMouseCell({ row, col });
       } else {
         setMouseCell(null);
