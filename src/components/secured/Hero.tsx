@@ -277,7 +277,6 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
         {
           input: inputValue,
           componentRestrictions: { country: "in" },
-          types: ["address", "establishment"],
           bounds: new google.maps.LatLngBounds(
             new google.maps.LatLng(12.75, 77.35),
             new google.maps.LatLng(13.20, 77.85)
@@ -343,6 +342,9 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
+        if (!placesSvcRef.current) {
+          try { placesSvcRef.current = new google.maps.places.PlacesService(document.createElement("div")); } catch { setLocating(false); return; }
+        }
         const svc = placesSvcRef.current;
         if (!svc) { setLocating(false); return; }
         svc.nearbySearch(
