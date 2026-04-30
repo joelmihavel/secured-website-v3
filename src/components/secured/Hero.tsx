@@ -218,24 +218,6 @@ function formatINR(amount: number): string {
   return "₹" + amount.toLocaleString("en-IN");
 }
 
-const ELIGIBLE_AREAS = new Set([
-  "Bellandur", "Domlur", "HSR Layout", "Indiranagar", "Kalyan Nagar",
-  "Koramangala", "MG Road", "Old Airport Road", "Sadashivanagar",
-  "Sarjapur Road", "Ulsoor", "Whitefield", "Marathahalli", "Hebbal",
-  "Frazer Town", "Malleswaram",
-]);
-
-const RENT_THRESHOLD = 35000;
-
-function fuzzyMatchArea(input: string): boolean {
-  const lower = input.toLowerCase().trim();
-  for (const area of ELIGIBLE_AREAS) {
-    if (lower.includes(area.toLowerCase()) || area.toLowerCase().includes(lower)) {
-      return true;
-    }
-  }
-  return false;
-}
 
 type EligibilityStep = "form" | "eligible" | "not-eligible";
 
@@ -439,6 +421,8 @@ export function RentMapSection() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [notifySubmitted, setNotifySubmitted] = useState(false);
+  const [isInCoverage, setIsInCoverage] = useState(true);
+  const [checking, setChecking] = useState(false);
   const flyToRef = useRef<((area: string) => void) | null>(null);
   const handleBuildingSelect = useCallback((b: SelectedBuilding | null) => setSelectedBuilding(b), []);
   const handleMapReady = useCallback((flyTo: (area: string) => void) => { flyToRef.current = flyTo; }, []);
@@ -466,13 +450,24 @@ export function RentMapSection() {
   }, []);
 
   const rent = parseInt(rentInput.replace(/,/g, ""), 10) || 0;
-  const currentRange = useMemo(() => areaRentRanges.find((r) => r.area === selectedArea), [selectedArea, areaRentRanges]);
-  const bhkRange = useMemo(() => currentRange?.byBhk[selectedBhk], [currentRange, selectedBhk]);
   const monthlyCashback = Math.round(rent * CASHBACK_RATE);
   const annualCashback = monthlyCashback * 12;
-  const isInCoverage = useMemo(() => fuzzyMatchArea(selectedArea), [selectedArea]);
-  const isEligible = useMemo(() => isInCoverage && rent >= RENT_THRESHOLD, [isInCoverage, rent]);
-  const handleCheck = useCallback(() => { if (rent >= 5000 && selectedArea) setStep(isEligible ? "eligible" : "not-eligible"); }, [rent, selectedArea, isEligible]);
+  const handleCheck = useCallback(async () => {
+    if (rent < 5000 || !selectedArea) return;
+    setChecking(true);
+    try {
+      const res = await fetch("/api/secured/check-eligibility", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ area: selectedArea, bhk: selectedBhk, rent }),
+      });
+      const { eligible, inCoverage } = await res.json();
+      setIsInCoverage(inCoverage);
+      setStep(eligible ? "eligible" : "not-eligible");
+    } finally {
+      setChecking(false);
+    }
+  }, [rent, selectedArea, selectedBhk]);
   const handleReset = useCallback(() => { setStep("form"); setRentInput(""); setNotifySubmitted(false); setPhone(""); setEmail(""); }, []);
   const handleRentChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { const raw = e.target.value.replace(/[^0-9]/g, ""); if (raw === "") { setRentInput(""); return; } setRentInput(parseInt(raw, 10).toLocaleString("en-IN")); }, []);
   const handleNotifySubmit = useCallback(async () => {
@@ -519,7 +514,7 @@ export function RentMapSection() {
                     <input type="text" inputMode="numeric" placeholder="25,000" value={rentInput} onChange={handleRentChange} onKeyDown={(e) => e.key === "Enter" && handleCheck()} className="w-full bg-transparent text-[14px] text-white placeholder-[#444] outline-none" style={{ fontFamily: "var(--font-ui)" }} />
                   </div>
                 </div>
-                <Button fullWidth onClick={handleCheck} disabled={rent < 5000 || !selectedArea}>Check eligibility</Button>
+                <Button fullWidth onClick={handleCheck} disabled={rent < 5000 || !selectedArea || checking}>{checking ? "Checking…" : "Check eligibility"}</Button>
               </div>
               {/* Desktop: original horizontal layout */}
               <div className="hidden md:flex md:flex-row md:items-end md:gap-0">
@@ -541,7 +536,7 @@ export function RentMapSection() {
                   </div>
                 </div>
               </div>
-              <div className="mt-5 hidden md:block"><Button fullWidth onClick={handleCheck} disabled={rent < 5000 || !selectedArea}>Check eligibility</Button></div>
+              <div className="mt-5 hidden md:block"><Button fullWidth onClick={handleCheck} disabled={rent < 5000 || !selectedArea || checking}>{checking ? "Checking…" : "Check eligibility"}</Button></div>
               <div className="mt-2 flex items-center justify-center gap-1.5 md:mt-3">
                 <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#4ade80] shadow-[0_0_4px_rgba(74,222,128,0.5)]" />
                 <p className="text-[9px] tracking-[0.02em] text-white/30" style={{ fontFamily: "var(--font-ui)" }}>Earn cashback on every rent payment with Secured</p>
