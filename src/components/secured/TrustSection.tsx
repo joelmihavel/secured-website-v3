@@ -142,23 +142,6 @@ export function TrustSection({ data, variant = "tenant" }: { data: TrustContent;
               </SlideUp>
             </div>
 
-            <div
-              className="mt-6 hidden lg:block"
-              style={{ height: "0.3px", backgroundColor: "#4D4D4D" }}
-            />
-
-            <SlideUp delay={0.3} className="mt-4 lg:mt-0 lg:py-[16px]">
-              <div className="flex flex-col items-center gap-4 md:flex-row md:gap-6 lg:gap-[12px] lg:items-center lg:justify-start">
-                {data.points.map((point, i) => (
-                  <TrustPoint key={i} text={point} index={i} />
-                ))}
-              </div>
-            </SlideUp>
-
-            <div
-              className="mb-6 hidden lg:block"
-              style={{ height: "0.3px", backgroundColor: "#4D4D4D" }}
-            />
           </div>
         </div>
       </div>

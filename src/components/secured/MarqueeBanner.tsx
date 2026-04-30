@@ -77,7 +77,7 @@ export function MarqueeBanner({
         text={text2}
         rotate="-0.48deg"
         bg="#cc7b57"
-        textColor="#ffffff"
+        textColor="#131313"
         direction="right"
         scrollYProgress={scrollYProgress}
       />
