@@ -128,9 +128,7 @@ export function generateTemplateBuildings(): BuildingData[] {
         area,
         bhk,
         rent,
-        market_avg: marketAvg,
         cashback: Math.round(rent * 0.01 * 12),
-        users,
       });
     }
   }
