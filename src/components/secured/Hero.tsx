@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { useMapsLibrary } from "@vis.gl/react-google-maps";
+import { APIProvider, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import { Button } from "./ui/Button";
@@ -263,14 +263,22 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
     let cancelled = false;
     const timer = setTimeout(async () => {
       try {
-        const { suggestions: results } = await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+        const autocompleteParams = {
           input: inputValue,
           includedRegionCodes: ["in"],
           locationBias: new google.maps.LatLngBounds(
             { lat: 12.75, lng: 77.35 },
             { lat: 13.20, lng: 77.85 }
           ),
+        };
+        let { suggestions: results } = await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+          ...autocompleteParams,
+          includedPrimaryTypes: ["housing_complex", "apartment_complex"],
         });
+        // Fall back to unfiltered if no housing complexes match
+        if (!results?.length) {
+          ({ suggestions: results } = await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(autocompleteParams));
+        }
         if (!cancelled) {
           const preds: PlacePrediction[] = (results ?? [])
             .filter((s) => s.placePrediction)
@@ -312,7 +320,8 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
     // Use cached coords from nearbySearch if available
     const cached = coordsCacheRef.current[pred.place_id];
     if (cached) {
-      import("./ActivityMap").then((m) => { m.AREA_COORDS[areaName] = [cached.lng, cached.lat]; });
+      const m = await import("./ActivityMap");
+      m.AREA_COORDS[areaName] = [cached.lng, cached.lat];
       onChangeRef.current(areaName, cached);
       return;
     }
@@ -342,14 +351,22 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
       async (pos) => {
         try {
           const { latitude, longitude } = pos.coords;
-          const { places } = await google.maps.places.Place.searchNearby({
-            fields: ["id", "displayName", "location", "formattedAddress"],
+          const nearbyParams = {
+            fields: ["id", "displayName", "location", "formattedAddress"] as string[],
             locationRestriction: {
               center: { lat: latitude, lng: longitude },
-              radius: 500,
+              radius: 1500,
             },
-            maxResultCount: 8,
+            maxResultCount: 10,
+          };
+          let { places } = await google.maps.places.Place.searchNearby({
+            ...nearbyParams,
+            includedTypes: ["housing_complex", "apartment_complex"],
           });
+          // Fall back to unfiltered if no housing complexes found nearby
+          if (!places?.length) {
+            ({ places } = await google.maps.places.Place.searchNearby(nearbyParams));
+          }
           if (places?.length) {
             places.forEach((p) => {
               if (p.id && p.location) {
@@ -365,9 +382,8 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
             }));
             setSuggestions(preds);
             setShowDropdown(true);
-            inputRef.current?.focus();
           }
-        } catch { /* silently fail */ }
+        } catch (err) { console.error("[locate] error:", err); }
         finally { setLocating(false); }
       },
       () => { setLocating(false); },
@@ -388,7 +404,7 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
           onChange={(e) => setInputValue(e.target.value)}
           onFocus={() => { if (inputValue === value) setInputValue(""); }}
           onBlur={() => { if (!inputValue.trim()) setInputValue(value ?? ""); }}
-          placeholder={locating ? "Locating…" : "Enter your society or address…"}
+          placeholder={locating ? "Locating…" : "Your society name…"}
           className="min-w-0 flex-1 bg-transparent text-[13px] text-white placeholder-[#555] outline-none"
           style={{ fontFamily: "var(--font-ui)" }}
         />
@@ -521,8 +537,7 @@ export function RentMapSection() {
         setAreaCoords(coords);
         setAllBuildingCoords(data.map((b) => [b.lng, b.lat]));
         setAreaRentRanges([]);
-        const defaultArea = names.includes("Koramangala") ? "Koramangala" : (names[0] ?? "");
-        setSelectedArea(defaultArea);
+        setSelectedArea("");
       });
   }, []);
 
@@ -549,14 +564,16 @@ export function RentMapSection() {
           }, { area: selectedArea, dist: Infinity }).area
         : selectedArea;
 
-      getSecuredSupabase()?.from("maps_properties").insert({
-        society_name: selectedArea,
+      const sb = getSecuredSupabase();
+      console.log("[supabase] client:", !!sb, "coords:", selectedCoords, "area:", selectedArea);
+      sb?.from("maps_properties").insert({
+        society_name: selectedCoords ? `https://www.google.com/maps?q=${selectedCoords.lat},${selectedCoords.lng}` : selectedArea,
         area: closestArea,
         configuration: selectedBhk,
         rent,
         lat: selectedCoords?.lat ?? null,
         lng: selectedCoords?.lng ?? null,
-      });
+      }).then(({ error }) => { if (error) console.error("[supabase] insert error:", error); else console.log("[supabase] insert ok"); });
     } finally {
       setChecking(false);
     }
@@ -569,7 +586,10 @@ export function RentMapSection() {
     setNotifySubmitted(true);
   }, [phone, email, selectedArea, selectedBhk, rent]);
 
+  const mapsApiKey = process.env.NEXT_PUBLIC_SECURED_GOOGLE_MAPS_API_KEY || "";
+
   return (
+    <APIProvider apiKey={mapsApiKey} libraries={["places"]}>
     <section data-section="rent-map" className="relative z-[31] flex w-full flex-col overflow-hidden bg-[#131313]" style={{ height: "100vh", minHeight: 700 }}>
       <div className="absolute inset-0 z-0 overflow-hidden lg:left-[120px] lg:right-[120px]">
         {mounted && <LazyActivityMap onBuildingSelect={handleBuildingSelect} onMapReady={handleMapReady} />}
@@ -709,6 +729,7 @@ export function RentMapSection() {
         </div>
       </div>
     </section>
+    </APIProvider>
   );
 }
 
