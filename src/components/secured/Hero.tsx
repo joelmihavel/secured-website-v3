@@ -219,7 +219,7 @@ function formatINR(amount: number): string {
 }
 
 
-type EligibilityStep = "form" | "eligible" | "not-eligible";
+type EligibilityStep = "form" | "eligible" | "not-eligible" | "not-serviceable";
 
 const COVERAGE_RADIUS_KM = 5;
 
@@ -249,6 +249,8 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
   const inputRef = useRef<HTMLInputElement>(null);
   const mapsLoaded = useApiIsLoaded();
   const svcRef = useRef<google.maps.places.AutocompleteService | null>(null);
+  const onChangeRef = useRef(onChange);
+  useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
 
   useEffect(() => { setInputValue(value); }, [value]);
 
@@ -312,9 +314,9 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
         const lng = results[0].geometry.location.lng();
         const m = await import("./ActivityMap");
         m.AREA_COORDS[areaName] = [lng, lat];
-        onChange(areaName, { lat, lng });
+        onChangeRef.current(areaName, { lat, lng });
       } else {
-        onChange(areaName);
+        onChangeRef.current(areaName);
       }
     });
   }
@@ -333,7 +335,7 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
           const m = await import("./ActivityMap");
           m.AREA_COORDS[areaName] = [longitude, latitude];
           setInputValue(areaName);
-          onChange(areaName, { lat: latitude, lng: longitude });
+          onChangeRef.current(areaName, { lat: latitude, lng: longitude });
         } catch {
           // silently fail
         } finally { setLocating(false); }
@@ -467,8 +469,7 @@ export function RentMapSection() {
     setSelectedArea(area);
     setSelectedCoords(coords ?? null);
     if (coords && allBuildingCoords.length > 0 && !isNearProperties(coords.lat, coords.lng, allBuildingCoords)) {
-      setIsInCoverage(false);
-      setStep("not-eligible");
+      setStep("not-serviceable");
       return;
     }
     handleFlyTo(area);
@@ -509,7 +510,7 @@ export function RentMapSection() {
       });
       const { eligible, inCoverage } = await res.json();
       setIsInCoverage(inCoverage);
-      setStep(eligible ? "eligible" : "not-eligible");
+      setStep(eligible ? "eligible" : inCoverage ? "not-eligible" : "not-serviceable");
     } finally {
       setChecking(false);
     }
@@ -613,6 +614,18 @@ export function RentMapSection() {
                 <p className="text-center text-[10px] font-medium text-[#ff9a6d]/80" style={{ fontFamily: "var(--font-ui)" }}>+ Extra ₹1,000 cashback this month on timely rent payment</p>
               </div>
             </div>
+          ) : step === "not-serviceable" ? (
+            <div className="rounded-2xl border border-white/[0.1] bg-[#131313]/98 px-6 py-5 shadow-[0_12px_48px_rgba(0,0,0,0.6)] md:px-8 md:py-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#ef4444]/[0.12]"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#ef4444" strokeWidth="1.5" /><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" /></svg></div>
+                  <p className="text-[13px] font-semibold text-[#ef4444]" style={{ fontFamily: "var(--font-ui)" }}>Area not serviceable</p>
+                </div>
+                <button onClick={handleReset} className="rounded-full border border-white/[0.08] px-3 py-1 text-[10px] text-[#777] transition-colors hover:border-white/20 hover:text-white" style={{ fontFamily: "var(--font-ui)" }}>Edit</button>
+              </div>
+              <p className="mt-1 text-[10px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>{selectedArea}</p>
+              <p className="mt-3 text-[12px] leading-[1.5] text-[#888]" style={{ fontFamily: "var(--font-ui)" }}>Secured isn&apos;t available in this area yet. Try a nearby location or search within Bangalore.</p>
+            </div>
           ) : (
             <div className="rounded-2xl border border-white/[0.1] bg-[#131313]/98 px-6 py-5 shadow-[0_12px_48px_rgba(0,0,0,0.6)] md:px-8 md:py-6">
               <div className="flex items-center justify-between">
@@ -624,9 +637,7 @@ export function RentMapSection() {
               </div>
               <p className="mt-1 text-[10px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>{selectedBhk} in {selectedArea} · {formatINR(rent)}/mo</p>
               <p className="mt-3 text-[12px] leading-[1.5] text-[#888]" style={{ fontFamily: "var(--font-ui)" }}>
-                {!isInCoverage
-                  ? "Secured is currently not available in your area. Leave your details and we'll notify you when we expand."
-                  : "You're not eligible yet. Leave your details and we'll notify you the moment you qualify."}
+                {"You're not eligible yet. Leave your details and we'll notify you the moment you qualify."}
               </p>
               {!notifySubmitted ? (
                 <div className="mt-4 flex flex-col gap-3">
