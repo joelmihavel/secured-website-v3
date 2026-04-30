@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { useApiIsLoaded } from "@vis.gl/react-google-maps";
+import { useMapsLibrary } from "@vis.gl/react-google-maps";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import { Button } from "./ui/Button";
@@ -247,53 +247,49 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
   const [locating, setLocating] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const mapsLoaded = useApiIsLoaded();
-  const svcRef = useRef<google.maps.places.AutocompleteService | null>(null);
-  const placesSvcRef = useRef<google.maps.places.PlacesService | null>(null);
+  const placesLib = useMapsLibrary("places");
   const coordsCacheRef = useRef<Record<string, { lat: number; lng: number }>>({});
   const onChangeRef = useRef(onChange);
   useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
 
   useEffect(() => { setInputValue(value ?? ""); }, [value]);
 
-  useEffect(() => {
-    if (!mapsLoaded) return;
-    try {
-      if (!svcRef.current) svcRef.current = new google.maps.places.AutocompleteService();
-      if (!placesSvcRef.current) placesSvcRef.current = new google.maps.places.PlacesService(document.createElement("div"));
-    } catch { /* not ready yet */ }
-  }, [mapsLoaded]);
-
   // Auto-locate on mount
   useEffect(() => { handleLocate(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Autocomplete while typing
   useEffect(() => {
-    if (!inputValue.trim() || inputValue === value) { setSuggestions([]); setShowDropdown(false); return; }
+    if (!placesLib || !inputValue.trim() || inputValue === value) { setSuggestions([]); setShowDropdown(false); return; }
     let cancelled = false;
-    const timer = setTimeout(() => {
-      if (!svcRef.current) return;
-      svcRef.current.getPlacePredictions(
-        {
+    const timer = setTimeout(async () => {
+      try {
+        const { suggestions: results } = await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
           input: inputValue,
-          componentRestrictions: { country: "in" },
-          bounds: new google.maps.LatLngBounds(
-            new google.maps.LatLng(12.75, 77.35),
-            new google.maps.LatLng(13.20, 77.85)
+          includedRegionCodes: ["in"],
+          locationBias: new google.maps.LatLngBounds(
+            { lat: 12.75, lng: 77.35 },
+            { lat: 13.20, lng: 77.85 }
           ),
-        },
-        (predictions, status) => {
-          if (!cancelled && status === google.maps.places.PlacesServiceStatus.OK) {
-            setSuggestions((predictions ?? []) as PlacePrediction[]);
-            setShowDropdown(true);
-          } else if (!cancelled) {
-            setSuggestions([]);
-          }
+        });
+        if (!cancelled) {
+          const preds: PlacePrediction[] = (results ?? [])
+            .filter((s) => s.placePrediction)
+            .map((s) => ({
+              place_id: s.placePrediction!.placeId,
+              structured_formatting: {
+                main_text: s.placePrediction!.mainText?.text ?? "",
+                secondary_text: s.placePrediction!.secondaryText?.text ?? "",
+              },
+            }));
+          setSuggestions(preds);
+          setShowDropdown(preds.length > 0);
         }
-      );
+      } catch {
+        if (!cancelled) setSuggestions([]);
+      }
     }, 250);
     return () => { cancelled = true; clearTimeout(timer); };
-  }, [inputValue, value]);
+  }, [inputValue, value, placesLib]);
 
   // Close dropdown on outside click, reset input to last confirmed value
   useEffect(() => {
@@ -307,13 +303,13 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
     return () => document.removeEventListener("mousedown", handleOutside);
   }, [value]);
 
-  function handleSelect(pred: PlacePrediction) {
+  async function handleSelect(pred: PlacePrediction) {
     setShowDropdown(false);
     setSuggestions([]);
     const areaName = pred.structured_formatting.main_text;
     setInputValue(areaName);
 
-    // Use cached coords from nearbySearch if available, skip geocoding
+    // Use cached coords from nearbySearch if available
     const cached = coordsCacheRef.current[pred.place_id];
     if (cached) {
       import("./ActivityMap").then((m) => { m.AREA_COORDS[areaName] = [cached.lng, cached.lat]; });
@@ -321,58 +317,58 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
       return;
     }
 
-    // Fall back to geocoding for autocomplete results
-    const geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ placeId: pred.place_id }, async (results, status) => {
-      if (status === google.maps.GeocoderStatus.OK && results?.[0]?.geometry?.location) {
-        const lat = results[0].geometry.location.lat();
-        const lng = results[0].geometry.location.lng();
+    // Fetch place location using new Places API
+    try {
+      const place = new google.maps.places.Place({ id: pred.place_id });
+      await place.fetchFields({ fields: ["location"] });
+      if (place.location) {
+        const lat = place.location.lat();
+        const lng = place.location.lng();
         const m = await import("./ActivityMap");
         m.AREA_COORDS[areaName] = [lng, lat];
         onChangeRef.current(areaName, { lat, lng });
       } else {
         onChangeRef.current(areaName);
       }
-    });
+    } catch {
+      onChangeRef.current(areaName);
+    }
   }
 
   function handleLocate() {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation || !placesLib) return;
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        if (!placesSvcRef.current) {
-          try { placesSvcRef.current = new google.maps.places.PlacesService(document.createElement("div")); } catch { setLocating(false); return; }
-        }
-        const svc = placesSvcRef.current;
-        if (!svc) { setLocating(false); return; }
-        svc.nearbySearch(
-          { location: { lat: latitude, lng: longitude }, radius: 500, type: "establishment" },
-          (results, status) => {
-            setLocating(false);
-            if (status === google.maps.places.PlacesServiceStatus.OK && results?.length) {
-              results.forEach((r) => {
-                if (r.place_id && r.geometry?.location) {
-                  coordsCacheRef.current[r.place_id] = {
-                    lat: r.geometry.location.lat(),
-                    lng: r.geometry.location.lng(),
-                  };
-                }
-              });
-              const preds: PlacePrediction[] = results.slice(0, 8).map((r) => ({
-                place_id: r.place_id!,
-                structured_formatting: {
-                  main_text: r.name!,
-                  secondary_text: r.vicinity || "",
-                },
-              }));
-              setSuggestions(preds);
-              setShowDropdown(true);
-              inputRef.current?.focus();
-            }
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const { places } = await google.maps.places.Place.searchNearby({
+            fields: ["id", "displayName", "location", "formattedAddress"],
+            locationRestriction: {
+              center: { lat: latitude, lng: longitude },
+              radius: 500,
+            },
+            maxResultCount: 8,
+          });
+          if (places?.length) {
+            places.forEach((p) => {
+              if (p.id && p.location) {
+                coordsCacheRef.current[p.id] = { lat: p.location.lat(), lng: p.location.lng() };
+              }
+            });
+            const preds: PlacePrediction[] = places.map((p) => ({
+              place_id: p.id!,
+              structured_formatting: {
+                main_text: p.displayName ?? "",
+                secondary_text: p.formattedAddress ?? "",
+              },
+            }));
+            setSuggestions(preds);
+            setShowDropdown(true);
+            inputRef.current?.focus();
           }
-        );
+        } catch { /* silently fail */ }
+        finally { setLocating(false); }
       },
       () => { setLocating(false); },
       { timeout: 15000, maximumAge: 60000, enableHighAccuracy: false }
