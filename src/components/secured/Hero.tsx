@@ -231,8 +231,8 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function isNearProperties(lat: number, lng: number, areaCoords: Record<string, [number, number]>): boolean {
-  return Object.values(areaCoords).some(([pLng, pLat]) => haversineKm(lat, lng, pLat, pLng) <= COVERAGE_RADIUS_KM);
+function isNearProperties(lat: number, lng: number, allCoords: [number, number][]): boolean {
+  return allCoords.some(([pLng, pLat]) => haversineKm(lat, lng, pLat, pLng) <= COVERAGE_RADIUS_KM);
 }
 
 interface PlacePrediction {
@@ -446,11 +446,13 @@ export function RentMapSection() {
   const [step, setStep] = useState<EligibilityStep>("form");
   const [rentInput, setRentInput] = useState("");
   const [selectedArea, setSelectedArea] = useState("");
+  const [selectedCoords, setSelectedCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [selectedBhk, setSelectedBhk] = useState<BhkType>("2 BHK");
   const [bhkTypes, setBhkTypes] = useState<BhkType[]>([]);
   const [areaNames, setAreaNames] = useState<string[]>([]);
   const [areaRentRanges, setAreaRentRanges] = useState<AreaRentRange[]>([]);
   const [areaCoords, setAreaCoords] = useState<Record<string, [number, number]>>({});
+  const [allBuildingCoords, setAllBuildingCoords] = useState<[number, number][]>([]);
   const [selectedBuilding, setSelectedBuilding] = useState<SelectedBuilding | null>(null);
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -463,13 +465,14 @@ export function RentMapSection() {
   const handleFlyTo = useCallback((area: string) => { if (!area) return; flyToRef.current?.(area); }, []);
   const handleAreaChange = useCallback((area: string, coords?: { lat: number; lng: number }) => {
     setSelectedArea(area);
-    if (coords && Object.keys(areaCoords).length > 0 && !isNearProperties(coords.lat, coords.lng, areaCoords)) {
+    setSelectedCoords(coords ?? null);
+    if (coords && allBuildingCoords.length > 0 && !isNearProperties(coords.lat, coords.lng, allBuildingCoords)) {
       setIsInCoverage(false);
       setStep("not-eligible");
       return;
     }
     handleFlyTo(area);
-  }, [handleFlyTo, areaCoords]);
+  }, [handleFlyTo, allBuildingCoords]);
 
   useEffect(() => {
     setMounted(true);
@@ -485,6 +488,7 @@ export function RentMapSection() {
         );
         setAreaNames(names);
         setAreaCoords(coords);
+        setAllBuildingCoords(data.map((b) => [b.lng, b.lat]));
         setAreaRentRanges([]);
         const defaultArea = names.includes("Koramangala") ? "Koramangala" : names[0];
         setSelectedArea(defaultArea);
@@ -501,7 +505,7 @@ export function RentMapSection() {
       const res = await fetch("/api/secured/check-eligibility", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ area: selectedArea, bhk: selectedBhk, rent }),
+        body: JSON.stringify({ area: selectedArea, bhk: selectedBhk, rent, coords: selectedCoords }),
       });
       const { eligible, inCoverage } = await res.json();
       setIsInCoverage(inCoverage);
