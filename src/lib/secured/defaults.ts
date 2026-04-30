@@ -18,7 +18,7 @@ export const HERO_DEFAULTS: HeroContent = {
   headingHighlight: "1% back",
   subheading: "On every timely rent payment",
   description: "Because habits like yours should be rewarded,\nnot overlooked.",
-  ctaButtonText: "Request an Invite",
+  ctaButtonText: "Download the App",
   ctaDisclaimer: "",
 };
 
