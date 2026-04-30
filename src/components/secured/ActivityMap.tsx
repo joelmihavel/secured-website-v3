@@ -35,9 +35,7 @@ interface BuildingData {
   area: string;
   bhk: BhkType;
   rent: number;
-  market_avg: number;
   cashback: number;
-  users: number;
 }
 
 /* ── Data ── */
@@ -139,16 +137,8 @@ export function ActivityMap({ onBuildingSelect, onMapReady }: { onBuildingSelect
     onBuildingSelect?.(null);
 
     for (const b of buildings) {
-      const isOverpaying = b.rent > b.market_avg;
-      const isHighUsers = b.users >= 10;
-
-      const glowColor = isOverpaying
-        ? "rgba(239, 68, 68, 0.6)"
-        : isHighUsers
-        ? "rgba(139, 92, 246, 0.6)"
-        : "rgba(255, 154, 109, 0.4)";
-
-      const dotColor = isOverpaying ? "#ef4444" : isHighUsers ? "#8b5cf6" : "#ff9a6d";
+      const glowColor = "rgba(255, 154, 109, 0.4)";
+      const dotColor = "#ff9a6d";
 
       const el = document.createElement("div");
       el.className = "secured-3d-marker";
