@@ -95,14 +95,14 @@ export function TrustSection({ data, variant = "tenant" }: { data: TrustContent;
     );
   }
 
-  const headingParts = data.heading.split(/(across Bangalore|across bangalore)/i);
+  const headingParts = data.heading.split(/(INR 20\+ crores)/i);
 
   return (
     <section className="relative bg-[#131313]">
       <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
         <div className="py-12 md:py-20 lg:pt-[152px] lg:pb-[64px]">
           <div className="lg:px-[120px]">
-            <div className="flex flex-col gap-3 text-center lg:gap-[12px] lg:text-left">
+            <div className="flex flex-col items-center gap-3 text-center lg:gap-[12px]">
               <motion.h2
                 ref={headingRef}
                 className="text-[32px] leading-[1.2] tracking-[-1px] text-white md:text-[40px] lg:text-[48px] lg:leading-[64px] lg:tracking-[-2px]"
@@ -112,11 +112,8 @@ export function TrustSection({ data, variant = "tenant" }: { data: TrustContent;
                 transition={{ duration: 0.6 }}
               >
                 {headingParts.map((part, i) =>
-                  /across bangalore/i.test(part) ? (
-                    <span key={i}>
-                      <br className="hidden lg:block" />
-                      <span className="text-[#ff9a6d]">{part}</span>
-                    </span>
+                  /INR 20\+ crores/i.test(part) ? (
+                    <span key={i} className="text-[#ff9a6d]">{part}</span>
                   ) : (
                     <span key={i}>{part}</span>
                   )
@@ -128,16 +125,7 @@ export function TrustSection({ data, variant = "tenant" }: { data: TrustContent;
                   className="text-[20px] leading-[1.4] tracking-[-0.5px] text-[#A6A6A6] md:text-[24px] lg:text-[28px] lg:leading-[40px] lg:tracking-[-1px]"
                   style={{ fontFamily: "var(--font-ui)" }}
                 >
-                  Thousands of rent payments already happen through Secured
-                </p>
-              </SlideUp>
-
-              <SlideUp delay={0.2}>
-                <p
-                  className="text-sm leading-[1.8] tracking-[-0.32px] text-[#656565] md:text-base lg:text-[16px]"
-                  style={{ fontFamily: "var(--font-ui)" }}
-                >
-                  People across Whitefield, HSR, Indiranagar and more are already earning
+                  {data.description}
                 </p>
               </SlideUp>
             </div>

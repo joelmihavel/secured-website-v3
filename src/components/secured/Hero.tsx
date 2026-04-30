@@ -630,23 +630,23 @@ export function RentMapSection() {
         <div className="pointer-events-auto w-[calc(100%-32px)] max-w-[620px]">
           {step === "form" ? (
             <div className="rounded-2xl border border-white/[0.1] bg-[#131313]/98 px-4 py-3 shadow-[0_12px_48px_rgba(0,0,0,0.6)] md:px-8 md:py-6">
-              <p className="mb-2 text-center text-[10px] uppercase tracking-[0.16em] text-[#777] md:mb-4" style={{ fontFamily: "var(--font-ui)" }}>Check if you&apos;re eligible for Flent Secured</p>
+              <p className="mb-2 text-center text-[10px] uppercase tracking-[0.16em] text-white md:mb-4" style={{ fontFamily: "var(--font-ui)" }}>Check if you&apos;re eligible for Flent Secured</p>
               {/* Mobile: compact 2-row layout | Desktop: single row */}
               <div className="flex flex-col gap-2.5 md:hidden">
                 <div className="flex gap-3">
                   <div className="flex-1 min-w-0">
-                    <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Area</label>
+                    <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-white" style={{ fontFamily: "var(--font-ui)" }}>Area</label>
                     <GoogleAreaPicker value={selectedArea} onChange={handleAreaChange} />
                   </div>
                   <div className="min-w-[110px]">
-                    <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Configuration</label>
+                    <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-white" style={{ fontFamily: "var(--font-ui)" }}>Configuration</label>
                     <BhkPicker types={bhkTypes} value={selectedBhk} onChange={setSelectedBhk} />
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Monthly Rent</label>
+                  <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-white" style={{ fontFamily: "var(--font-ui)" }}>Monthly Rent</label>
                   <div className="flex items-baseline gap-1.5 border-b border-white/10 pb-1 transition-colors focus-within:border-[#ff9a6d]">
-                    <span className="text-[14px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>₹</span>
+                    <span className="text-[14px] text-white" style={{ fontFamily: "var(--font-ui)" }}>₹</span>
                     <input type="text" inputMode="numeric" placeholder="25,000" value={rentInput} onChange={handleRentChange} onKeyDown={(e) => e.key === "Enter" && handleCheck()} className="w-full bg-transparent text-[14px] text-white placeholder-[#444] outline-none" style={{ fontFamily: "var(--font-ui)" }} />
                   </div>
                 </div>
@@ -655,19 +655,19 @@ export function RentMapSection() {
               {/* Desktop: original horizontal layout */}
               <div className="hidden md:flex md:flex-row md:items-end md:gap-0">
                 <div className="flex-1">
-                  <label className="mb-1.5 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Area</label>
+                  <label className="mb-1.5 block text-[9px] font-medium uppercase tracking-[1px] text-white" style={{ fontFamily: "var(--font-ui)" }}>Area</label>
                   <GoogleAreaPicker value={selectedArea} onChange={handleAreaChange} />
                 </div>
                 <div className="h-10 w-px bg-white/[0.06] mx-5" />
                 <div className="flex-1">
-                  <label className="mb-1.5 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Configuration</label>
+                  <label className="mb-1.5 block text-[9px] font-medium uppercase tracking-[1px] text-white" style={{ fontFamily: "var(--font-ui)" }}>Configuration</label>
                   <BhkPicker types={bhkTypes} value={selectedBhk} onChange={setSelectedBhk} />
                 </div>
                 <div className="h-10 w-px bg-white/[0.06] mx-5" />
                 <div className="flex-shrink-0">
-                  <label className="mb-1.5 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Monthly Rent</label>
+                  <label className="mb-1.5 block text-[9px] font-medium uppercase tracking-[1px] text-white" style={{ fontFamily: "var(--font-ui)" }}>Monthly Rent</label>
                   <div className="flex items-baseline gap-1.5 border-b border-white/10 pb-1.5 transition-colors focus-within:border-[#ff9a6d]">
-                    <span className="text-[14px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>₹</span>
+                    <span className="text-[14px] text-white" style={{ fontFamily: "var(--font-ui)" }}>₹</span>
                     <input type="text" inputMode="numeric" placeholder="25,000" value={rentInput} onChange={handleRentChange} onKeyDown={(e) => e.key === "Enter" && handleCheck()} className="w-24 bg-transparent text-[14px] text-white placeholder-[#444] outline-none" style={{ fontFamily: "var(--font-ui)" }} />
                   </div>
                 </div>
