@@ -221,35 +221,54 @@ function formatINR(amount: number): string {
 
 type EligibilityStep = "form" | "eligible" | "not-eligible";
 
+const COVERAGE_RADIUS_KM = 5;
+
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function isNearProperties(lat: number, lng: number, areaCoords: Record<string, [number, number]>): boolean {
+  return Object.values(areaCoords).some(([pLng, pLat]) => haversineKm(lat, lng, pLat, pLng) <= COVERAGE_RADIUS_KM);
+}
+
 interface PlacePrediction {
   place_id: string;
   structured_formatting: { main_text: string; secondary_text: string };
 }
 
-function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area: string) => void }) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
+function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area: string, coords?: { lat: number; lng: number }) => void }) {
+  const [inputValue, setInputValue] = useState(value);
   const [suggestions, setSuggestions] = useState<PlacePrediction[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
   const [locating, setLocating] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const mapsLoaded = useApiIsLoaded();
   const svcRef = useRef<google.maps.places.AutocompleteService | null>(null);
 
-  // Create service once Maps (+ places library) is ready
+  useEffect(() => { setInputValue(value); }, [value]);
+
   useEffect(() => {
     if (!mapsLoaded || svcRef.current) return;
     try { svcRef.current = new google.maps.places.AutocompleteService(); } catch { /* not ready yet */ }
   }, [mapsLoaded]);
 
+  // Auto-locate on mount
+  useEffect(() => { handleLocate(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Autocomplete while typing
   useEffect(() => {
-    if (!search.trim()) { setSuggestions([]); return; }
+    if (!inputValue.trim() || inputValue === value) { setSuggestions([]); setShowDropdown(false); return; }
     let cancelled = false;
     const timer = setTimeout(() => {
       if (!svcRef.current) return;
       svcRef.current.getPlacePredictions(
         {
-          input: search,
+          input: inputValue,
           componentRestrictions: { country: "in" },
           bounds: new google.maps.LatLngBounds(
             new google.maps.LatLng(12.75, 77.35),
@@ -259,6 +278,7 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
         (predictions, status) => {
           if (!cancelled && status === google.maps.places.PlacesServiceStatus.OK) {
             setSuggestions((predictions ?? []) as PlacePrediction[]);
+            setShowDropdown(true);
           } else if (!cancelled) {
             setSuggestions([]);
           }
@@ -266,32 +286,36 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
       );
     }, 250);
     return () => { cancelled = true; clearTimeout(timer); };
-  }, [search, mapsLoaded]);
+  }, [inputValue, value]);
 
+  // Close dropdown on outside click, reset input to last confirmed value
   useEffect(() => {
-    if (!open) return;
     function handleOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+        setInputValue(value);
+      }
     }
     document.addEventListener("mousedown", handleOutside);
-    setTimeout(() => inputRef.current?.focus(), 50);
     return () => document.removeEventListener("mousedown", handleOutside);
-  }, [open]);
-
-  useEffect(() => { if (open) { setSearch(""); setSuggestions([]); } }, [open]);
+  }, [value]);
 
   function handleSelect(pred: PlacePrediction) {
-    setOpen(false);
+    setShowDropdown(false);
+    setSuggestions([]);
     const geocoder = new google.maps.Geocoder();
     geocoder.geocode({ placeId: pred.place_id }, async (results, status) => {
       const areaName = pred.structured_formatting.main_text;
+      setInputValue(areaName);
       if (status === google.maps.GeocoderStatus.OK && results?.[0]?.geometry?.location) {
         const lat = results[0].geometry.location.lat();
         const lng = results[0].geometry.location.lng();
         const m = await import("./ActivityMap");
         m.AREA_COORDS[areaName] = [lng, lat];
+        onChange(areaName, { lat, lng });
+      } else {
+        onChange(areaName);
       }
-      onChange(areaName);
     });
   }
 
@@ -308,8 +332,8 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
           const areaName = suburb || data.display_name?.split(",")[0] || "My Location";
           const m = await import("./ActivityMap");
           m.AREA_COORDS[areaName] = [longitude, latitude];
-          onChange(areaName);
-          setOpen(false);
+          setInputValue(areaName);
+          onChange(areaName, { lat: latitude, lng: longitude });
         } catch {
           // silently fail
         } finally { setLocating(false); }
@@ -321,52 +345,62 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
 
   return (
     <div ref={containerRef} className="relative">
-      <button type="button" onClick={() => setOpen(!open)} className="flex w-full items-center gap-2 border-b border-white/10 bg-transparent pb-1.5 text-left transition-colors hover:border-white/20">
-        <svg className="flex-shrink-0 text-[#666]" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-        <span className="flex-1 truncate text-[13px] text-white" style={{ fontFamily: "var(--font-ui)" }}>{value || "Search location"}</span>
-        <svg className="flex-shrink-0 text-[#555]" width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-      </button>
-      {open && (
-        <div className="absolute left-0 right-0 bottom-[calc(100%+6px)] z-[600] flex max-h-[240px] flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a1a1a] shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
-          <div className="flex flex-shrink-0 items-center gap-2 border-b border-white/[0.06] px-3 py-2">
-            <svg className="flex-shrink-0 text-[#555]" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-            <input ref={inputRef} type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search location in Bangalore..." className="min-w-0 flex-1 bg-transparent text-[12px] text-white placeholder-[#555] outline-none" style={{ fontFamily: "var(--font-ui)" }} />
-            <button type="button" onClick={handleLocate} className="flex flex-shrink-0 items-center gap-1 rounded-full border border-white/[0.08] px-2 py-0.5 text-[9px] text-[#888] transition-colors hover:border-[#ff9a6d]/30 hover:text-[#ff9a6d]" style={{ fontFamily: "var(--font-ui)" }}>
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><line x1="12" y1="2" x2="12" y2="6" /><line x1="12" y1="18" x2="12" y2="22" /><line x1="2" y1="12" x2="6" y2="12" /><line x1="18" y1="12" x2="22" y2="12" /></svg>
-              {locating ? "..." : "Locate me"}
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto overscroll-contain" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }} onTouchMove={(e) => e.stopPropagation()} onWheel={(e) => e.stopPropagation()}>
-            {suggestions.map((pred) => {
-              const isSelected = pred.structured_formatting.main_text === value;
-              return (
-                <button
-                  key={pred.place_id}
-                  type="button"
-                  onClick={() => handleSelect(pred)}
-                  className={`flex w-full items-center gap-1.5 px-3 py-[6px] text-left text-[12px] transition-colors ${
-                    isSelected
-                      ? "bg-[#ff9a6d]/[0.08] text-[#ff9a6d]"
-                      : "text-white/70 hover:bg-white/[0.04] hover:text-white"
-                  }`}
-                  style={{ fontFamily: "var(--font-ui)" }}
-                >
-                  {isSelected
-                    ? <svg className="flex-shrink-0" width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 2.5" stroke="#ff9a6d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                    : <span className="w-[9px] flex-shrink-0" />
-                  }
-                  <span className="flex-1 truncate">{pred.structured_formatting.main_text}</span>
-                  <span className="flex-shrink-0 text-[10px] opacity-40 truncate max-w-[40%]">{pred.structured_formatting.secondary_text}</span>
-                </button>
-              );
-            })}
-            {suggestions.length === 0 && search.length === 0 && (
-              <p className="px-3 py-3 text-[11px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Start typing to search locations…</p>
-            )}
-            {suggestions.length === 0 && search.length > 0 && (
-              <p className="px-3 py-3 text-[11px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>No results found</p>
-            )}
-          </div>
+      <div className="flex items-center gap-2 border-b border-white/10 pb-1.5 transition-colors focus-within:border-white/20">
+        <svg className="flex-shrink-0 text-[#666]" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onFocus={() => { if (inputValue === value) setInputValue(""); }}
+          onBlur={() => { if (!inputValue.trim()) setInputValue(value); }}
+          placeholder={locating ? "Locating…" : "Search your area…"}
+          className="min-w-0 flex-1 bg-transparent text-[13px] text-white placeholder-[#555] outline-none"
+          style={{ fontFamily: "var(--font-ui)" }}
+        />
+        <button
+          type="button"
+          onClick={handleLocate}
+          disabled={locating}
+          title="Use my location"
+          className="flex-shrink-0 text-[#555] transition-colors hover:text-[#ff9a6d] disabled:opacity-40"
+        >
+          {locating
+            ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+            : <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><line x1="12" y1="2" x2="12" y2="6" /><line x1="12" y1="18" x2="12" y2="22" /><line x1="2" y1="12" x2="6" y2="12" /><line x1="18" y1="12" x2="22" y2="12" /></svg>
+          }
+        </button>
+      </div>
+      {showDropdown && suggestions.length > 0 && (
+        <div
+          className="absolute left-0 right-0 bottom-[calc(100%+6px)] z-[600] max-h-[200px] overflow-y-auto overscroll-contain rounded-xl border border-white/[0.08] bg-[#1a1a1a] shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
+          style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }}
+          onTouchMove={(e) => e.stopPropagation()}
+          onWheel={(e) => e.stopPropagation()}
+        >
+          {suggestions.map((pred) => {
+            const isSelected = pred.structured_formatting.main_text === value;
+            return (
+              <button
+                key={pred.place_id}
+                type="button"
+                onClick={() => handleSelect(pred)}
+                className={`flex w-full items-center gap-1.5 px-3 py-[6px] text-left text-[12px] transition-colors ${
+                  isSelected ? "bg-[#ff9a6d]/[0.08] text-[#ff9a6d]" : "text-white/70 hover:bg-white/[0.04] hover:text-white"
+                }`}
+                style={{ fontFamily: "var(--font-ui)" }}
+              >
+                {isSelected
+                  ? <svg className="flex-shrink-0" width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 2.5" stroke="#ff9a6d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  : <span className="w-[9px] flex-shrink-0" />
+                }
+                <span className="flex-1 truncate">{pred.structured_formatting.main_text}</span>
+                <span className="flex-shrink-0 text-[10px] opacity-40 truncate max-w-[40%]">{pred.structured_formatting.secondary_text}</span>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
@@ -427,7 +461,15 @@ export function RentMapSection() {
   const handleBuildingSelect = useCallback((b: SelectedBuilding | null) => setSelectedBuilding(b), []);
   const handleMapReady = useCallback((flyTo: (area: string) => void) => { flyToRef.current = flyTo; }, []);
   const handleFlyTo = useCallback((area: string) => { if (!area) return; flyToRef.current?.(area); }, []);
-  const handleAreaChange = useCallback((area: string) => { setSelectedArea(area); handleFlyTo(area); }, [handleFlyTo]);
+  const handleAreaChange = useCallback((area: string, coords?: { lat: number; lng: number }) => {
+    setSelectedArea(area);
+    if (coords && Object.keys(areaCoords).length > 0 && !isNearProperties(coords.lat, coords.lng, areaCoords)) {
+      setIsInCoverage(false);
+      setStep("not-eligible");
+      return;
+    }
+    handleFlyTo(area);
+  }, [handleFlyTo, areaCoords]);
 
   useEffect(() => {
     setMounted(true);
