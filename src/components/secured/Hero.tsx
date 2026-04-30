@@ -249,14 +249,19 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
   const inputRef = useRef<HTMLInputElement>(null);
   const mapsLoaded = useApiIsLoaded();
   const svcRef = useRef<google.maps.places.AutocompleteService | null>(null);
+  const placesSvcRef = useRef<google.maps.places.PlacesService | null>(null);
+  const coordsCacheRef = useRef<Record<string, { lat: number; lng: number }>>({});
   const onChangeRef = useRef(onChange);
   useEffect(() => { onChangeRef.current = onChange; }, [onChange]);
 
-  useEffect(() => { setInputValue(value); }, [value]);
+  useEffect(() => { setInputValue(value ?? ""); }, [value]);
 
   useEffect(() => {
-    if (!mapsLoaded || svcRef.current) return;
-    try { svcRef.current = new google.maps.places.AutocompleteService(); } catch { /* not ready yet */ }
+    if (!mapsLoaded) return;
+    try {
+      if (!svcRef.current) svcRef.current = new google.maps.places.AutocompleteService();
+      if (!placesSvcRef.current) placesSvcRef.current = new google.maps.places.PlacesService(document.createElement("div"));
+    } catch { /* not ready yet */ }
   }, [mapsLoaded]);
 
   // Auto-locate on mount
@@ -272,6 +277,7 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
         {
           input: inputValue,
           componentRestrictions: { country: "in" },
+          types: ["address", "establishment"],
           bounds: new google.maps.LatLngBounds(
             new google.maps.LatLng(12.75, 77.35),
             new google.maps.LatLng(13.20, 77.85)
@@ -305,10 +311,20 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
   function handleSelect(pred: PlacePrediction) {
     setShowDropdown(false);
     setSuggestions([]);
+    const areaName = pred.structured_formatting.main_text;
+    setInputValue(areaName);
+
+    // Use cached coords from nearbySearch if available, skip geocoding
+    const cached = coordsCacheRef.current[pred.place_id];
+    if (cached) {
+      import("./ActivityMap").then((m) => { m.AREA_COORDS[areaName] = [cached.lng, cached.lat]; });
+      onChangeRef.current(areaName, cached);
+      return;
+    }
+
+    // Fall back to geocoding for autocomplete results
     const geocoder = new google.maps.Geocoder();
     geocoder.geocode({ placeId: pred.place_id }, async (results, status) => {
-      const areaName = pred.structured_formatting.main_text;
-      setInputValue(areaName);
       if (status === google.maps.GeocoderStatus.OK && results?.[0]?.geometry?.location) {
         const lat = results[0].geometry.location.lat();
         const lng = results[0].geometry.location.lng();
@@ -325,20 +341,36 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
     if (!navigator.geolocation) return;
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const { latitude, longitude } = pos.coords;
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=14`);
-          const data = await res.json();
-          const suburb = data.address?.suburb || data.address?.neighbourhood || data.address?.city_district || "";
-          const areaName = suburb || data.display_name?.split(",")[0] || "My Location";
-          const m = await import("./ActivityMap");
-          m.AREA_COORDS[areaName] = [longitude, latitude];
-          setInputValue(areaName);
-          onChangeRef.current(areaName, { lat: latitude, lng: longitude });
-        } catch {
-          // silently fail
-        } finally { setLocating(false); }
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const svc = placesSvcRef.current;
+        if (!svc) { setLocating(false); return; }
+        svc.nearbySearch(
+          { location: { lat: latitude, lng: longitude }, radius: 500, type: "establishment" },
+          (results, status) => {
+            setLocating(false);
+            if (status === google.maps.places.PlacesServiceStatus.OK && results?.length) {
+              results.forEach((r) => {
+                if (r.place_id && r.geometry?.location) {
+                  coordsCacheRef.current[r.place_id] = {
+                    lat: r.geometry.location.lat(),
+                    lng: r.geometry.location.lng(),
+                  };
+                }
+              });
+              const preds: PlacePrediction[] = results.slice(0, 8).map((r) => ({
+                place_id: r.place_id!,
+                structured_formatting: {
+                  main_text: r.name!,
+                  secondary_text: r.vicinity || "",
+                },
+              }));
+              setSuggestions(preds);
+              setShowDropdown(true);
+              inputRef.current?.focus();
+            }
+          }
+        );
       },
       () => { setLocating(false); },
       { timeout: 15000, maximumAge: 60000, enableHighAccuracy: false }
@@ -357,8 +389,8 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onFocus={() => { if (inputValue === value) setInputValue(""); }}
-          onBlur={() => { if (!inputValue.trim()) setInputValue(value); }}
-          placeholder={locating ? "Locating…" : "Search your area…"}
+          onBlur={() => { if (!inputValue.trim()) setInputValue(value ?? ""); }}
+          placeholder={locating ? "Locating…" : "Enter your society or address…"}
           className="min-w-0 flex-1 bg-transparent text-[13px] text-white placeholder-[#555] outline-none"
           style={{ fontFamily: "var(--font-ui)" }}
         />
@@ -491,7 +523,7 @@ export function RentMapSection() {
         setAreaCoords(coords);
         setAllBuildingCoords(data.map((b) => [b.lng, b.lat]));
         setAreaRentRanges([]);
-        const defaultArea = names.includes("Koramangala") ? "Koramangala" : names[0];
+        const defaultArea = names.includes("Koramangala") ? "Koramangala" : (names[0] ?? "");
         setSelectedArea(defaultArea);
       });
   }, []);
@@ -511,10 +543,26 @@ export function RentMapSection() {
       const { eligible, inCoverage } = await res.json();
       setIsInCoverage(inCoverage);
       setStep(eligible ? "eligible" : inCoverage ? "not-eligible" : "not-serviceable");
+
+      const closestArea = selectedCoords
+        ? Object.entries(areaCoords).reduce((best, [area, [lng, lat]]) => {
+            const d = haversineKm(selectedCoords.lat, selectedCoords.lng, lat, lng);
+            return d < best.dist ? { area, dist: d } : best;
+          }, { area: selectedArea, dist: Infinity }).area
+        : selectedArea;
+
+      getSecuredSupabase()?.from("maps_properties").insert({
+        society_name: selectedArea,
+        area: closestArea,
+        configuration: selectedBhk,
+        rent,
+        lat: selectedCoords?.lat ?? null,
+        lng: selectedCoords?.lng ?? null,
+      });
     } finally {
       setChecking(false);
     }
-  }, [rent, selectedArea, selectedBhk]);
+  }, [rent, selectedArea, selectedBhk, selectedCoords, areaCoords]);
   const handleReset = useCallback(() => { setStep("form"); setRentInput(""); setNotifySubmitted(false); setPhone(""); setEmail(""); }, []);
   const handleRentChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { const raw = e.target.value.replace(/[^0-9]/g, ""); if (raw === "") { setRentInput(""); return; } setRentInput(parseInt(raw, 10).toLocaleString("en-IN")); }, []);
   const handleNotifySubmit = useCallback(async () => {
@@ -586,7 +634,7 @@ export function RentMapSection() {
               <div className="mt-5 hidden md:block"><Button fullWidth onClick={handleCheck} disabled={rent < 5000 || !selectedArea || checking}>{checking ? "Checking…" : "Check eligibility"}</Button></div>
               <div className="mt-2 flex items-center justify-center gap-1.5 md:mt-3">
                 <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#4ade80] shadow-[0_0_4px_rgba(74,222,128,0.5)]" />
-                <p className="text-[9px] tracking-[0.02em] text-white/30" style={{ fontFamily: "var(--font-ui)" }}>Earn cashback on every rent payment with Secured</p>
+                <p className="text-[9px] tracking-[0.02em] text-white/30" style={{ fontFamily: "var(--font-ui)" }}>I agree to share my rent details with Secured</p>
               </div>
             </div>
           ) : step === "eligible" ? (
