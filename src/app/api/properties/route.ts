@@ -16,7 +16,7 @@ export async function GET() {
     .not("lng", "is", null);
 
   if (error || !data) {
-    return Response.json({ error: error?.message, url: process.env.NEXT_PUBLIC_SECURED_SUPABASE_URL, key: (process.env.NEXT_PUBLIC_SECURED_SUPABASE_PUBLISHABLE_KEY ?? "").slice(0, 20) }, { status: 500 });
+    return Response.json([], { status: 500 });
   }
 
   const buildings = data.map((row, i) => ({
