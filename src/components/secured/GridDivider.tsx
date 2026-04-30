@@ -69,7 +69,7 @@ function DotGridRow({
 
 export function GridDivider({ variant }: { variant?: string }) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: false, margin: "-40px" });
+  const isInView = useInView(ref, { once: true, margin: "-40px" });
   const [animateKey, setAnimateKey] = useState(0);
   const [show, setShow] = useState(true);
   const prevVariant = useRef(variant);

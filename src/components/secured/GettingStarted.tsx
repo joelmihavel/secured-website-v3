@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValueEvent, useInView } from "framer-motion";
 import { useState } from "react";
@@ -74,7 +74,7 @@ function StickyCard({
   index: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: false, margin: "-20%" as `${number}px` });
+  const isInView = useInView(ref, { once: true, margin: "-10%" as `${number}px` });
   const rotation = CARD_ROTATIONS[index % CARD_ROTATIONS.length];
   const topOffset = 200 + index * 60;
 
@@ -89,7 +89,7 @@ function StickyCard({
         position: "sticky",
         top: topOffset,
         zIndex: index + 1,
-        marginBottom: "-120px",
+        marginBottom: 40,
       }}
     >
       <motion.div
@@ -108,7 +108,7 @@ function StickyCard({
           />
           <div className="absolute inset-0 flex items-center justify-center px-6 md:px-8">
             <p
-              className="text-center text-[12px] leading-[18px] md:text-[13px] md:leading-[20px]"
+              className="text-center text-[16px] leading-[24px]"
               style={{ fontFamily: "var(--font-ui)", whiteSpace: "pre-line" }}
             >
               {lines.map((line, i) => (
@@ -131,7 +131,7 @@ function LandlordGettingStarted({ data }: { data: GettingStartedContent }) {
   const STEPS = data.steps;
   return (
     <section data-section="how-it-works" className="relative bg-[#131313]">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden px-[120px]">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden px-0 lg:px-[120px]">
         <img
           src="/assets/backgrounds/concentric-circles.svg"
           alt=""
@@ -200,6 +200,7 @@ function TenantGettingStarted({ data }: { data: GettingStartedContent }) {
   const STEPS = data.steps;
   const [activeStep, setActiveStep] = useState(0);
   const sectionRef = useRef<HTMLDivElement>(null);
+  const stepButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const stepCount = STEPS.length;
 
   const { scrollYProgress } = useScroll({
@@ -212,40 +213,42 @@ function TenantGettingStarted({ data }: { data: GettingStartedContent }) {
     setActiveStep(step);
   });
 
+  useEffect(() => {
+    stepButtonRefs.current[activeStep]?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }, [activeStep]);
+
   return (
     <section data-section="how-it-works" className="bg-[#131313]">
-      <div className="h-[60px] md:h-[80px] lg:h-[120px]" />
-
-      {/* Header — scrolls normally */}
-      <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
-        <div className="py-8 md:py-12 lg:px-[120px] lg:pb-[48px] lg:pt-[64px]">
-          <div className="text-center lg:text-left">
-            <SlideUp>
-              <p
-                className="text-sm leading-[1.6] tracking-[-0.32px] text-[#999] md:text-base lg:text-[20px] lg:leading-[32px] lg:text-[#797979]"
-                style={{ fontFamily: "var(--font-ui)" }}
-              >
-                {data.sectionLabel}
-              </p>
-            </SlideUp>
-            <h2
-              className="mx-auto mt-3 max-w-[850px] text-[28px] leading-[1.4] tracking-[-0.5px] text-white md:mt-4 md:text-[34px] lg:mx-0 lg:mt-[16px] lg:max-w-[715px] lg:text-[40px] lg:leading-[1.5] lg:tracking-[-0.88px]"
-              style={{ fontFamily: "var(--font-ui)" }}
-            >
-              <span className="text-white">Getting started is </span>
-              <span className="text-[#ff9a6d]">simple &amp; straightforward</span>
-            </h2>
-          </div>
-        </div>
-      </div>
-
-      {/* Scroll-pinned container: steps + phone only */}
+      {/* Scroll-pinned container */}
       <div ref={sectionRef} className="relative" style={{ height: `${stepCount * 100}vh` }}>
         <div className="sticky top-0 flex h-screen items-center overflow-hidden">
-          <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
-            <div className="lg:px-[120px]">
-              {/* Mobile: stacked */}
-              <div className="flex flex-col items-center gap-8 lg:hidden">
+          <div className="mx-auto w-full px-6 pb-8 pt-24 md:px-12 md:py-16 lg:px-[120px] lg:py-[120px]">
+            <div className="lg:px-[240px]">
+              {/* Mobile: heading, phone centered, horizontal step carousel below */}
+              <div className="flex flex-col items-center gap-4 lg:hidden">
+                <div className="w-full">
+                  <SlideUp>
+                    <p
+                      className="text-sm leading-[1.6] tracking-[-0.32px] text-[#999] md:text-base"
+                      style={{ fontFamily: "var(--font-ui)" }}
+                    >
+                      {data.sectionLabel}
+                    </p>
+                  </SlideUp>
+                  <h2
+                    className="mt-3 text-[24px] leading-[1.3] tracking-[-0.5px] text-white md:text-[34px]"
+                    style={{ fontFamily: "var(--font-ui)" }}
+                  >
+                    <span className="text-white">Getting started is</span>
+                    <br />
+                    <span className="text-[#ff9a6d]">simple &amp; straightforward</span>
+                  </h2>
+                </div>
+
                 <IPhoneFrame className="w-[180px]">
                   <AnimatePresence mode="popLayout" initial={false}>
                     <motion.div
@@ -268,19 +271,21 @@ function TenantGettingStarted({ data }: { data: GettingStartedContent }) {
                   </AnimatePresence>
                 </IPhoneFrame>
 
-                <div className="flex w-full flex-col gap-2">
+                <div className="-mx-6 flex w-[100vw] gap-2 overflow-x-auto px-6 pb-2 scrollbar-none" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
                   {STEPS.map((step, i) => (
                     <button
                       key={i}
+                      ref={(el) => { stepButtonRefs.current[i] = el; }}
                       onClick={() => setActiveStep(i)}
-                      className={`w-full rounded-2xl px-6 py-4 text-left transition-all duration-300 ${
+                      className={`flex-shrink-0 rounded-xl px-4 py-2.5 text-left transition-all duration-300 ${
                         activeStep === i
                           ? "bg-[#cc7b57] text-[#060606]"
                           : "bg-[#1a1a1a] text-[#a9a9a9]"
                       }`}
+                      style={{ maxWidth: "200px" }}
                     >
                       <p
-                        className="text-sm leading-6"
+                        className="text-xs leading-5"
                         style={{ fontFamily: "var(--font-ui)" }}
                       >
                         {step.number}. {step.description}
@@ -290,39 +295,61 @@ function TenantGettingStarted({ data }: { data: GettingStartedContent }) {
                 </div>
               </div>
 
-              {/* Desktop: side by side — steps left, phone right */}
-              <div className="hidden items-center lg:flex" style={{ gap: 120 }}>
-                {/* Left — step list */}
-                <div className="flex max-w-[50%] flex-1 flex-col gap-[8px]">
-                  {STEPS.map((step, i) => (
-                    <motion.div
-                      key={i}
-                      animate={{
-                        backgroundColor: activeStep === i ? "#cc7b57" : "#1a1a1a",
-                      }}
-                      transition={{ duration: 0.4 }}
-                      className="w-full rounded-[16px] px-[32px] py-[16px] text-left"
-                    >
-                      <ol
-                        className={`list-decimal text-[16px] leading-[24px] transition-colors duration-300 ${
-                          activeStep === i
-                            ? "text-[#060606]"
-                            : "text-[#a9a9a9]"
-                        }`}
+              {/* Desktop: heading + steps left, phone right */}
+              <div className="hidden items-center lg:flex" style={{ gap: 80 }}>
+                {/* Left — heading + step list */}
+                <div className="flex flex-1 flex-col gap-[32px]">
+                  <div>
+                    <SlideUp>
+                      <p
+                        className="text-[20px] leading-[32px] text-[#797979]"
                         style={{ fontFamily: "var(--font-ui)" }}
-                        start={step.number}
                       >
-                        <li className="ms-[24px]">
-                          <span>{step.description}</span>
-                        </li>
-                      </ol>
-                    </motion.div>
-                  ))}
+                        {data.sectionLabel}
+                      </p>
+                    </SlideUp>
+                    <h2
+                      className="mt-[16px] text-[40px] leading-[1.3] tracking-[-0.88px] text-white"
+                      style={{ fontFamily: "var(--font-ui)" }}
+                    >
+                      <span className="text-white">Getting started is</span>
+                      <br />
+                      <span className="text-[#ff9a6d]">simple &amp; straightforward</span>
+                    </h2>
+                  </div>
+
+                  <div className="flex flex-col gap-[8px]">
+                    {STEPS.map((step, i) => (
+                      <motion.button
+                        key={i}
+                        onClick={() => setActiveStep(i)}
+                        animate={{
+                          backgroundColor: activeStep === i ? "#cc7b57" : "#1a1a1a",
+                        }}
+                        transition={{ duration: 0.4 }}
+                        className="w-full cursor-pointer rounded-[16px] px-[32px] py-[20px] text-left"
+                      >
+                        <ol
+                          className={`list-decimal text-[16px] leading-[24px] transition-colors duration-300 ${
+                            activeStep === i
+                              ? "text-[#060606]"
+                              : "text-[#a9a9a9]"
+                          }`}
+                          style={{ fontFamily: "var(--font-ui)" }}
+                          start={step.number}
+                        >
+                          <li className="ms-[24px]">
+                            <span>{step.description}</span>
+                          </li>
+                        </ol>
+                      </motion.button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Right — Phone mockup */}
-                <div className="flex-shrink-0">
-                  <IPhoneFrame className="w-[280px]">
+                <div className="mt-[24px] flex flex-shrink-0">
+                  <IPhoneFrame className="w-[336px]">
                     <AnimatePresence mode="popLayout" initial={false}>
                       <motion.div
                         key={activeStep}

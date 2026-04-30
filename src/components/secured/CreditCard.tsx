@@ -19,13 +19,13 @@ function FeatureCard({
   index: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: false, margin: "-40px" });
+  const isInView = useInView(ref, { once: true, margin: "-40px" });
   const Icon = ICON_COMPONENTS[iconKey];
 
   return (
     <motion.div
       ref={ref}
-      className="flex flex-col gap-4 border-[0.3px] border-[#4d4d4d] p-5 md:p-6 lg:-ml-[0.3px] lg:-mt-[0.3px] lg:gap-[32px] lg:px-[64px] lg:py-[48px]"
+      className="flex h-full flex-col gap-4 border-[0.3px] border-[#4d4d4d] p-5 md:p-6 lg:-ml-[0.3px] lg:-mt-[0.3px] lg:gap-[32px] lg:px-[64px] lg:py-[48px]"
       initial={{ opacity: 0, y: 24 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
       transition={{ duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
@@ -33,17 +33,17 @@ function FeatureCard({
       <div className="aspect-[4/3] w-full">
         {Icon && isInView && <Icon className="h-full w-full" />}
       </div>
-      <div className="text-center">
+      <div className="mt-auto text-center">
         {accentText && (
           <span
-            className="text-[17px] font-normal leading-[32px] text-[#ff9a6d] md:text-[20px]"
+            className="text-[16px] font-normal leading-[24px] text-[#ff9a6d]"
             style={{ fontFamily: "var(--font-ui)" }}
           >
             {accentText}{" "}
           </span>
         )}
         <span
-          className="text-[17px] font-normal leading-[32px] text-white md:text-[20px]"
+          className="text-[16px] font-normal leading-[24px] text-white"
           style={{ fontFamily: "var(--font-ui)" }}
         >
           {text}
@@ -55,7 +55,7 @@ function FeatureCard({
 
 export function CreditCard({ data }: { data: CreditCardContent }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const headingInView = useInView(headingRef, { once: false, margin: "-60px" });
+  const headingInView = useInView(headingRef, { once: true, margin: "-60px" });
 
   const colCount = data.featureCards.length <= 3 ? 3 : 4;
 

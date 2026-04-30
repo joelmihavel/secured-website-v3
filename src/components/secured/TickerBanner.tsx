@@ -1,17 +1,17 @@
 "use client";
 
-import { motion } from "framer-motion";
-
-const TICKER_TEXT = "This month — flat ₹1000 cashback on your rent payment";
-const REPEAT = 12;
+const TICKER_TEXT = "1% cashback + ₹1000 extra on timely rent this month.";
+const REPEAT = 8;
 
 export function TickerBanner() {
   return (
     <div className="fixed top-0 left-0 right-0 z-[70] w-full overflow-hidden bg-[#ff9a6d] py-1.5">
-      <motion.div
+      <div
         className="flex whitespace-nowrap"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: 18, ease: "linear", repeat: Infinity }}
+        style={{
+          animation: "ticker-scroll 18s linear infinite",
+          willChange: "transform",
+        }}
       >
         {Array.from({ length: REPEAT }).map((_, i) => (
           <span
@@ -23,7 +23,13 @@ export function TickerBanner() {
             <span className="mx-4 text-[#0d0d0d]/30 md:mx-5">✦</span>
           </span>
         ))}
-      </motion.div>
+      </div>
+      <style jsx>{`
+        @keyframes ticker-scroll {
+          from { transform: translate3d(0, 0, 0); }
+          to { transform: translate3d(-50%, 0, 0); }
+        }
+      `}</style>
     </div>
   );
 }

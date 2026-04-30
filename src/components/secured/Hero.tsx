@@ -4,61 +4,8 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import { Button } from "./ui/Button";
+import { useAsciiGlitch } from "./useAsciiGlitch";
 import type { HeroContent } from "@/lib/secured/types";
-
-const GLITCH_CHARS = "01!@#$%&*+=<>?/\\|{}[]~^";
-
-function useAsciiGlitch(text: string, initialDelay = 800) {
-  const [display, setDisplay] = useState(text);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const glitchingRef = useRef(false);
-  const textRef = useRef(text);
-
-  useEffect(() => {
-    textRef.current = text;
-    if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
-    glitchingRef.current = false;
-    setDisplay(text);
-  }, [text]);
-
-  const triggerGlitch = useCallback(() => {
-    if (glitchingRef.current) return;
-    glitchingRef.current = true;
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    let frame = 0;
-    const totalFrames = 14;
-    const t = textRef.current;
-    intervalRef.current = setInterval(() => {
-      frame++;
-      const progress = frame / totalFrames;
-      const resolved = Math.floor(progress * t.length);
-      let result = "";
-      for (let i = 0; i < t.length; i++) {
-        result += t[i] === " " ? " " : i < resolved ? t[i] : GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
-      }
-      setDisplay(result);
-      if (frame >= totalFrames) {
-        clearInterval(intervalRef.current!);
-        intervalRef.current = null;
-        setDisplay(t);
-        glitchingRef.current = false;
-      }
-    }, 40);
-  }, []);
-
-  useEffect(() => {
-    const initTimer = setTimeout(triggerGlitch, initialDelay);
-    const loopTimer = setInterval(triggerGlitch, 6000);
-    return () => {
-      clearTimeout(initTimer);
-      clearInterval(loopTimer);
-      if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
-      glitchingRef.current = false;
-    };
-  }, [triggerGlitch, initialDelay]);
-
-  return { display, triggerGlitch };
-}
 
 /* ── iPhone Frame (shared) ── */
 const FRAME = "/assets/illustrations/iphone-frame";
@@ -66,17 +13,17 @@ const FRAME = "/assets/illustrations/iphone-frame";
 function IPhoneFrame({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={`relative ${className}`} style={{ aspectRatio: "335 / 682" }}>
-      <div className="absolute" style={{ inset: "0 0.46% 0 0.68%" }}><img alt="" className="absolute block h-full w-full" src={`${FRAME}/bezel.svg`} /></div>
-      <div className="absolute" style={{ inset: "0 0.46% 0 0.68%" }}><img alt="" className="absolute block h-full w-full" src={`${FRAME}/bezel-stroke.svg`} /></div>
-      <div className="absolute" style={{ inset: "0.67% 1.82% 0.67% 2.05%" }}><img alt="" className="absolute block h-full w-full" src={`${FRAME}/glass.svg`} /></div>
-      <div className="absolute" style={{ inset: "0.67% 1.82% 0.67% 2.05%" }}><img alt="" className="absolute block h-full w-full" src={`${FRAME}/glass-stroke.svg`} /></div>
-      <div className="absolute" style={{ inset: "0.73% 39.64% 98.94% 39.41%" }}><img alt="" className="absolute block h-full w-full" src={`${FRAME}/speaker.svg`} /></div>
-      <div className="absolute" style={{ inset: "0.67% 39.52% 98.88% 39.29%" }}><img alt="" className="absolute block h-full w-full" src={`${FRAME}/speaker-stroke.svg`} /></div>
+      <div className="absolute" style={{ inset: "0 0.46% 0 0.68%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/bezel.svg`} /></div>
+      <div className="absolute" style={{ inset: "0 0.46% 0 0.68%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/bezel-stroke.svg`} /></div>
+      <div className="absolute" style={{ inset: "0.67% 1.82% 0.67% 2.05%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/glass.svg`} /></div>
+      <div className="absolute" style={{ inset: "0.67% 1.82% 0.67% 2.05%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/glass-stroke.svg`} /></div>
+      <div className="absolute" style={{ inset: "0.73% 39.64% 98.94% 39.41%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/speaker.svg`} /></div>
+      <div className="absolute" style={{ inset: "0.67% 39.52% 98.88% 39.29%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/speaker-stroke.svg`} /></div>
       <div className="absolute overflow-hidden" style={{ inset: "2.02% 4.56% 2.02% 4.78%", borderRadius: "10.5% / 5.2%" }}>{children}</div>
-      <div className="absolute" style={{ inset: "28.33% 0 60.58% 99.32%" }}><img alt="" className="absolute block h-full w-full" src={`${FRAME}/buttons-right.svg`} /></div>
-      <div className="absolute" style={{ inset: "20.04% 99.09% 55.66% 0" }}><img alt="" className="absolute block h-full w-full" src={`${FRAME}/buttons-left.svg`} /></div>
-      <div className="absolute" style={{ inset: "0.11% 0.68% 0.11% 0.91%" }}><img alt="" className="absolute block h-full w-full" src={`${FRAME}/antenna.svg`} /></div>
-      <div className="absolute" style={{ inset: "3.58% 36.22% 92.16% 35.99%" }}><img alt="" className="absolute block h-full w-full" src={`${FRAME}/dynamic-island.svg`} /></div>
+      <div className="absolute" style={{ inset: "28.33% 0 60.58% 99.32%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/buttons-right.svg`} /></div>
+      <div className="absolute" style={{ inset: "20.04% 99.09% 55.66% 0" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/buttons-left.svg`} /></div>
+      <div className="absolute" style={{ inset: "0.11% 0.68% 0.11% 0.91%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/antenna.svg`} /></div>
+      <div className="absolute" style={{ inset: "3.58% 36.22% 92.16% 35.99%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/dynamic-island.svg`} /></div>
     </div>
   );
 }
@@ -110,7 +57,7 @@ function TenantHero({ data }: { data: HeroContent }) {
       </div>
 
       <div className="relative z-10 mx-auto w-full px-6 md:px-12 lg:px-[120px]">
-        <div className="flex flex-col items-center px-0 pt-28 md:pt-36 lg:px-[120px] lg:pt-[228px]">
+        <div className="flex flex-col items-center px-0 pt-40 md:pt-36 lg:px-[120px] lg:pt-[228px]">
           {/* Centered text content */}
           <div className="flex max-w-[700px] flex-col items-center gap-6 text-center xl:max-w-[800px] 3xl:max-w-[1000px] 4xl:max-w-[1200px] 5xl:max-w-[1600px]">
             <div className="flex flex-col items-center gap-3">
@@ -121,6 +68,7 @@ function TenantHero({ data }: { data: HeroContent }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
                 onMouseEnter={triggerGlitch}
+                onTouchStart={triggerGlitch}
               >
                 {glitchedHeading.slice(0, prefixLen)}
                 <span className="text-[#ff9a6d]">{glitchedHeading.slice(prefixLen)}</span>
@@ -204,7 +152,7 @@ function LandlordHero({ data }: { data: HeroContent }) {
       </div>
 
       <div className="relative z-10 mx-auto w-full px-6 md:px-12 lg:px-[120px]">
-        <div className="flex flex-col items-center px-0 pt-28 md:pt-36 lg:px-[120px] lg:pt-[228px]">
+        <div className="flex flex-col items-center px-0 pt-40 md:pt-36 lg:px-[120px] lg:pt-[228px]">
           <div className="flex max-w-[700px] flex-col items-center gap-6 text-center xl:max-w-[800px]">
             <div className="flex flex-col items-center gap-3">
               <motion.h1
@@ -214,6 +162,7 @@ function LandlordHero({ data }: { data: HeroContent }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
                 onMouseEnter={triggerGlitch}
+                onTouchStart={triggerGlitch}
               >
                 {glitchedHeading.slice(0, prefixLen)}
                 <span className="text-[#ff9a6d]">{glitchedHeading.slice(prefixLen)}</span>
@@ -344,7 +293,7 @@ function AreaPicker({
         <svg className="flex-shrink-0 text-[#555]" width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
       {open && (
-        <div className="absolute left-0 right-0 bottom-[calc(100%+6px)] z-[600] flex max-h-[240px] flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a1a1a]/95 shadow-[0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+        <div className="absolute left-0 right-0 bottom-[calc(100%+6px)] z-[600] flex max-h-[240px] flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a1a1a] shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
           <div className="flex flex-shrink-0 items-center gap-2 border-b border-white/[0.06] px-3 py-2">
             <svg className="flex-shrink-0 text-[#555]" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
             <input ref={inputRef} type="text" value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && filtered.length === 1) { onChange(filtered[0]); setOpen(false); } else if (e.key === "Enter" && showCustomOption) { onChange(search); setOpen(false); } }} placeholder="Search area in Bangalore..." className="min-w-0 flex-1 bg-transparent text-[12px] text-white placeholder-[#555] outline-none" style={{ fontFamily: "var(--font-ui)" }} />
@@ -432,14 +381,40 @@ export function RentMapSection() {
       <div className="pointer-events-none absolute inset-0 z-[450] flex items-end justify-center pb-8 md:pb-10 lg:left-[120px] lg:right-[120px]">
         <div className="pointer-events-auto w-[calc(100%-32px)] max-w-[620px]">
           {step === "form" ? (
-            <div className="rounded-2xl border border-white/[0.1] bg-[#131313]/90 px-6 py-5 shadow-[0_12px_48px_rgba(0,0,0,0.6)] backdrop-blur-xl md:px-8 md:py-6">
-              <p className="mb-4 text-center text-[10px] uppercase tracking-[0.16em] text-[#777]" style={{ fontFamily: "var(--font-ui)" }}>Check if you&apos;re eligible for Flent Secured</p>
-              <div className="flex flex-col gap-4 md:flex-row md:items-end md:gap-0">
+            <div className="rounded-2xl border border-white/[0.1] bg-[#131313]/98 px-4 py-3 shadow-[0_12px_48px_rgba(0,0,0,0.6)] md:px-8 md:py-6">
+              <p className="mb-2 text-center text-[10px] uppercase tracking-[0.16em] text-[#777] md:mb-4" style={{ fontFamily: "var(--font-ui)" }}>Check if you&apos;re eligible for Flent Secured</p>
+              {/* Mobile: compact 2-row layout | Desktop: single row */}
+              <div className="flex flex-col gap-2.5 md:hidden">
+                <div className="flex gap-3">
+                  <div className="flex-1 min-w-0">
+                    <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Area</label>
+                    <AreaPicker areas={areaNames} value={selectedArea} onChange={handleAreaChange} areaCoords={areaCoords} />
+                  </div>
+                  <div className="flex-shrink-0">
+                    <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Type</label>
+                    <div className="flex gap-1">
+                      {bhkTypes.map((bhk) => (
+                        <button key={bhk} type="button" onClick={() => setSelectedBhk(bhk)} className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-all ${selectedBhk === bhk ? "bg-[#ff9a6d]/[0.12] text-[#ff9a6d] ring-1 ring-inset ring-[#ff9a6d]/25" : "bg-white/[0.04] text-[#555] hover:bg-white/[0.06] hover:text-white/50"}`} style={{ fontFamily: "var(--font-ui)" }}>{bhk}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Monthly Rent</label>
+                  <div className="flex items-baseline gap-1.5 border-b border-white/10 pb-1 transition-colors focus-within:border-[#ff9a6d]">
+                    <span className="text-[14px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>₹</span>
+                    <input type="text" inputMode="numeric" placeholder="25,000" value={rentInput} onChange={handleRentChange} onKeyDown={(e) => e.key === "Enter" && handleCheck()} className="w-full bg-transparent text-[14px] text-white placeholder-[#444] outline-none" style={{ fontFamily: "var(--font-ui)" }} />
+                  </div>
+                </div>
+                <Button fullWidth onClick={handleCheck} disabled={rent < 5000 || !selectedArea}>Check eligibility</Button>
+              </div>
+              {/* Desktop: original horizontal layout */}
+              <div className="hidden md:flex md:flex-row md:items-end md:gap-0">
                 <div className="flex-1">
                   <label className="mb-1.5 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Area</label>
                   <AreaPicker areas={areaNames} value={selectedArea} onChange={handleAreaChange} areaCoords={areaCoords} />
                 </div>
-                <div className="hidden h-10 w-px bg-white/[0.06] mx-5 md:block" />
+                <div className="h-10 w-px bg-white/[0.06] mx-5" />
                 <div className="flex-shrink-0">
                   <label className="mb-1.5 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Type</label>
                   <div className="flex gap-1.5">
@@ -448,7 +423,7 @@ export function RentMapSection() {
                     ))}
                   </div>
                 </div>
-                <div className="hidden h-10 w-px bg-white/[0.06] mx-5 md:block" />
+                <div className="h-10 w-px bg-white/[0.06] mx-5" />
                 <div className="flex-1">
                   <label className="mb-1.5 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Monthly Rent</label>
                   <div className="flex items-baseline gap-1.5 border-b border-white/10 pb-1.5 transition-colors focus-within:border-[#ff9a6d]">
@@ -457,8 +432,8 @@ export function RentMapSection() {
                   </div>
                 </div>
               </div>
-              <div className="mt-5"><Button fullWidth onClick={handleCheck} disabled={rent < 5000 || !selectedArea}>Check eligibility</Button></div>
-              <div className="mt-3 flex flex-col items-center gap-1.5 md:flex-row md:justify-between">
+              <div className="mt-5 hidden md:block"><Button fullWidth onClick={handleCheck} disabled={rent < 5000 || !selectedArea}>Check eligibility</Button></div>
+              <div className="mt-2 flex flex-col items-center gap-1.5 md:mt-3 md:flex-row md:justify-between">
                 {bhkRange && <p className="text-[9px] text-[#444]" style={{ fontFamily: "var(--font-ui)" }}>{selectedBhk} in {selectedArea}: {formatINR(bhkRange.min)} – {formatINR(bhkRange.max)}</p>}
                 <div className="flex items-center gap-1.5">
                   <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#4ade80] shadow-[0_0_4px_rgba(74,222,128,0.5)]" />
@@ -467,7 +442,7 @@ export function RentMapSection() {
               </div>
             </div>
           ) : step === "eligible" ? (
-            <div className="rounded-2xl border border-white/[0.1] bg-[#131313]/90 px-6 py-5 shadow-[0_12px_48px_rgba(0,0,0,0.6)] backdrop-blur-xl md:px-8 md:py-6">
+            <div className="rounded-2xl border border-white/[0.1] bg-[#131313]/98 px-6 py-5 shadow-[0_12px_48px_rgba(0,0,0,0.6)] md:px-8 md:py-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#4ade80]/[0.15]"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
@@ -492,7 +467,7 @@ export function RentMapSection() {
               </div>
             </div>
           ) : (
-            <div className="rounded-2xl border border-white/[0.1] bg-[#131313]/90 px-6 py-5 shadow-[0_12px_48px_rgba(0,0,0,0.6)] backdrop-blur-xl md:px-8 md:py-6">
+            <div className="rounded-2xl border border-white/[0.1] bg-[#131313]/98 px-6 py-5 shadow-[0_12px_48px_rgba(0,0,0,0.6)] md:px-8 md:py-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#fbbf24]/[0.15]"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#fbbf24" strokeWidth="1.5" /><path d="M8 5v3.5" stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round" /><circle cx="8" cy="11" r="0.75" fill="#fbbf24" /></svg></div>
@@ -536,7 +511,7 @@ function BuildingPopup({ building, x, y, onClose }: { building: BuildingData; x:
 
   return (
     <div className="absolute z-[500]" style={{ left: x, top: y - 12, transform: "translate(-50%, -100%)", animation: "popupFadeIn 0.2s ease-out" }} onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
-      <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#161616]/95 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl" style={{ width: 220 }}>
+      <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#161616] shadow-[0_12px_40px_rgba(0,0,0,0.5)]" style={{ width: 220 }}>
         <div className="flex items-center justify-between px-4 pt-3">
           <p className="text-[10px] font-semibold uppercase tracking-[0.8px] text-white/60" style={{ fontFamily: "var(--font-ui)" }}>{building.area} · {building.bhk}</p>
           <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="flex h-5 w-5 items-center justify-center rounded-full bg-white/[0.1] text-white/60 transition-colors hover:text-white" style={{ fontSize: 11, lineHeight: 1 }}>×</button>

@@ -8,7 +8,7 @@ import type { WhyJoinContent } from "@/lib/secured/types";
 
 function AnimatedArrowDown() {
   const ref = useRef<SVGSVGElement>(null);
-  const isInView = useInView(ref, { once: false, margin: "-20px" });
+  const isInView = useInView(ref, { once: true, margin: "-20px" });
 
   return (
     <svg
@@ -54,7 +54,7 @@ function ProblemItem({ text, index }: { text: string; index: number }) {
 
 function SolutionItem({ text, index }: { text: string; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: false, margin: "-20px" });
+  const isInView = useInView(ref, { once: true, margin: "-20px" });
 
   return (
     <div ref={ref}>

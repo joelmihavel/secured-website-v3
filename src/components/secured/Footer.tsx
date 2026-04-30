@@ -25,7 +25,7 @@ export function Footer({ data }: { data: FooterContent }) {
               style={{ fontFamily: "var(--font-ui)" }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false }}
+              viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
               <span className="text-white">{data.taglineLine1} </span>
@@ -37,7 +37,7 @@ export function Footer({ data }: { data: FooterContent }) {
               className="flex w-full flex-col gap-1 md:w-[320px] md:flex-shrink-0"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false }}
+              viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.15 }}
             >
               <a

@@ -10,7 +10,7 @@ import type { CoverageContent } from "@/lib/secured/types";
 
 function AnimatedSafetyNet() {
   const ref = useRef<SVGSVGElement>(null);
-  const isInView = useInView(ref, { once: false, margin: "-40px" });
+  const isInView = useInView(ref, { once: true, margin: "-40px" });
 
   return (
     <svg
@@ -151,7 +151,7 @@ function AnimatedSafetyNet() {
 
 function CoveragePoint({ text, index }: { text: string; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: false, margin: "-20px" });
+  const isInView = useInView(ref, { once: true, margin: "-20px" });
 
   return (
     <div ref={ref}>
@@ -261,7 +261,7 @@ export function CoverageSection({ data }: { data: CoverageContent }) {
 
 function DetailCard({ text, highlight, iconKey, index }: { text: string; highlight?: string; iconKey?: string; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: false, margin: "-40px" });
+  const isInView = useInView(ref, { once: true, margin: "-40px" });
   const Icon = iconKey ? ICON_COMPONENTS[iconKey] : null;
 
   const parts = highlight ? text.split(highlight) : [text];
@@ -280,7 +280,7 @@ function DetailCard({ text, highlight, iconKey, index }: { text: string; highlig
         </div>
       )}
       <p
-        className="text-center text-[16px] leading-[24px] text-[#a9a9a9] md:text-[16px]"
+        className="text-center text-[16px] font-normal leading-[24px] text-white"
         style={{ fontFamily: "var(--font-ui)" }}
       >
         {highlight && parts.length > 1 ? (

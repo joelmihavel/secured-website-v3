@@ -71,7 +71,7 @@ export function SecuredLandingContent() {
         style={{ right: 120, width: "0.3px", backgroundColor: "#4D4D4D" }}
       />
 
-      <main className="flex flex-col">
+      <main className="flex flex-col gap-6 md:gap-0">
         <Hero data={data.hero} variant={variant} />
 
         {variant === "tenant" && (

@@ -23,7 +23,7 @@ export function SectionBlock({
   bg = "#0f0f0f",
 }: SectionBlockProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: false, margin: "-60px" });
+  const isInView = useInView(ref, { once: true, margin: "-60px" });
   const padNum = number != null ? String(number).padStart(2, "0") : null;
 
   return (

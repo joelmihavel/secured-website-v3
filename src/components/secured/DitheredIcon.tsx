@@ -16,7 +16,7 @@ export function DitheredIcon({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: false, margin: "-40px" });
+  const isInView = useInView(ref, { once: true, margin: "-40px" });
 
   return (
     <div ref={ref} className={`relative inline-flex items-center justify-center ${className}`}>

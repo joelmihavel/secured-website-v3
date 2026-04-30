@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 
-const REPEAT = 20;
+const REPEAT = 10;
 
 function MarqueeStrip({
   text,

@@ -22,7 +22,7 @@ function BenefitCard({
   tag?: "live" | "coming-soon";
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: false, margin: "-40px" });
+  const isInView = useInView(ref, { once: true, margin: "-40px" });
   const Icon = ICON_COMPONENTS[iconKey];
 
   const spanClass = colSpan === 1 ? "lg:col-span-1" : colSpan === 3 ? "lg:col-span-3" : "lg:col-span-2";
@@ -30,7 +30,7 @@ function BenefitCard({
   return (
     <motion.div
       ref={ref}
-      className={`relative flex flex-col gap-4 border-[0.3px] border-[#4d4d4d] p-5 md:p-6 lg:-ml-[0.3px] lg:-mt-[0.3px] lg:gap-4 lg:px-[40px] lg:py-[48px] ${spanClass}`}
+      className={`relative flex h-full flex-col gap-4 border-[0.3px] border-[#4d4d4d] p-5 md:p-6 lg:-ml-[0.3px] lg:-mt-[0.3px] lg:gap-4 lg:px-[40px] lg:py-[48px] ${spanClass}`}
       initial={{ opacity: 0, y: 24 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
       transition={{ duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
@@ -61,17 +61,17 @@ function BenefitCard({
       <div className="aspect-[4/3] w-full">
         {Icon && isInView && <Icon className="h-full w-full" />}
       </div>
-      <div className="text-center">
+      <div className="mt-auto text-center" style={{ whiteSpace: "pre-line" }}>
         {accentText && (
           <span
-            className="text-[18px] font-normal leading-[32px] text-[#ff9a6d] md:text-[20px]"
+            className="text-[16px] font-normal leading-[24px] text-[#ff9a6d]"
             style={{ fontFamily: "var(--font-ui)" }}
           >
             {accentText}{" "}
           </span>
         )}
         <span
-          className="text-[18px] font-normal leading-[32px] text-white md:text-[20px]"
+          className="text-[16px] font-normal leading-[24px] text-white"
           style={{ fontFamily: "var(--font-ui)" }}
         >
           {text}
@@ -89,7 +89,7 @@ export function Commitment({
   variant?: "tenant" | "landlord";
 }) {
   const headingRef = useRef<HTMLDivElement>(null);
-  const headingInView = useInView(headingRef, { once: false, margin: "-60px" });
+  const headingInView = useInView(headingRef, { once: true, margin: "-60px" });
 
   return (
     <section className="relative bg-[#131313]">

@@ -16,7 +16,7 @@ interface SectionHeadingProps {
 
 function EyebrowLabel({ text }: { text: string }) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: false, margin: "-20px" });
+  const isInView = useInView(ref, { once: true, margin: "-20px" });
 
   return (
     <div ref={ref} className="overflow-hidden">

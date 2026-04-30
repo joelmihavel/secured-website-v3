@@ -7,7 +7,7 @@ import type { TrustContent } from "@/lib/secured/types";
 
 function TrustPoint({ text, index }: { text: string; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: false, margin: "-20px" });
+  const isInView = useInView(ref, { once: true, margin: "-20px" });
 
   return (
     <motion.div
@@ -44,7 +44,7 @@ function TrustPoint({ text, index }: { text: string; index: number }) {
 
 export function TrustSection({ data, variant = "tenant" }: { data: TrustContent; variant?: "tenant" | "landlord" }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const headingInView = useInView(headingRef, { once: false, margin: "-60px" });
+  const headingInView = useInView(headingRef, { once: true, margin: "-60px" });
 
   if (variant === "landlord") {
     const parts = data.heading.split(/(one event away from disruption)/i);

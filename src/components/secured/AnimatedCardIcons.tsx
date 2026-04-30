@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useInView } from "framer-motion";
+import { useRef, useState, useEffect, memo } from "react";
+import { motion } from "framer-motion";
 import {
   FileText,
   MousePointerClick,
@@ -17,23 +17,41 @@ const B = "#2a2a2a";
 
 function useVis() {
   const ref = useRef<HTMLDivElement>(null);
-  const v = useInView(ref, { once: false, margin: "-40px" as `${number}px` });
-  return { ref, v };
+  const [v, setV] = useState(false);
+  const [key, setKey] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setV(true); obs.disconnect(); } },
+      { rootMargin: "-40px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  const replay = () => setKey((k) => k + 1);
+  return { ref, v, key, replay };
 }
 
-function Wrap({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function Wrap({ children, className = "", onHover, animKey }: { children: React.ReactNode; className?: string; onHover?: () => void; animKey?: number }) {
   return (
-    <div className={`relative flex h-full w-full items-center justify-center overflow-hidden ${className}`}>
-      {children}
+    <div
+      className={`relative flex h-full w-full items-center justify-center overflow-hidden ${className}`}
+      onMouseEnter={onHover}
+      onTouchStart={onHover}
+    >
+      <div key={animKey} className="flex h-full w-full items-center justify-center">
+        {children}
+      </div>
     </div>
   );
 }
 
 // ─── CASHBACK ───────────────────────────────────────────────
 function CashbackScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-6">
         <div className="relative flex h-[170px] w-[170px] items-center justify-center">
           <svg viewBox="0 0 170 170" className="absolute inset-0 h-full w-full">
@@ -74,9 +92,9 @@ function CashbackScene({ className = "" }: { className?: string }) {
 
 // ─── ZERO DEPOSIT ───────────────────────────────────────────
 function ZeroDepositScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-6">
         <div className="relative h-[150px] w-[130px]">
           <motion.svg
@@ -124,9 +142,9 @@ function ZeroDepositScene({ className = "" }: { className?: string }) {
 
 // ─── MOVEOUT CASH ───────────────────────────────────────────
 function MoveoutCashScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-6">
         <motion.div
           className="flex flex-col items-center"
@@ -174,9 +192,9 @@ function MoveoutCashScene({ className = "" }: { className?: string }) {
 
 // ─── BETTER HOMES ───────────────────────────────────────────
 function BetterHomesScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-6">
         <div className="relative h-[190px] w-[300px]">
           {[2, 1, 0].map((i) => (
@@ -236,9 +254,9 @@ function BetterHomesScene({ className = "" }: { className?: string }) {
 
 // ─── RENTER PROFILE (First dibs on upcoming flent homes) ────
 function RenterProfileScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-5">
         {/* Phone notification card */}
         <motion.div
@@ -308,9 +326,9 @@ function RenterProfileScene({ className = "" }: { className?: string }) {
 
 // ─── VACANCY COVER ──────────────────────────────────────────
 function VacancyCoverScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-5">
         <div className="relative h-[150px] w-[130px]">
           <motion.svg
@@ -365,9 +383,9 @@ function VacancyCoverScene({ className = "" }: { className?: string }) {
 
 // ─── TENANT EXIT / DAMAGE COVER (wrench + claim items) ──────
 function TenantExitScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-5">
         {/* Wrench icon with orange accent */}
         <div className="relative flex h-[100px] w-[100px] items-center justify-center">
@@ -424,9 +442,9 @@ function TenantExitScene({ className = "" }: { className?: string }) {
 
 // ─── VERIFICATION ───────────────────────────────────────────
 function VerificationScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-6">
         <div className="relative flex h-[130px] w-[130px] items-center justify-center">
           <div className="absolute inset-0 rounded-3xl" style={{ background: `${O}05`, border: `1.5px solid ${O}15` }} />
@@ -480,10 +498,10 @@ function VerificationScene({ className = "" }: { className?: string }) {
 
 // ─── GROWTH / LOAN ──────────────────────────────────────────
 function GrowthScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   const bars = [30, 38, 35, 48, 42, 58, 52, 68, 62, 78, 72, 90];
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-5">
         <div className="flex items-end gap-[5px]" style={{ height: 130, width: 260 }}>
           {bars.map((h, i) => (
@@ -517,9 +535,9 @@ function GrowthScene({ className = "" }: { className?: string }) {
 
 // ─── SETUP FAST ─────────────────────────────────────────────
 function SetupFastScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-5">
         <div className="relative flex h-[160px] w-[160px] items-center justify-center">
           <svg viewBox="0 0 160 160" className="absolute inset-0">
@@ -558,9 +576,9 @@ function SetupFastScene({ className = "" }: { className?: string }) {
 
 // ─── CARD POINTS ────────────────────────────────────────────
 function CardPointsScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-5">
         <motion.div
           className="relative w-[260px] overflow-hidden rounded-2xl border"
@@ -611,9 +629,9 @@ function CardPointsScene({ className = "" }: { className?: string }) {
 
 // ─── BREATHING ROOM ─────────────────────────────────────────
 function BreathingRoomScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-5">
         <div className="relative flex h-[170px] w-[170px] items-center justify-center">
           <svg viewBox="0 0 170 170" className="absolute inset-0">
@@ -652,9 +670,9 @@ function BreathingRoomScene({ className = "" }: { className?: string }) {
 
 // ─── LOW FEES ───────────────────────────────────────────────
 function LowFeesScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-5">
         <div className="w-[260px] space-y-4">
           {[
@@ -699,9 +717,9 @@ function LowFeesScene({ className = "" }: { className?: string }) {
 
 // ─── CREDIT REPORT (Complimentary tenant credit report) ─────
 function CreditReportScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-5">
         <motion.div
           className="relative w-[200px] overflow-hidden rounded-2xl border"
@@ -759,9 +777,9 @@ function CreditReportScene({ className = "" }: { className?: string }) {
 
 // ─── SIMPLE SIGNUP (Simple, one-click signup) ───────────────
 function SimpleSignupScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-6">
         <div className="relative flex h-[140px] w-[140px] items-center justify-center">
           <motion.div
@@ -806,9 +824,9 @@ function SimpleSignupScene({ className = "" }: { className?: string }) {
 
 // ─── INSTANT PAYOUTS (Instant payouts, zero paperwork) ──────
 function InstantPayoutsScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-5">
         <div className="relative flex h-[120px] w-[120px] items-center justify-center">
           <motion.div
@@ -868,9 +886,9 @@ function InstantPayoutsScene({ className = "" }: { className?: string }) {
 
 // ─── VACANCY CALENDAR (30-day vacancy → collect rent) ───────
 function VacancyCalendarScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-5">
         <div className="relative flex h-[120px] w-[120px] items-center justify-center">
           <motion.div
@@ -920,9 +938,9 @@ function VacancyCalendarScene({ className = "" }: { className?: string }) {
 
 // ─── EXIT NOTICE (tenant leaves without notice) ─────────────
 function ExitNoticeScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-5">
         <div className="relative flex h-[120px] w-[120px] items-center justify-center">
           <motion.div
@@ -986,9 +1004,9 @@ function ExitNoticeScene({ className = "" }: { className?: string }) {
 
 // ─── BGV REPORT (Complimentary tenant BGV) ──────────────────
 function BgvReportScene({ className = "" }: { className?: string }) {
-  const { ref, v } = useVis();
+  const { ref, v, key, replay } = useVis();
   return (
-    <Wrap className={className}>
+    <Wrap className={className} onHover={replay} animKey={key}>
       <div ref={ref} className="relative flex flex-col items-center gap-5">
         <div className="relative flex h-[120px] w-[120px] items-center justify-center">
           <motion.div
@@ -1043,25 +1061,25 @@ function BgvReportScene({ className = "" }: { className?: string }) {
 
 // ─── EXPORTS ────────────────────────────────────────────────
 const SCENE_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  cashback: CashbackScene,
-  "zero-deposit": ZeroDepositScene,
-  "moveout-cash": MoveoutCashScene,
-  "better-homes": BetterHomesScene,
-  "renter-profile": RenterProfileScene,
-  "vacancy-cover": VacancyCoverScene,
-  "tenant-exit": TenantExitScene,
-  verification: VerificationScene,
-  growth: GrowthScene,
-  "setup-fast": SetupFastScene,
-  "card-points": CardPointsScene,
-  "breathing-room": BreathingRoomScene,
-  "low-fees": LowFeesScene,
-  "credit-report": CreditReportScene,
-  "simple-signup": SimpleSignupScene,
-  "instant-payouts": InstantPayoutsScene,
-  "vacancy-calendar": VacancyCalendarScene,
-  "exit-notice": ExitNoticeScene,
-  "bgv-report": BgvReportScene,
+  cashback: memo(CashbackScene),
+  "zero-deposit": memo(ZeroDepositScene),
+  "moveout-cash": memo(MoveoutCashScene),
+  "better-homes": memo(BetterHomesScene),
+  "renter-profile": memo(RenterProfileScene),
+  "vacancy-cover": memo(VacancyCoverScene),
+  "tenant-exit": memo(TenantExitScene),
+  verification: memo(VerificationScene),
+  growth: memo(GrowthScene),
+  "setup-fast": memo(SetupFastScene),
+  "card-points": memo(CardPointsScene),
+  "breathing-room": memo(BreathingRoomScene),
+  "low-fees": memo(LowFeesScene),
+  "credit-report": memo(CreditReportScene),
+  "simple-signup": memo(SimpleSignupScene),
+  "instant-payouts": memo(InstantPayoutsScene),
+  "vacancy-calendar": memo(VacancyCalendarScene),
+  "exit-notice": memo(ExitNoticeScene),
+  "bgv-report": memo(BgvReportScene),
 };
 
 export const ICON_COMPONENTS: Record<string, React.ComponentType<{ className?: string }>> = SCENE_MAP;
