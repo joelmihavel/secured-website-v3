@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useVariant } from "./VariantContext";
+import { TickerBanner } from "./TickerBanner";
 
 const VERT = `
 attribute vec2 a_position;
@@ -152,10 +153,11 @@ function StarfieldCanvas({ active }: { active: boolean }) {
 }
 
 export function PageContent({ children }: { children: React.ReactNode }) {
-  const { menuOpen } = useVariant();
+  const { menuOpen, variant } = useVariant();
 
   return (
     <div className="relative">
+      {variant === "tenant" && <TickerBanner />}
       <StarfieldCanvas active={menuOpen} />
 
       {/* Page content */}

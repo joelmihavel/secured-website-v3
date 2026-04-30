@@ -1,10 +1,56 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 
 export function StickyQR() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const rentMap = document.querySelector('[data-section="rent-map"]');
+    const hiw = document.querySelector('[data-section="how-it-works"]');
+    const observers: IntersectionObserver[] = [];
+
+    const update = () => {
+      setVisible(!rentMapVisible && !hiwVisible);
+    };
+
+    let rentMapVisible = false;
+    let hiwVisible = false;
+
+    if (rentMap) {
+      const o = new IntersectionObserver(
+        ([entry]) => { rentMapVisible = entry.isIntersecting; update(); },
+        { threshold: 0.15 }
+      );
+      o.observe(rentMap);
+      observers.push(o);
+    }
+    if (hiw) {
+      const o = new IntersectionObserver(
+        ([entry]) => { hiwVisible = entry.isIntersecting; update(); },
+        { threshold: 0.15 }
+      );
+      o.observe(hiw);
+      observers.push(o);
+    }
+
+    if (!rentMap && !hiw) setVisible(true);
+
+    return () => observers.forEach((o) => o.disconnect());
+  }, []);
+
   return (
-    <div className="fixed bottom-[108px] right-12 z-50 hidden md:flex md:items-center" style={{ height: 40 }}>
+    <div
+      className="fixed bottom-[108px] right-12 z-50 hidden md:flex md:items-center"
+      style={{
+        height: 40,
+        pointerEvents: visible ? "auto" : "none",
+        transition: "transform 0.5s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.5s cubic-bezier(0.77, 0, 0.175, 1)",
+        transform: visible ? "translateY(0)" : "translateY(20px)",
+        opacity: visible ? 1 : 0,
+      }}
+    >
       <a
         href="https://apps.apple.com/in/app/secured-by-flent/id6757275258"
         target="_blank"

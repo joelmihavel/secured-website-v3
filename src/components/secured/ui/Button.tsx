@@ -41,12 +41,13 @@ export function Button({
     );
   }
 
+  const Tag = href === "#" && onClick ? "button" : "a";
+  const linkProps = Tag === "a" ? { href, target, rel } : { type: "button" as const };
+
   return (
-    <a
-      href={href}
+    <Tag
+      {...linkProps}
       onClick={onClick}
-      target={target}
-      rel={rel}
       className={`btn-figma group flex flex-col items-center gap-2 rounded-xl ${widthClass} ${className}`}
     >
       {/* Top accent bar */}
@@ -62,6 +63,6 @@ export function Button({
         {/* Inner shadow overlay */}
         <div className="btn-figma__inset pointer-events-none absolute inset-0 rounded-[inherit]" />
       </div>
-    </a>
+    </Tag>
   );
 }

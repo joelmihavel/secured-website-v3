@@ -631,3 +631,244 @@ body:has(.secured-page) {
   box-shadow: 0 0 0 3px rgba(0, 142, 117, 0.1);
   outline: none;
 }
+
+/* -- Secured Activity Map -- */
+/* -- Secured page grid lines layout -- */
+.secured-page .secured-section-padded {
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+@media (min-width: 1024px) {
+  .secured-page .secured-section-padded {
+    padding-left: 200px;
+    padding-right: 200px;
+  }
+}
+
+/* ── 3D Map — MapLibre overrides ── */
+
+.maplibregl-ctrl-group {
+  background: rgba(26, 26, 26, 0.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 10px !important;
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+
+.maplibregl-ctrl-group button {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+
+.maplibregl-ctrl-group button span {
+  filter: invert(1) !important;
+  opacity: 0.5;
+}
+
+.maplibregl-ctrl-group button:hover span {
+  opacity: 1;
+}
+
+/* ── 3D Markers ── */
+
+.secured-3d-marker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.secured-3d-marker-hover {
+  transform: scale(1.15);
+  z-index: 10 !important;
+}
+
+.secured-3d-pulse {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  opacity: 0;
+  animation: markerPulse 3s ease-out infinite;
+}
+
+.secured-3d-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(19, 19, 19, 0.9);
+  position: relative;
+  z-index: 2;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.secured-3d-marker-hover .secured-3d-dot {
+  transform: scale(1.4);
+}
+
+.secured-3d-label {
+  margin-top: 3px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(19, 19, 19, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  padding: 2px 5px;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+  letter-spacing: -0.2px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.secured-3d-marker-hover .secured-3d-label {
+  opacity: 1;
+  transform: translateY(0);
+  background: rgba(19, 19, 19, 0.95);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+@keyframes markerPulse {
+  0% { transform: scale(0.8); opacity: 0.4; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+/* ── 3D Popup ── */
+
+.secured-3d-popup-wrapper .maplibregl-popup-content {
+  background: rgba(22, 22, 22, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 14px !important;
+  padding: 0 !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03) !important;
+  backdrop-filter: blur(16px);
+  animation: popupFadeIn 0.2s ease-out;
+}
+
+.secured-3d-popup-wrapper .maplibregl-popup-tip {
+  border-top-color: rgba(22, 22, 22, 0.95) !important;
+}
+
+.secured-3d-popup-wrapper .maplibregl-popup-close-button {
+  color: rgba(255, 255, 255, 0.3) !important;
+  font-size: 16px;
+  padding: 4px 8px;
+  right: 2px;
+  top: 2px;
+}
+
+.secured-3d-popup-wrapper .maplibregl-popup-close-button:hover {
+  color: white !important;
+  background: transparent !important;
+}
+
+@keyframes popupFadeIn {
+  from { opacity: 0; transform: translateY(6px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.secured-3d-popup {
+  padding: 14px 16px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.secured-3d-popup-area {
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 10px;
+  letter-spacing: -0.3px;
+}
+
+.secured-3d-popup-rent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.secured-3d-popup-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.secured-3d-popup-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+}
+
+.secured-3d-popup-alert {
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+
+.secured-3d-popup-good {
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.15);
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+
+.secured-3d-popup-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 10px 0;
+}
+
+.secured-3d-popup-cashback {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 4px;
+}
+
+.secured-3d-popup-cashback strong {
+  color: #ff9a6d;
+  font-weight: 600;
+}
+
+.secured-3d-popup-users {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+  margin-bottom: 10px;
+}
+
+.secured-3d-popup-cta {
+  display: block;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #131313;
+  background: #ff9a6d;
+  border-radius: 8px;
+  padding: 7px 12px;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.secured-3d-popup-cta:hover {
+  background: #ffb08a;
+}
+
+@keyframes ticker-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}

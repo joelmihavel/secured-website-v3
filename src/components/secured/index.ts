@@ -1,5 +1,5 @@
 export { Navbar } from "./Navbar";
-export { Hero } from "./Hero";
+export { Hero, RentMapSection } from "./Hero";
 export { GridDivider } from "./GridDivider";
 export { Commitment } from "./Commitment";
 export { CreditCard } from "./CreditCard";
@@ -9,3 +9,8 @@ export { FAQ } from "./FAQ";
 export { DownloadApp } from "./DownloadApp";
 export { Footer } from "./Footer";
 export { StickyQR } from "./StickyQR";
+export { TrustSection } from "./TrustSection";
+export { WhyJoinSection } from "./WhyJoinSection";
+export { CoverageSection } from "./CoverageSection";
+export { CallbackSection } from "./CallbackSection";
+export { TickerBanner } from "./TickerBanner";

@@ -1,127 +1,140 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import { motion, useMotionValue, useSpring } from "framer-motion";
-import { SectionWrapper } from "./ui/SectionWrapper";
-import { FadeIn } from "./ui/FadeIn";
+import { useRef } from "react";
+import { motion, useInView } from "framer-motion";
+import { SlideUp } from "./ui/TextReveal";
 import { Button } from "./ui/Button";
-import { WordReveal, SlideUp } from "./ui/TextReveal";
+import { ICON_COMPONENTS } from "./AnimatedCardIcons";
 import type { CreditCardContent } from "@/lib/secured/types";
 
-function usePaperSway(baseTilt: number, index: number) {
-  const rotate = useMotionValue(baseTilt);
-  const smoothRotate = useSpring(rotate, { stiffness: 15, damping: 4, mass: 1.2 });
-  const [isHovered, setIsHovered] = useState(false);
-
-  useEffect(() => {
-    if (isHovered) {
-      rotate.set(0);
-      return;
-    }
-
-    const sway = () => {
-      const wind = (Math.random() - 0.4) * 5;
-      const target = baseTilt + wind;
-      rotate.set(target);
-    };
-
-    sway();
-    const interval = setInterval(sway, 1800 + index * 400);
-    return () => clearInterval(interval);
-  }, [baseTilt, index, isHovered, rotate]);
-
-  return { smoothRotate, setIsHovered };
-}
-
-function FeatureCard({ text, icon, delay, index }: { text: string; icon: string; delay: number; index: number }) {
-  const isEven = index % 2 === 0;
-  const tilt = isEven ? -2.73 : 2.73;
-  const { smoothRotate, setIsHovered } = usePaperSway(tilt, index);
+function FeatureCard({
+  text,
+  iconKey,
+  accentText,
+  index,
+}: {
+  text: string;
+  iconKey: string;
+  accentText?: string;
+  index: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-40px" });
+  const Icon = ICON_COMPONENTS[iconKey];
 
   return (
-    <FadeIn delay={delay}>
-      <motion.div
-        className="relative flex h-[220px] w-full flex-col items-center justify-center gap-6 rounded-xl bg-[#202020] px-4 py-6 md:h-[258px] md:w-[320px] md:gap-8 xl:h-[290px] xl:w-[380px] 2xl:w-[420px] 3xl:h-[340px] 3xl:w-[500px] 4xl:h-[420px] 4xl:w-[620px] 5xl:h-[560px] 5xl:w-[840px]"
-        style={{ transformOrigin: "top left", rotate: smoothRotate }}
-        onHoverStart={() => setIsHovered(true)}
-        onHoverEnd={() => setIsHovered(false)}
-      >
-        {/* Corner decoration */}
-        <div className="absolute right-0 top-0 3xl:scale-125 4xl:scale-150 5xl:scale-[2]" style={{ transformOrigin: "top right" }}>
-          <Image
-            src="/assets/icons/card-corner.svg"
-            alt=""
-            width={54}
-            height={54}
-            aria-hidden="true"
-          />
-        </div>
-
-        {/* Paper pin */}
-        <div className="absolute top-3 left-4 3xl:top-4 3xl:left-5 4xl:top-5 4xl:left-6 5xl:top-6 5xl:left-8">
-          <div className="h-4 w-4 rounded-full bg-[#ff9a6d] shadow-[0px_2px_4px_rgba(0,0,0,0.3)] 3xl:h-5 3xl:w-5 4xl:h-6 4xl:w-6 5xl:h-8 5xl:w-8">
-            <div className="absolute left-1/2 top-1/2 h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#cc7b57] 3xl:h-2 3xl:w-2 4xl:h-2.5 4xl:w-2.5 5xl:h-3.5 5xl:w-3.5" />
-          </div>
-        </div>
-
-        <div className="flex h-16 items-center justify-center 3xl:h-20 4xl:h-24 5xl:h-32">
-          <Image src={icon} alt="" width={80} height={64} aria-hidden="true" className="h-16 w-auto 3xl:h-20 4xl:h-24 5xl:h-32" />
-        </div>
-        <p className="max-w-[244px] text-center font-body text-sm leading-6 text-[#a9a9a9] md:text-base 3xl:max-w-[320px] 3xl:text-lg 4xl:max-w-[420px] 4xl:text-xl 5xl:max-w-[560px] 5xl:text-2xl">
+    <motion.div
+      ref={ref}
+      className="flex h-full flex-col gap-4 border-[0.3px] border-[#4d4d4d] p-5 md:p-6 lg:-ml-[0.3px] lg:-mt-[0.3px] lg:gap-[32px] lg:px-[64px] lg:py-[48px]"
+      initial={{ opacity: 0, y: 24 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+      transition={{ duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div className="aspect-[4/3] w-full">
+        {Icon && isInView && <Icon className="h-full w-full" />}
+      </div>
+      <div className="mt-auto text-center">
+        {accentText && (
+          <span
+            className="text-[16px] font-normal leading-[24px] text-[#ff9a6d]"
+            style={{ fontFamily: "var(--font-ui)" }}
+          >
+            {accentText}{" "}
+          </span>
+        )}
+        <span
+          className="text-[16px] font-normal leading-[24px] text-white"
+          style={{ fontFamily: "var(--font-ui)" }}
+        >
           {text}
-        </p>
-      </motion.div>
-    </FadeIn>
+        </span>
+      </div>
+    </motion.div>
   );
 }
 
 export function CreditCard({ data }: { data: CreditCardContent }) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const headingInView = useInView(headingRef, { once: true, margin: "-60px" });
+
+  const colCount = data.featureCards.length <= 3 ? 3 : 4;
+
   return (
-    <section className="relative bg-[#131313] py-8 md:pb-[160px] md:pt-[160px]">
-      {/* Background decorative ellipses */}
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden" aria-hidden="true">
-        <Image
-          src="/assets/backgrounds/creditcard-ellipses.svg"
-          alt=""
-          width={1534}
-          height={767}
-          className="h-auto w-[1534px] max-w-none"
-        />
-      </div>
+    <section className="relative bg-[#131313]">
+      {data.heading && <div className="h-[60px] md:h-[80px] lg:h-[120px]" />}
 
-      <SectionWrapper className="relative z-10 text-center">
-        <h2 className="mx-auto max-w-[582px] font-display text-[28px] leading-[1.4] tracking-[-0.5px] text-white md:text-[34px] lg:text-[40px] lg:leading-[1.5] lg:tracking-[-0.88px] xl:max-w-[700px] xl:text-[48px] 2xl:text-[52px] 3xl:max-w-[900px] 3xl:text-[60px] 4xl:max-w-[1200px] 4xl:text-[72px] 5xl:max-w-[1600px] 5xl:text-[96px]">
-          <WordReveal>{data.heading}</WordReveal>
-        </h2>
+      {/* Text section — hidden when heading is empty */}
+      {data.heading && (
+        <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
+          <div className="py-12 md:py-20 lg:px-[120px] lg:pb-[64px] lg:pt-[64px]">
+            <div className="text-center lg:text-left">
+              <motion.h2
+                ref={headingRef}
+                className="mx-auto max-w-[600px] text-[28px] leading-[1.3] tracking-[-1px] text-white md:text-[36px] lg:mx-0 lg:max-w-[715px] lg:text-[40px] lg:leading-[1.5] lg:tracking-[-0.88px]"
+                style={{ fontFamily: "var(--font-ui)", whiteSpace: "pre-line" }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={headingInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6 }}
+              >
+                <span className="text-white">Yes, you can pay rent{"\n"}</span>
+                <span className="text-[#ff9a6d]">using your credit card here</span>
+              </motion.h2>
 
-        <SlideUp delay={0.3} className="mt-3">
-          <p
-            className="text-base leading-[1.6] text-[#797979] md:text-xl 3xl:text-2xl 4xl:text-3xl 5xl:text-4xl"
-            style={{ fontFamily: "var(--font-ui)" }}
-          >
-            {data.subheading}
-          </p>
-        </SlideUp>
+              <SlideUp delay={0.2} className="mt-3 lg:mt-[16px]">
+                <p
+                  className="text-base leading-[1.6] text-[#999] md:text-lg lg:text-[20px] lg:leading-[32px] lg:text-[#797979]"
+                  style={{ fontFamily: "var(--font-ui)" }}
+                >
+                  {data.subheading}
+                </p>
+              </SlideUp>
+            </div>
+          </div>
+        </div>
+      )}
 
-        {/* Feature cards — 2-col grid */}
-        <div className="mx-auto mt-8 max-w-[700px] grid grid-cols-1 gap-7 md:mt-12 md:grid-cols-2 md:gap-10 xl:max-w-[840px] 2xl:max-w-[920px] 3xl:max-w-[1100px] 4xl:max-w-[1400px] 5xl:max-w-[1900px]">
+      {/* Feature grid — 3 or 4 columns based on card count */}
+      <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
+        <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:gap-0 ${colCount === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"}`}>
           {data.featureCards.map((card, i) => (
-            <FeatureCard key={i} text={card.text} icon={card.icon} delay={0.1 * i} index={i} />
+            <FeatureCard
+              key={i}
+              text={card.text}
+              iconKey={card.iconKey}
+              accentText={card.accentText}
+              index={i}
+            />
           ))}
         </div>
+      </div>
 
-        {/* CTA */}
-        <div className="mx-auto mt-10 max-w-[480px] md:mt-16 3xl:max-w-[580px] 4xl:max-w-[720px] 5xl:max-w-[960px]">
-          <Button fullWidth onClick={() => document.getElementById("download-app")?.scrollIntoView({ behavior: "smooth" })}>{data.ctaButtonText}</Button>
-          <p
-            className="mt-3 text-center text-xs leading-[1.8] tracking-[-0.24px] text-[#8a8a8a] 3xl:text-sm 4xl:text-base 5xl:text-lg"
-            style={{ fontFamily: "var(--font-ui)" }}
-          >
-            {data.ctaDisclaimer}
-          </p>
+      {/* CTA — hidden when empty */}
+      {data.ctaButtonText && (
+        <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
+          <div className="lg:px-[120px]">
+            <div className="mx-auto mt-10 max-w-[480px] text-center md:mt-16 lg:mx-0 lg:mt-[64px] lg:max-w-[480px] lg:text-left">
+              <Button
+                fullWidth
+                onClick={() =>
+                  document
+                    .getElementById("download-app")
+                    ?.scrollIntoView({ behavior: "smooth" })
+                }
+              >
+                {data.ctaButtonText}
+              </Button>
+              {data.ctaDisclaimer && (
+                <p
+                  className="mt-3 text-center text-xs leading-[1.8] tracking-[-0.24px] text-[#aaa] lg:text-left"
+                  style={{ fontFamily: "var(--font-ui)" }}
+                >
+                  {data.ctaDisclaimer}
+                </p>
+              )}
+            </div>
+          </div>
         </div>
-      </SectionWrapper>
+      )}
     </section>
   );
 }
