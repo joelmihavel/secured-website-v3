@@ -23,6 +23,7 @@ const description =
   "Unlock India's top 1% rental homes with Flent. Fully furnished, designer homes with no broker hassles and minimal security deposit. Just bring your clothes, and you're home.";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://flent.in"),
   title,
   description,
   openGraph: {

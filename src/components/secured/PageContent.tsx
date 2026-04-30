@@ -78,13 +78,18 @@ function StarfieldCanvas({ active }: { active: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
   const startTime = useRef(0);
+  const drawRef = useRef<((t: number) => void) | null>(null);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
+    if (!active || initializedRef.current) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const gl = canvas.getContext("webgl", { alpha: true, antialias: false });
     if (!gl) return;
+
+    initializedRef.current = true;
 
     const vs = gl.createShader(gl.VERTEX_SHADER)!;
     gl.shaderSource(vs, VERT);
@@ -120,23 +125,41 @@ function StarfieldCanvas({ active }: { active: boolean }) {
     window.addEventListener("resize", resize);
     startTime.current = performance.now();
 
+    const uRes = gl.getUniformLocation(prog, "u_resolution");
+    const uTime = gl.getUniformLocation(prog, "u_time");
+
     const draw = (t: number) => {
       const elapsed = (t - startTime.current) * 0.001;
-      const uRes = gl.getUniformLocation(prog, "u_resolution");
-      const uTime = gl.getUniformLocation(prog, "u_time");
       gl.uniform2f(uRes, canvas.width, canvas.height);
       gl.uniform1f(uTime, elapsed);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       animRef.current = requestAnimationFrame(draw);
     };
 
+    drawRef.current = draw;
     animRef.current = requestAnimationFrame(draw);
 
     return () => {
       cancelAnimationFrame(animRef.current);
+      animRef.current = 0;
       window.removeEventListener("resize", resize);
     };
-  }, []);
+  }, [active]);
+
+  useEffect(() => {
+    if (!initializedRef.current || !drawRef.current) return;
+    if (active) {
+      if (!animRef.current) {
+        startTime.current = performance.now();
+        animRef.current = requestAnimationFrame(drawRef.current);
+      }
+    } else {
+      if (animRef.current) {
+        cancelAnimationFrame(animRef.current);
+        animRef.current = 0;
+      }
+    }
+  }, [active]);
 
   return (
     <canvas

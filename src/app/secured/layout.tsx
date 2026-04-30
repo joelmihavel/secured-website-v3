@@ -28,6 +28,16 @@ export default function SecuredLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <>
+      {/* Warm up tile-server connections so the rent-map paints faster on scroll */}
+      <link rel="preconnect" href="https://a.basemaps.cartocdn.com" crossOrigin="anonymous" />
+      <link rel="preconnect" href="https://b.basemaps.cartocdn.com" crossOrigin="anonymous" />
+      <link rel="preconnect" href="https://c.basemaps.cartocdn.com" crossOrigin="anonymous" />
+      <link rel="preconnect" href="https://tiles.openfreemap.org" crossOrigin="anonymous" />
+      <link rel="preconnect" href="https://demotiles.maplibre.org" crossOrigin="anonymous" />
+      {children}
+    </>
+  );
 }
 

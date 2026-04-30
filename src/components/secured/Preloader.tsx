@@ -5,11 +5,29 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
 const STRIP_COUNT = 7;
+const STORAGE_KEY = "secured_preloader_seen";
 
 export function Preloader() {
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
   const [visible, setVisible] = useState(true);
+  const [skip, setSkip] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const seen = window.sessionStorage.getItem(STORAGE_KEY);
+      if (seen === "1") {
+        setSkip(true);
+        setDone(true);
+        setVisible(false);
+        return;
+      }
+    } catch {
+      // sessionStorage may be unavailable (private mode); fall through to playing the preloader
+    }
+    setSkip(false);
+  }, []);
 
   const animate = useCallback(() => {
     let current = 0;
@@ -26,18 +44,25 @@ export function Preloader() {
   }, []);
 
   useEffect(() => {
+    if (skip !== false) return;
     const cleanup = animate();
     return cleanup;
-  }, [animate]);
+  }, [animate, skip]);
 
   useEffect(() => {
-    if (done) {
+    if (done && skip === false) {
+      try {
+        window.sessionStorage.setItem(STORAGE_KEY, "1");
+      } catch {
+        // ignore
+      }
       const timeout = setTimeout(() => setVisible(false), 1400);
       return () => clearTimeout(timeout);
     }
-  }, [done]);
+  }, [done, skip]);
 
-  if (!visible) return null;
+  if (!visible || skip === true) return null;
+  if (skip === null) return null;
 
   return (
     <AnimatePresence>

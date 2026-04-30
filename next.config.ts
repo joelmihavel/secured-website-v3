@@ -9,8 +9,18 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+  experimental: {
+    optimizePackageImports: [
+      "framer-motion",
+      "lucide-react",
+      "@tabler/icons-react",
+      "@untitledui/icons",
+      "@radix-ui/react-accordion",
+      "posthog-js",
+    ],
+  },
   images: {
-    unoptimized: true,
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
         protocol: "https",
