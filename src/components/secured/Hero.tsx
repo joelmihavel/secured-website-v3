@@ -221,12 +221,26 @@ function formatINR(amount: number): string {
 
 type EligibilityStep = "form" | "eligible" | "not-eligible";
 
+const COVERAGE_RADIUS_KM = 5;
+
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function isNearProperties(lat: number, lng: number, areaCoords: Record<string, [number, number]>): boolean {
+  return Object.values(areaCoords).some(([pLng, pLat]) => haversineKm(lat, lng, pLat, pLng) <= COVERAGE_RADIUS_KM);
+}
+
 interface PlacePrediction {
   place_id: string;
   structured_formatting: { main_text: string; secondary_text: string };
 }
 
-function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area: string) => void }) {
+function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area: string, coords?: { lat: number; lng: number }) => void }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [suggestions, setSuggestions] = useState<PlacePrediction[]>([]);
@@ -290,8 +304,10 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
         const lng = results[0].geometry.location.lng();
         const m = await import("./ActivityMap");
         m.AREA_COORDS[areaName] = [lng, lat];
+        onChange(areaName, { lat, lng });
+      } else {
+        onChange(areaName);
       }
-      onChange(areaName);
     });
   }
 
@@ -308,7 +324,7 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
           const areaName = suburb || data.display_name?.split(",")[0] || "My Location";
           const m = await import("./ActivityMap");
           m.AREA_COORDS[areaName] = [longitude, latitude];
-          onChange(areaName);
+          onChange(areaName, { lat: latitude, lng: longitude });
           setOpen(false);
         } catch {
           // silently fail
@@ -427,7 +443,15 @@ export function RentMapSection() {
   const handleBuildingSelect = useCallback((b: SelectedBuilding | null) => setSelectedBuilding(b), []);
   const handleMapReady = useCallback((flyTo: (area: string) => void) => { flyToRef.current = flyTo; }, []);
   const handleFlyTo = useCallback((area: string) => { if (!area) return; flyToRef.current?.(area); }, []);
-  const handleAreaChange = useCallback((area: string) => { setSelectedArea(area); handleFlyTo(area); }, [handleFlyTo]);
+  const handleAreaChange = useCallback((area: string, coords?: { lat: number; lng: number }) => {
+    setSelectedArea(area);
+    if (coords && !isNearProperties(coords.lat, coords.lng, areaCoords)) {
+      setIsInCoverage(false);
+      setStep("not-eligible");
+      return;
+    }
+    handleFlyTo(area);
+  }, [handleFlyTo, areaCoords]);
 
   useEffect(() => {
     setMounted(true);
