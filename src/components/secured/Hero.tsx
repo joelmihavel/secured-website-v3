@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useApiIsLoaded } from "@vis.gl/react-google-maps";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import { Button } from "./ui/Button";
 import { useAsciiGlitch } from "./useAsciiGlitch";
 import type { HeroContent } from "@/lib/secured/types";
+import { securedSupabase } from "@/lib/secured/supabase";
 
 /* ── iPhone Frame (shared) ── */
 const FRAME = "/assets/illustrations/iphone-frame";
@@ -101,12 +103,7 @@ function TenantHero({ data }: { data: HeroContent }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.45 }}
             >
-              <Button
-                fullWidth
-                href="https://apps.apple.com/in/app/secured-by-flent/id6757275258"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <Button fullWidth href="#download-app">
                 {data.ctaButtonText}
               </Button>
             </motion.div>
@@ -230,32 +227,91 @@ const ELIGIBLE_AREAS = new Set([
 
 const RENT_THRESHOLD = 35000;
 
+function fuzzyMatchArea(input: string): boolean {
+  const lower = input.toLowerCase().trim();
+  for (const area of ELIGIBLE_AREAS) {
+    if (lower.includes(area.toLowerCase()) || area.toLowerCase().includes(lower)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 type EligibilityStep = "form" | "eligible" | "not-eligible";
 
-function AreaPicker({
-  areas, value, onChange, areaCoords,
-}: {
-  areas: string[]; value: string; onChange: (area: string) => void;
-  areaCoords?: Record<string, [number, number]>;
-}) {
+interface PlacePrediction {
+  place_id: string;
+  structured_formatting: { main_text: string; secondary_text: string };
+}
+
+function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area: string) => void }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [suggestions, setSuggestions] = useState<PlacePrediction[]>([]);
   const [locating, setLocating] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const mapsLoaded = useApiIsLoaded();
+  const svcRef = useRef<google.maps.places.AutocompleteService | null>(null);
+
+  // Create service once Maps (+ places library) is ready
+  useEffect(() => {
+    if (!mapsLoaded || svcRef.current) return;
+    try { svcRef.current = new google.maps.places.AutocompleteService(); } catch { /* not ready yet */ }
+  }, [mapsLoaded]);
 
   useEffect(() => {
+    if (!search.trim()) { setSuggestions([]); return; }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      if (!svcRef.current) return;
+      svcRef.current.getPlacePredictions(
+        {
+          input: search,
+          componentRestrictions: { country: "in" },
+          bounds: new google.maps.LatLngBounds(
+            new google.maps.LatLng(12.75, 77.35),
+            new google.maps.LatLng(13.20, 77.85)
+          ),
+        },
+        (predictions, status) => {
+          if (!cancelled && status === google.maps.places.PlacesServiceStatus.OK) {
+            setSuggestions((predictions ?? []) as PlacePrediction[]);
+          } else if (!cancelled) {
+            setSuggestions([]);
+          }
+        }
+      );
+    }, 250);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [search, mapsLoaded]);
+
+  useEffect(() => {
+    if (!open) return;
     function handleOutside(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
     }
-    if (open) { document.addEventListener("mousedown", handleOutside); setTimeout(() => inputRef.current?.focus(), 50); }
+    document.addEventListener("mousedown", handleOutside);
+    setTimeout(() => inputRef.current?.focus(), 50);
     return () => document.removeEventListener("mousedown", handleOutside);
   }, [open]);
 
-  useEffect(() => { if (open) setSearch(""); }, [open]);
+  useEffect(() => { if (open) { setSearch(""); setSuggestions([]); } }, [open]);
 
-  const filtered = search ? areas.filter((a) => a.toLowerCase().includes(search.toLowerCase())) : areas;
-  const showCustomOption = search.length > 1 && filtered.length === 0;
+  function handleSelect(pred: PlacePrediction) {
+    setOpen(false);
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ placeId: pred.place_id }, async (results, status) => {
+      const areaName = pred.structured_formatting.main_text;
+      if (status === google.maps.GeocoderStatus.OK && results?.[0]?.geometry?.location) {
+        const lat = results[0].geometry.location.lat();
+        const lng = results[0].geometry.location.lng();
+        const m = await import("./ActivityMap");
+        m.AREA_COORDS[areaName] = [lng, lat];
+      }
+      onChange(areaName);
+    });
+  }
 
   function handleLocate() {
     if (!navigator.geolocation) return;
@@ -266,22 +322,18 @@ function AreaPicker({
           const { latitude, longitude } = pos.coords;
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&zoom=14`);
           const data = await res.json();
-          const city = data.address?.city || data.address?.town || data.address?.state_district || "";
-          if (!city.toLowerCase().includes("bengaluru") && !city.toLowerCase().includes("bangalore")) { setSearch("Not in Bangalore"); setLocating(false); return; }
           const suburb = data.address?.suburb || data.address?.neighbourhood || data.address?.city_district || "";
-          const match = areas.find((a) => a.toLowerCase() === suburb.toLowerCase());
-          if (match) { onChange(match); setOpen(false); setLocating(false); return; }
-          const partial = areas.find((a) => suburb.toLowerCase().includes(a.toLowerCase()) || a.toLowerCase().includes(suburb.toLowerCase()));
-          if (partial) { onChange(partial); setOpen(false); setLocating(false); return; }
-          if (areaCoords) {
-            let nearest = areas[0]; let minDist = Infinity;
-            for (const a of areas) { const c = areaCoords[a]; if (!c) continue; const d = (c[0] - longitude) ** 2 + (c[1] - latitude) ** 2; if (d < minDist) { minDist = d; nearest = a; } }
-            onChange(nearest); setOpen(false);
-          } else if (suburb) { onChange(suburb); setOpen(false); }
-        } catch { /* ignore */ } finally { setLocating(false); }
+          const areaName = suburb || data.display_name?.split(",")[0] || "My Location";
+          const m = await import("./ActivityMap");
+          m.AREA_COORDS[areaName] = [longitude, latitude];
+          onChange(areaName);
+          setOpen(false);
+        } catch {
+          // silently fail
+        } finally { setLocating(false); }
       },
-      () => setLocating(false),
-      { timeout: 8000, maximumAge: 60000 }
+      () => { setLocating(false); },
+      { timeout: 15000, maximumAge: 60000, enableHighAccuracy: false }
     );
   }
 
@@ -289,31 +341,83 @@ function AreaPicker({
     <div ref={containerRef} className="relative">
       <button type="button" onClick={() => setOpen(!open)} className="flex w-full items-center gap-2 border-b border-white/10 bg-transparent pb-1.5 text-left transition-colors hover:border-white/20">
         <svg className="flex-shrink-0 text-[#666]" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-        <span className="flex-1 truncate text-[13px] text-white" style={{ fontFamily: "var(--font-ui)" }}>{value || "Select area"}</span>
+        <span className="flex-1 truncate text-[13px] text-white" style={{ fontFamily: "var(--font-ui)" }}>{value || "Search location"}</span>
         <svg className="flex-shrink-0 text-[#555]" width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
       {open && (
         <div className="absolute left-0 right-0 bottom-[calc(100%+6px)] z-[600] flex max-h-[240px] flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a1a1a] shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
           <div className="flex flex-shrink-0 items-center gap-2 border-b border-white/[0.06] px-3 py-2">
             <svg className="flex-shrink-0 text-[#555]" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-            <input ref={inputRef} type="text" value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && filtered.length === 1) { onChange(filtered[0]); setOpen(false); } else if (e.key === "Enter" && showCustomOption) { onChange(search); setOpen(false); } }} placeholder="Search area in Bangalore..." className="min-w-0 flex-1 bg-transparent text-[12px] text-white placeholder-[#555] outline-none" style={{ fontFamily: "var(--font-ui)" }} />
+            <input ref={inputRef} type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search location in Bangalore..." className="min-w-0 flex-1 bg-transparent text-[12px] text-white placeholder-[#555] outline-none" style={{ fontFamily: "var(--font-ui)" }} />
             <button type="button" onClick={handleLocate} className="flex flex-shrink-0 items-center gap-1 rounded-full border border-white/[0.08] px-2 py-0.5 text-[9px] text-[#888] transition-colors hover:border-[#ff9a6d]/30 hover:text-[#ff9a6d]" style={{ fontFamily: "var(--font-ui)" }}>
               <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><line x1="12" y1="2" x2="12" y2="6" /><line x1="12" y1="18" x2="12" y2="22" /><line x1="2" y1="12" x2="6" y2="12" /><line x1="18" y1="12" x2="22" y2="12" /></svg>
               {locating ? "..." : "Locate me"}
             </button>
           </div>
           <div className="flex-1 overflow-y-auto overscroll-contain" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }} onTouchMove={(e) => e.stopPropagation()} onWheel={(e) => e.stopPropagation()}>
-            {filtered.map((name) => (
-              <button key={name} type="button" onClick={() => { onChange(name); setOpen(false); }} className={`flex w-full items-center gap-1.5 px-3 py-[6px] text-left text-[12px] transition-colors ${name === value ? "bg-[#ff9a6d]/[0.08] text-[#ff9a6d]" : "text-white/70 hover:bg-white/[0.04] hover:text-white"}`} style={{ fontFamily: "var(--font-ui)" }}>
-                {name === value ? <svg className="flex-shrink-0" width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 2.5" stroke="#ff9a6d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg> : <span className="w-[9px]" />}
-                {name}
+            {suggestions.map((pred) => {
+              const isSelected = pred.structured_formatting.main_text === value;
+              return (
+                <button
+                  key={pred.place_id}
+                  type="button"
+                  onClick={() => handleSelect(pred)}
+                  className={`flex w-full items-center gap-1.5 px-3 py-[6px] text-left text-[12px] transition-colors ${
+                    isSelected
+                      ? "bg-[#ff9a6d]/[0.08] text-[#ff9a6d]"
+                      : "text-white/70 hover:bg-white/[0.04] hover:text-white"
+                  }`}
+                  style={{ fontFamily: "var(--font-ui)" }}
+                >
+                  {isSelected
+                    ? <svg className="flex-shrink-0" width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 2.5" stroke="#ff9a6d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    : <span className="w-[9px] flex-shrink-0" />
+                  }
+                  <span className="flex-1 truncate">{pred.structured_formatting.main_text}</span>
+                  <span className="flex-shrink-0 text-[10px] opacity-40 truncate max-w-[40%]">{pred.structured_formatting.secondary_text}</span>
+                </button>
+              );
+            })}
+            {suggestions.length === 0 && search.length === 0 && (
+              <p className="px-3 py-3 text-[11px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Start typing to search locations…</p>
+            )}
+            {suggestions.length === 0 && search.length > 0 && (
+              <p className="px-3 py-3 text-[11px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>No results found</p>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BhkPicker({ types, value, onChange }: { types: BhkType[]; value: BhkType; onChange: (v: BhkType) => void }) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    if (open) document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [open]);
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button type="button" onClick={() => setOpen(!open)} className="flex w-full items-center gap-2 border-b border-white/10 bg-transparent pb-1.5 text-left transition-colors hover:border-white/20">
+        <span className="flex-1 truncate text-[13px] text-white" style={{ fontFamily: "var(--font-ui)" }}>{value}</span>
+        <svg className="flex-shrink-0 text-[#555]" width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      </button>
+      {open && (
+        <div className="absolute left-0 right-0 bottom-[calc(100%+6px)] z-[600] flex max-h-[240px] flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a1a1a] shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+          <div className="flex-1 overflow-y-auto overscroll-contain" style={{ scrollbarWidth: "thin", scrollbarColor: "#333 transparent" }} onTouchMove={(e) => e.stopPropagation()} onWheel={(e) => e.stopPropagation()}>
+            {types.map((bhk) => (
+              <button key={bhk} type="button" onClick={() => { onChange(bhk); setOpen(false); }} className={`flex w-full items-center gap-1.5 px-3 py-[6px] text-left text-[12px] transition-colors ${bhk === value ? "bg-[#ff9a6d]/[0.08] text-[#ff9a6d]" : "text-white/70 hover:bg-white/[0.04] hover:text-white"}`} style={{ fontFamily: "var(--font-ui)" }}>
+                {bhk === value ? <svg className="flex-shrink-0" width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 2.5" stroke="#ff9a6d" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg> : <span className="w-[9px]" />}
+                {bhk}
               </button>
             ))}
-            {showCustomOption && (
-              <button type="button" onClick={() => { onChange(search); setOpen(false); }} className="flex w-full items-center gap-1.5 px-3 py-[6px] text-left text-[12px] text-[#ff9a6d] transition-colors hover:bg-[#ff9a6d]/[0.06]" style={{ fontFamily: "var(--font-ui)" }}>
-                Use &ldquo;{search}&rdquo;
-              </button>
-            )}
           </div>
         </div>
       )}
@@ -344,13 +448,21 @@ export function RentMapSection() {
   useEffect(() => {
     setMounted(true);
     import("./ActivityMap").then((m) => {
-      setAreaNames(m.AREA_NAMES);
-      setAreaRentRanges(m.AREA_RENT_RANGES);
-      setAreaCoords(m.AREA_COORDS);
       setBhkTypes(m.BHK_TYPES);
-      const defaultArea = m.AREA_NAMES.includes("Koramangala") ? "Koramangala" : m.AREA_NAMES[0];
-      setSelectedArea(defaultArea);
     });
+    fetch("/api/properties")
+      .then((r) => r.json())
+      .then((data: { area: string; bhk: string; rent: number; lat: number; lng: number }[]) => {
+        const names = [...new Set(data.map((b) => b.area))];
+        const coords: Record<string, [number, number]> = Object.fromEntries(
+          data.map((b) => [b.area, [b.lng, b.lat] as [number, number]])
+        );
+        setAreaNames(names);
+        setAreaCoords(coords);
+        setAreaRentRanges([]);
+        const defaultArea = names.includes("Koramangala") ? "Koramangala" : names[0];
+        setSelectedArea(defaultArea);
+      });
   }, []);
 
   const rent = parseInt(rentInput.replace(/,/g, ""), 10) || 0;
@@ -358,11 +470,16 @@ export function RentMapSection() {
   const bhkRange = useMemo(() => currentRange?.byBhk[selectedBhk], [currentRange, selectedBhk]);
   const monthlyCashback = Math.round(rent * CASHBACK_RATE);
   const annualCashback = monthlyCashback * 12;
-  const isEligible = useMemo(() => ELIGIBLE_AREAS.has(selectedArea) && rent >= RENT_THRESHOLD, [selectedArea, rent]);
+  const isInCoverage = useMemo(() => fuzzyMatchArea(selectedArea), [selectedArea]);
+  const isEligible = useMemo(() => isInCoverage && rent >= RENT_THRESHOLD, [isInCoverage, rent]);
   const handleCheck = useCallback(() => { if (rent >= 5000 && selectedArea) setStep(isEligible ? "eligible" : "not-eligible"); }, [rent, selectedArea, isEligible]);
   const handleReset = useCallback(() => { setStep("form"); setRentInput(""); setNotifySubmitted(false); setPhone(""); setEmail(""); }, []);
   const handleRentChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { const raw = e.target.value.replace(/[^0-9]/g, ""); if (raw === "") { setRentInput(""); return; } setRentInput(parseInt(raw, 10).toLocaleString("en-IN")); }, []);
-  const handleNotifySubmit = useCallback(() => { if (phone || email) setNotifySubmitted(true); }, [phone, email]);
+  const handleNotifySubmit = useCallback(async () => {
+    if (!phone && !email) return;
+    await securedSupabase.from("website_leads").insert({ email, phone, area: selectedArea, bhk: selectedBhk, rent });
+    setNotifySubmitted(true);
+  }, [phone, email, selectedArea, selectedBhk, rent]);
 
   return (
     <section data-section="rent-map" className="relative z-[31] flex w-full flex-col overflow-hidden bg-[#131313]" style={{ height: "100vh", minHeight: 700 }}>
@@ -388,15 +505,11 @@ export function RentMapSection() {
                 <div className="flex gap-3">
                   <div className="flex-1 min-w-0">
                     <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Area</label>
-                    <AreaPicker areas={areaNames} value={selectedArea} onChange={handleAreaChange} areaCoords={areaCoords} />
+                    <GoogleAreaPicker value={selectedArea} onChange={handleAreaChange} />
                   </div>
-                  <div className="flex-shrink-0">
-                    <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Type</label>
-                    <div className="flex gap-1">
-                      {bhkTypes.map((bhk) => (
-                        <button key={bhk} type="button" onClick={() => setSelectedBhk(bhk)} className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-all ${selectedBhk === bhk ? "bg-[#ff9a6d]/[0.12] text-[#ff9a6d] ring-1 ring-inset ring-[#ff9a6d]/25" : "bg-white/[0.04] text-[#555] hover:bg-white/[0.06] hover:text-white/50"}`} style={{ fontFamily: "var(--font-ui)" }}>{bhk}</button>
-                      ))}
-                    </div>
+                  <div className="min-w-[110px]">
+                    <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Configuration</label>
+                    <BhkPicker types={bhkTypes} value={selectedBhk} onChange={setSelectedBhk} />
                   </div>
                 </div>
                 <div>
@@ -412,33 +525,26 @@ export function RentMapSection() {
               <div className="hidden md:flex md:flex-row md:items-end md:gap-0">
                 <div className="flex-1">
                   <label className="mb-1.5 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Area</label>
-                  <AreaPicker areas={areaNames} value={selectedArea} onChange={handleAreaChange} areaCoords={areaCoords} />
-                </div>
-                <div className="h-10 w-px bg-white/[0.06] mx-5" />
-                <div className="flex-shrink-0">
-                  <label className="mb-1.5 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Type</label>
-                  <div className="flex gap-1.5">
-                    {bhkTypes.map((bhk) => (
-                      <button key={bhk} type="button" onClick={() => setSelectedBhk(bhk)} className={`rounded-full px-3 py-1.5 text-[11px] font-medium transition-all ${selectedBhk === bhk ? "bg-[#ff9a6d]/[0.12] text-[#ff9a6d] ring-1 ring-inset ring-[#ff9a6d]/25" : "bg-white/[0.04] text-[#555] hover:bg-white/[0.06] hover:text-white/50"}`} style={{ fontFamily: "var(--font-ui)" }}>{bhk}</button>
-                    ))}
-                  </div>
+                  <GoogleAreaPicker value={selectedArea} onChange={handleAreaChange} />
                 </div>
                 <div className="h-10 w-px bg-white/[0.06] mx-5" />
                 <div className="flex-1">
+                  <label className="mb-1.5 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Configuration</label>
+                  <BhkPicker types={bhkTypes} value={selectedBhk} onChange={setSelectedBhk} />
+                </div>
+                <div className="h-10 w-px bg-white/[0.06] mx-5" />
+                <div className="flex-shrink-0">
                   <label className="mb-1.5 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Monthly Rent</label>
                   <div className="flex items-baseline gap-1.5 border-b border-white/10 pb-1.5 transition-colors focus-within:border-[#ff9a6d]">
                     <span className="text-[14px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>₹</span>
-                    <input type="text" inputMode="numeric" placeholder="25,000" value={rentInput} onChange={handleRentChange} onKeyDown={(e) => e.key === "Enter" && handleCheck()} className="w-full bg-transparent text-[14px] text-white placeholder-[#444] outline-none" style={{ fontFamily: "var(--font-ui)" }} />
+                    <input type="text" inputMode="numeric" placeholder="25,000" value={rentInput} onChange={handleRentChange} onKeyDown={(e) => e.key === "Enter" && handleCheck()} className="w-24 bg-transparent text-[14px] text-white placeholder-[#444] outline-none" style={{ fontFamily: "var(--font-ui)" }} />
                   </div>
                 </div>
               </div>
               <div className="mt-5 hidden md:block"><Button fullWidth onClick={handleCheck} disabled={rent < 5000 || !selectedArea}>Check eligibility</Button></div>
-              <div className="mt-2 flex flex-col items-center gap-1.5 md:mt-3 md:flex-row md:justify-between">
-                {bhkRange && <p className="text-[9px] text-[#444]" style={{ fontFamily: "var(--font-ui)" }}>{selectedBhk} in {selectedArea}: {formatINR(bhkRange.min)} – {formatINR(bhkRange.max)}</p>}
-                <div className="flex items-center gap-1.5">
-                  <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#4ade80] shadow-[0_0_4px_rgba(74,222,128,0.5)]" />
-                  <p className="text-[9px] tracking-[0.02em] text-white/30" style={{ fontFamily: "var(--font-ui)" }}>Earn cashback on every rent payment with Secured</p>
-                </div>
+              <div className="mt-2 flex items-center justify-center gap-1.5 md:mt-3">
+                <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#4ade80] shadow-[0_0_4px_rgba(74,222,128,0.5)]" />
+                <p className="text-[9px] tracking-[0.02em] text-white/30" style={{ fontFamily: "var(--font-ui)" }}>Earn cashback on every rent payment with Secured</p>
               </div>
             </div>
           ) : step === "eligible" ? (
@@ -476,7 +582,11 @@ export function RentMapSection() {
                 <button onClick={handleReset} className="rounded-full border border-white/[0.08] px-3 py-1 text-[10px] text-[#777] transition-colors hover:border-white/20 hover:text-white" style={{ fontFamily: "var(--font-ui)" }}>Edit</button>
               </div>
               <p className="mt-1 text-[10px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>{selectedBhk} in {selectedArea} · {formatINR(rent)}/mo</p>
-              <p className="mt-3 text-[12px] leading-[1.5] text-[#888]" style={{ fontFamily: "var(--font-ui)" }}>Secured is expanding to your area soon. Leave your details and we&apos;ll notify you the moment you&apos;re eligible.</p>
+              <p className="mt-3 text-[12px] leading-[1.5] text-[#888]" style={{ fontFamily: "var(--font-ui)" }}>
+                {!isInCoverage
+                  ? "Secured is currently not available in your area. Leave your details and we'll notify you when we expand."
+                  : "You're not eligible yet. Leave your details and we'll notify you the moment you qualify."}
+              </p>
               {!notifySubmitted ? (
                 <div className="mt-4 flex flex-col gap-3">
                   <div className="flex flex-col gap-3 md:flex-row">
@@ -493,7 +603,7 @@ export function RentMapSection() {
                 </div>
               ) : (
                 <div className="mt-4 rounded-lg border border-[#4ade80]/10 bg-[#4ade80]/[0.04] px-3 py-3">
-                  <p className="text-center text-[11px] font-medium text-[#4ade80]" style={{ fontFamily: "var(--font-ui)" }}>We&apos;ll notify you as soon as Secured is available in your area</p>
+                  <p className="text-center text-[11px] font-medium text-[#4ade80]" style={{ fontFamily: "var(--font-ui)" }}>We will notify you</p>
                 </div>
               )}
             </div>
@@ -505,9 +615,7 @@ export function RentMapSection() {
 }
 
 function BuildingPopup({ building, x, y, onClose }: { building: BuildingData; x: number; y: number; onClose: () => void }) {
-  const isOverpaying = building.rent > building.market_avg;
-  const diff = Math.abs(building.rent - building.market_avg);
-  const savingsColor = isOverpaying ? "#ef4444" : "#4ade80";
+  const monthlySaving = Math.round(building.cashback / 12);
 
   return (
     <div className="absolute z-[500]" style={{ left: x, top: y - 12, transform: "translate(-50%, -100%)", animation: "popupFadeIn 0.2s ease-out" }} onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
@@ -519,14 +627,14 @@ function BuildingPopup({ building, x, y, onClose }: { building: BuildingData; x:
         <div className="px-4 pt-2 pb-3">
           <p className="text-[9px] font-medium uppercase tracking-[0.5px] text-[#777]" style={{ fontFamily: "var(--font-ui)" }}>Rent</p>
           <p className="mt-0.5 font-display text-[22px] leading-[1.1] tracking-[-0.8px] text-white">{formatINR(building.rent)}<span className="ml-0.5 text-[11px] tracking-normal text-[#777]">/mo</span></p>
-          <div className="mt-2 inline-flex items-center gap-1.5 rounded-md px-2 py-1" style={{ background: isOverpaying ? "rgba(239,68,68,0.08)" : "rgba(74,222,128,0.08)" }}>
-            <svg width="8" height="8" viewBox="0 0 10 10" fill="none" style={{ transform: isOverpaying ? "rotate(180deg)" : "none" }}><path d="M5 2L8 7H2L5 2Z" fill={savingsColor} /></svg>
-            <span className="whitespace-nowrap text-[10px] font-semibold" style={{ color: savingsColor, fontFamily: "var(--font-ui)" }}>{formatINR(diff)} {isOverpaying ? "above" : "below"} market avg</span>
+          <div className="mt-2 inline-flex items-center gap-1.5 rounded-md px-2 py-1" style={{ background: "rgba(74,222,128,0.08)" }}>
+            <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M5 2L8 7H2L5 2Z" fill="#4ade80" /></svg>
+            <span className="whitespace-nowrap text-[10px] font-semibold" style={{ color: "#4ade80", fontFamily: "var(--font-ui)" }}>{formatINR(monthlySaving)}/month cashback</span>
           </div>
         </div>
         <div className="border-t border-white/[0.06] bg-[#ff9a6d]/[0.04] px-4 py-3">
-          <p className="text-[9px] font-medium uppercase tracking-[0.5px] text-[#888]" style={{ fontFamily: "var(--font-ui)" }}>Cashback with Secured</p>
-          <p className="mt-1 font-display text-[20px] leading-[1] tracking-[-0.6px] text-[#ff9a6d]">{formatINR(building.cashback)}<span className="ml-0.5 text-[11px] text-[#ff9a6d]/50">/yr</span><span className="ml-2 text-[11px] font-normal tracking-normal text-white/60" style={{ fontFamily: "var(--font-ui)" }}>{formatINR(Math.round(building.cashback / 12))}/mo</span></p>
+          <p className="text-[9px] font-medium uppercase tracking-[0.5px] text-[#888]" style={{ fontFamily: "var(--font-ui)" }}>Annual cashback with Secured</p>
+          <p className="mt-1 font-display font-bold text-[20px] leading-[1] tracking-[-0.6px] text-[#ff9a6d]">{formatINR(building.cashback)}</p>
         </div>
       </div>
       <div className="mx-auto h-0 w-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-[#161616]/95" />

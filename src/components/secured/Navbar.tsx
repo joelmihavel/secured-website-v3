@@ -21,9 +21,7 @@ export function Navbar() {
       <motion.div
         className="pointer-events-none fixed z-[65] w-full"
         style={{ top: scrolled ? 30 : 24 }}
-        animate={{
-          top: scrolled ? 30 : 24,
-        }}
+        animate={{ top: scrolled ? 30 : 24 }}
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Background — fades in on scroll */}
@@ -52,19 +50,22 @@ export function Navbar() {
               animate={{
                 flexDirection: scrolled ? "row" as const : "column" as const,
                 alignItems: scrolled ? "center" : "flex-end",
-                gap: scrolled ? 6 : 3,
               }}
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             >
               <span
-                className="text-[23px] leading-[23px] tracking-[-0.6px] text-[#ff9a6d]"
+                className="text-[18px] leading-[1.2] tracking-[-0.5px] text-[#ff9a6d] md:text-[23.8px]"
                 style={{ fontFamily: "var(--font-body)" }}
               >
                 Secured
               </span>
-              <div className="flex items-center gap-[4px]">
+              <motion.div
+                className="flex items-center gap-2"
+                animate={{ marginLeft: scrolled ? 8 : 0, marginTop: scrolled ? 0 : 3 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              >
                 <span
-                  className="text-[18px] font-light leading-[20px] tracking-[-0.5px] text-white"
+                  className="text-[16px] font-light leading-[1.2] tracking-[-0.8px] text-white md:text-[22.4px]"
                   style={{ fontFamily: "var(--font-ui)" }}
                 >
                   by
@@ -75,22 +76,22 @@ export function Navbar() {
                   width={52}
                   height={18}
                   priority
-                  className="h-[14px] w-auto"
+                  className="h-[14px] w-auto md:h-[18px]"
                 />
-              </div>
+              </motion.div>
             </motion.div>
           </a>
 
-          {/* Toggle — ghost buttons */}
+          {/* Toggle — pill switcher */}
           <div
-            className="pointer-events-auto flex gap-0 whitespace-nowrap"
+            className="pointer-events-auto flex whitespace-nowrap rounded-full border border-white/10 bg-[#1a1a1a] p-1 3xl:p-1.5 4xl:p-2"
             style={{ fontFamily: "var(--font-ui)" }}
           >
             <button
               onClick={() => setVariant("tenant")}
-              className={`rounded-[50px] px-4 py-1.5 text-xs leading-5 transition-all duration-200 md:px-5 md:py-1.5 md:text-sm 3xl:px-7 3xl:py-2.5 3xl:text-base 4xl:px-9 4xl:py-3 4xl:text-lg 5xl:px-11 5xl:py-4 5xl:text-xl ${
+              className={`rounded-full px-4 py-1.5 text-xs leading-5 transition-all duration-200 md:px-5 md:py-1.5 md:text-sm 3xl:px-7 3xl:py-2.5 3xl:text-base 4xl:px-9 4xl:py-3 4xl:text-lg 5xl:px-11 5xl:py-4 5xl:text-xl ${
                 variant === "tenant"
-                  ? "font-semibold text-[#ff9a6d]"
+                  ? "bg-[#ff9a6d] font-semibold text-[#131313]"
                   : "font-medium text-[#777] hover:text-white"
               }`}
             >
@@ -98,9 +99,9 @@ export function Navbar() {
             </button>
             <button
               onClick={() => setVariant("landlord")}
-              className={`rounded-[50px] px-4 py-1.5 text-xs leading-5 transition-all duration-200 md:px-5 md:py-1.5 md:text-sm 3xl:px-7 3xl:py-2.5 3xl:text-base 4xl:px-9 4xl:py-3 4xl:text-lg 5xl:px-11 5xl:py-4 5xl:text-xl ${
+              className={`rounded-full px-4 py-1.5 text-xs leading-5 transition-all duration-200 md:px-5 md:py-1.5 md:text-sm 3xl:px-7 3xl:py-2.5 3xl:text-base 4xl:px-9 4xl:py-3 4xl:text-lg 5xl:px-11 5xl:py-4 5xl:text-xl ${
                 variant === "landlord"
-                  ? "font-semibold text-[#ff9a6d]"
+                  ? "bg-[#ff9a6d] font-semibold text-[#131313]"
                   : "font-medium text-[#777] hover:text-white"
               }`}
             >

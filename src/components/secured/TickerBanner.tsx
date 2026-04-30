@@ -24,12 +24,6 @@ export function TickerBanner() {
           </span>
         ))}
       </div>
-      <style jsx>{`
-        @keyframes ticker-scroll {
-          from { transform: translate3d(0, 0, 0); }
-          to { transform: translate3d(-50%, 0, 0); }
-        }
-      `}</style>
     </div>
   );
 }

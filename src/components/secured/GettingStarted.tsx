@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValueEvent, useInView } from "framer-motion";
 import { useState } from "react";
@@ -221,6 +221,15 @@ function TenantGettingStarted({ data }: { data: GettingStartedContent }) {
     });
   }, [activeStep]);
 
+  const scrollToStep = useCallback((i: number) => {
+    if (!sectionRef.current) return;
+    const sectionTop = sectionRef.current.offsetTop;
+    const sectionHeight = sectionRef.current.offsetHeight;
+    const viewportHeight = window.innerHeight;
+    const targetY = sectionTop + (i / stepCount) * (sectionHeight - viewportHeight);
+    window.scrollTo({ top: targetY, behavior: "smooth" });
+  }, [stepCount]);
+
   return (
     <section data-section="how-it-works" className="bg-[#131313]">
       {/* Scroll-pinned container */}
@@ -276,7 +285,7 @@ function TenantGettingStarted({ data }: { data: GettingStartedContent }) {
                     <button
                       key={i}
                       ref={(el) => { stepButtonRefs.current[i] = el; }}
-                      onClick={() => setActiveStep(i)}
+                      onClick={() => scrollToStep(i)}
                       className={`flex-shrink-0 rounded-xl px-4 py-2.5 text-left transition-all duration-300 ${
                         activeStep === i
                           ? "bg-[#cc7b57] text-[#060606]"
@@ -322,7 +331,7 @@ function TenantGettingStarted({ data }: { data: GettingStartedContent }) {
                     {STEPS.map((step, i) => (
                       <motion.button
                         key={i}
-                        onClick={() => setActiveStep(i)}
+                        onClick={() => scrollToStep(i)}
                         animate={{
                           backgroundColor: activeStep === i ? "#cc7b57" : "#1a1a1a",
                         }}

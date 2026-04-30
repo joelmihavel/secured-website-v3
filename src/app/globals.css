@@ -867,3 +867,8 @@ body:has(.secured-page) {
 .secured-3d-popup-cta:hover {
   background: #ffb08a;
 }
+
+@keyframes ticker-scroll {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
