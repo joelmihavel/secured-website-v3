@@ -65,7 +65,8 @@ const MAP_STYLE: maplibregl.StyleSpecification = {
       url: "https://tiles.openfreemap.org/planet",
     },
   },
-  glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+  // No symbol layers reference glyphs — keep the field absent to avoid an
+  // unused TLS handshake to demotiles.maplibre.org on every page load.
   layers: [
     {
       id: "carto-dark-layer",
@@ -243,7 +244,17 @@ export function ActivityMap({
       dragRotate: false,
       pitchWithRotate: false,
       refreshExpiredTiles: false,
+      // Skip the per-frame cross-fade between tile zooms — we don't user-zoom
+      // (scrollZoom: false) so the fade is barely perceptible and removing it
+      // saves continuous GL state churn during initial tile load.
+      fadeDuration: 0,
     });
+
+    // Drain the visible @2x raster tile fan in one parallel pass instead of
+    // queueing through the default 16 (browser caps to ~6 per origin but
+    // carto rotates a/b/c subdomains, giving effective parallelism ~18).
+    // Global on the maplibregl namespace, not a per-map MapOptions field.
+    maplibregl.setMaxParallelImageRequests?.(24);
 
     if (map.touchZoomRotate) {
       map.touchZoomRotate.disableRotation();

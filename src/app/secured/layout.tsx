@@ -35,11 +35,13 @@ export default function SecuredLayout({
       <link rel="preconnect" href="https://b.basemaps.cartocdn.com" crossOrigin="anonymous" />
       <link rel="preconnect" href="https://c.basemaps.cartocdn.com" crossOrigin="anonymous" />
       <link rel="preconnect" href="https://tiles.openfreemap.org" crossOrigin="anonymous" />
-      <link rel="preconnect" href="https://demotiles.maplibre.org" crossOrigin="anonymous" />
       {/* Kick off the building list fetch during HTML parse, well before the
           rent-map section enters the viewport — so the data is in the cache
-          by the time the IntersectionObserver mounts the map. */}
-      <link rel="preload" as="fetch" href="/api/properties" crossOrigin="anonymous" />
+          by the time the IntersectionObserver mounts the map.
+          NOTE: no crossOrigin — must match the same-origin fetch() in
+          Hero.tsx, otherwise the browser fails to dedupe and double-fetches. */}
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+      <link rel="preload" as="fetch" href="/api/properties" fetchPriority="high" />
       {children}
     </>
   );

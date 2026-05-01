@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { REAL_BUILDINGS } from "@/components/secured/data/real-buildings";
 
+// Pure-CPU haversine + comparison: ideal for the edge runtime.
+// The /secured client now computes eligibility synchronously from the loaded
+// building list and bypasses this route, so this only runs for direct API
+// callers — but if it does run, edge in Mumbai/Singapore makes it ~80ms
+// instead of ~800ms for Indian users vs the default Node lambda in iad1.
+export const runtime = "edge";
+export const preferredRegion = ["bom1", "sin1"];
+
 const COVERAGE_RADIUS_KM = 5;
 
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {

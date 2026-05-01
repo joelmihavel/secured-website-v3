@@ -35,5 +35,13 @@ export async function GET() {
     lng: row.lng,
   }));
 
-  return Response.json(buildings);
+  return Response.json(buildings, {
+    headers: {
+      // Browser: reuse for 5 min before revalidating (data turns over rarely).
+      // CDN edge: keep for 6 h, serve stale for a day while regenerating.
+      "Cache-Control":
+        "public, max-age=300, s-maxage=21600, stale-while-revalidate=86400",
+      "CDN-Cache-Control": "public, s-maxage=21600",
+    },
+  });
 }
