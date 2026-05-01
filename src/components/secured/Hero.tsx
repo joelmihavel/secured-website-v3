@@ -490,9 +490,15 @@ function BhkPicker({ types, value, onChange }: { types: BhkType[]; value: BhkTyp
   );
 }
 
+// User has been continuously in view for this many ms before we accept it as
+// real engagement and mount the heavy maplibre WebGL map. Fast scrollers blowing
+// past the section never trigger it.
+const ENGAGEMENT_LINGER_MS = 600;
+
 export function RentMapSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [shouldMount, setShouldMount] = useState(false);
+  const [shouldMountMap, setShouldMountMap] = useState(false);
   const [buildings, setBuildings] = useState<BuildingData[]>([]);
   const [step, setStep] = useState<EligibilityStep>("form");
   const [rentInput, setRentInput] = useState("");
@@ -523,22 +529,77 @@ export function RentMapSection() {
     handleFlyTo(area);
   }, [handleFlyTo, allBuildingCoords]);
 
-  // Defer mounting map + form + Maps SDK until the section is near the viewport.
-  // Saves: maplibre WebGL init, /api/properties fetch, Google Maps SDK script + init.
+  // Two-stage mount.
+  //
+  // Stage 1 (`shouldMount`): the form + /api/properties fetch + Maps Places
+  // SDK render as soon as the section is near the viewport. The form is
+  // immediately useful — eligibility check is now client-side and synchronous.
+  //
+  // Stage 2 (`shouldMountMap`): the heavy maplibre WebGL map mounts only when
+  // the user shows real engagement — either lingering in view continuously for
+  // 600ms (`engageMap` fires on the IO timer), or interacting with the form
+  // (`engageMap` fires from input focus / pointer enter). Until then a dark
+  // gradient placeholder sits behind the form, identical to maplibre's own
+  // tile-loading appearance. Fast scrollers who blow past the section never
+  // trigger maplibre at all — no WebGL init, no tile downloads, no jank.
+  const engageMap = useCallback(() => {
+    setShouldMountMap(true);
+  }, []);
+
   useEffect(() => {
     const node = sectionRef.current;
     if (!node) return;
+    let lingerTimer: number | null = null;
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setShouldMount(true);
-          io.disconnect();
+          // Start the linger timer. If user stays in view for 600ms continuous,
+          // promote to engagement and mount the map. If they scroll away
+          // before then, the timer is cancelled and the map stays unloaded.
+          lingerTimer = window.setTimeout(() => {
+            setShouldMountMap(true);
+          }, ENGAGEMENT_LINGER_MS);
+        } else if (lingerTimer !== null) {
+          clearTimeout(lingerTimer);
+          lingerTimer = null;
         }
       },
       { rootMargin: "300px" }
     );
     io.observe(node);
-    return () => io.disconnect();
+    return () => {
+      io.disconnect();
+      if (lingerTimer !== null) clearTimeout(lingerTimer);
+    };
+  }, []);
+
+  // Background-prefetch the maplibre chunk during browser idle, so by the time
+  // engagement promotes the map mount the JS is already in cache. Doesn't
+  // execute the module — just ensures the chunk is downloaded.
+  useEffect(() => {
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    let idleId: number | undefined;
+    let timeoutId: number | undefined;
+    const prefetch = () => {
+      import("./ActivityMap").catch(() => {
+        /* ignore — failure here is harmless, the IO mount path will retry */
+      });
+    };
+    if (typeof w.requestIdleCallback === "function") {
+      idleId = w.requestIdleCallback(prefetch, { timeout: 3000 });
+    } else {
+      timeoutId = window.setTimeout(prefetch, 1500);
+    }
+    return () => {
+      if (idleId !== undefined && typeof w.cancelIdleCallback === "function") {
+        w.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+    };
   }, []);
 
   useEffect(() => {
@@ -608,11 +669,35 @@ export function RentMapSection() {
   const mapsApiKey = process.env.NEXT_PUBLIC_SECURED_GOOGLE_MAPS_API_KEY || "";
 
   return (
-    <section ref={sectionRef} id="rent-map" data-section="rent-map" className="relative z-[31] flex w-full flex-col overflow-hidden bg-[#131313]" style={{ height: "100vh", minHeight: 700 }}>
+    <section
+      ref={sectionRef}
+      id="rent-map"
+      data-section="rent-map"
+      className="relative z-[31] flex w-full flex-col overflow-hidden bg-[#131313]"
+      style={{ height: "100vh", minHeight: 700 }}
+      onPointerDownCapture={engageMap}
+      onFocusCapture={engageMap}
+    >
       {shouldMount && (
         <APIProvider apiKey={mapsApiKey} libraries={["places"]}>
-      <div className="absolute inset-0 z-0 overflow-hidden lg:left-[120px] lg:right-[120px]">
-        <LazyActivityMap buildings={buildings} onBuildingSelect={handleBuildingSelect} onMapReady={handleMapReady} />
+      <div
+        className="absolute inset-0 z-0 overflow-hidden lg:left-[120px] lg:right-[120px]"
+        onPointerEnter={engageMap}
+      >
+        {shouldMountMap ? (
+          <LazyActivityMap buildings={buildings} onBuildingSelect={handleBuildingSelect} onMapReady={handleMapReady} />
+        ) : (
+          // Placeholder — visually matches the dark map base while tiles
+          // would be loading. Cheap to paint, no WebGL, no network.
+          <div
+            aria-hidden="true"
+            className="h-full w-full"
+            style={{
+              background:
+                "radial-gradient(ellipse at center, #1f1f33 0%, #131313 60%, #0d0d0d 100%)",
+            }}
+          />
+        )}
       </div>
 
       {selectedBuilding && (
