@@ -31,7 +31,7 @@ export function Button({
           className={`flex items-center justify-center overflow-hidden rounded-lg border border-[#202020] bg-[#1a1a1a] p-4 ${widthClass}`}
         >
           <span
-            className="text-center text-base font-medium leading-6 text-[#8a8a8a] 3xl:text-lg 4xl:text-xl 5xl:text-2xl"
+            className="text-center text-base font-bold leading-6 text-[#8a8a8a] 3xl:text-lg 4xl:text-xl 5xl:text-2xl"
             style={{ fontFamily: "var(--font-ui)" }}
           >
             {children}
@@ -55,7 +55,7 @@ export function Button({
       {/* Button body */}
       <div className="btn-figma__body relative flex items-center justify-center overflow-hidden rounded-lg border-[0.1px] border-[#ff9a6d] p-4 w-full 3xl:p-5 4xl:p-6 5xl:p-8">
         <span
-          className="relative z-10 text-center text-base font-medium leading-6 text-white 3xl:text-lg 4xl:text-xl 5xl:text-2xl"
+          className="relative z-10 text-center text-base font-bold leading-6 text-white 3xl:text-lg 4xl:text-xl 5xl:text-2xl"
           style={{ fontFamily: "var(--font-ui)" }}
         >
           {children}
