@@ -97,7 +97,7 @@ export function Commitment({
       {(data.subtitle || data.heading || data.description) && (
       <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
         <div className={`py-12 md:py-20 lg:px-[120px] lg:pb-[64px] ${variant === "landlord" ? "lg:pt-[48px]" : "lg:pt-[160px]"}`}>
-          <div className={`${variant === "landlord" ? "text-center" : "text-center lg:text-left"}`}>
+          <div className="text-center">
             {data.subtitle && (
               <SlideUp>
                 <p
@@ -112,7 +112,7 @@ export function Commitment({
             {(variant === "tenant" || data.heading) && (
               <motion.h2
                 ref={headingRef}
-                className="mx-auto mt-3 max-w-[750px] text-[28px] leading-[1.3] tracking-[-1px] text-white md:mt-4 md:text-[36px] lg:mx-0 lg:max-w-[715px] lg:text-[40px] lg:leading-[1.5] lg:tracking-[-0.88px]"
+                className="mx-auto mt-3 max-w-[750px] text-[28px] leading-[1.3] tracking-[-1px] text-white md:mt-4 md:text-[36px] lg:max-w-[715px] lg:text-[40px] lg:leading-[1.5] lg:tracking-[-0.88px]"
                 style={{ fontFamily: "var(--font-ui)", whiteSpace: "pre-line" }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={headingInView ? { opacity: 1, y: 0 } : {}}
@@ -133,7 +133,7 @@ export function Commitment({
             {data.description && (
               <SlideUp delay={0.3} className="mt-4 lg:mt-[16px]">
                 <p
-                  className="mx-auto max-w-[700px] text-base leading-[1.7] text-[#888] md:text-lg lg:mx-0 lg:max-w-none lg:text-[20px] lg:leading-[32px] lg:text-[#797979]"
+                  className="mx-auto max-w-[700px] text-base leading-[1.7] text-[#888] md:text-lg lg:max-w-[850px] lg:text-[20px] lg:leading-[32px] lg:text-[#797979]"
                   style={{ fontFamily: "var(--font-ui)", whiteSpace: "pre-line" }}
                 >
                   {data.description}

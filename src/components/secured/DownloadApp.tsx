@@ -113,7 +113,7 @@ export function DownloadApp({ data }: { data: DownloadAppContent }) {
               </div>
 
               <div className="flex flex-1 flex-col gap-[48px]">
-                <div className="flex flex-col gap-[16px]">
+                <div className="flex flex-col gap-[16px] text-center">
                   <h2
                     className="text-[40px] leading-[1.3] tracking-[-0.88px] text-white"
                     style={{ fontFamily: "var(--font-ui)" }}
@@ -136,7 +136,7 @@ export function DownloadApp({ data }: { data: DownloadAppContent }) {
                   </SlideUp>
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex justify-center gap-4">
                   <a
                     href="https://apps.apple.com/in/app/secured-by-flent/id6757275258"
                     target="_blank"
