@@ -63,7 +63,7 @@ export function MarqueeBanner({
   return (
     <div
       ref={ref}
-      className="relative z-[10] flex flex-col items-center overflow-hidden"
+      className="relative z-[1000] flex flex-col items-center overflow-hidden"
     >
       <MarqueeStrip
         text={text1}

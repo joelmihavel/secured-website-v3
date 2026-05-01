@@ -112,7 +112,7 @@ export function TrustSection({ data, variant = "tenant" }: { data: TrustContent;
                 transition={{ duration: 0.6 }}
               >
                 {headingParts.map((part, i) =>
-                  /INR 20\+ crores/i.test(part) ? (
+                  /INR 20 crores\+/i.test(part) ? (
                     <span key={i} className="text-[#ff9a6d]">{part}</span>
                   ) : (
                     <span key={i}>{part}</span>
