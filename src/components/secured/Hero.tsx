@@ -611,7 +611,7 @@ export function RentMapSection() {
   const mapsApiKey = process.env.NEXT_PUBLIC_SECURED_GOOGLE_MAPS_API_KEY || "";
 
   return (
-    <section ref={sectionRef} data-section="rent-map" className="relative z-[31] flex w-full flex-col overflow-hidden bg-[#131313]" style={{ height: "100vh", minHeight: 700 }}>
+    <section ref={sectionRef} id="rent-map" data-section="rent-map" className="relative z-[31] flex w-full flex-col overflow-hidden bg-[#131313]" style={{ height: "100vh", minHeight: 700 }}>
       {shouldMount && (
         <APIProvider apiKey={mapsApiKey} libraries={["places"]}>
       <div className="absolute inset-0 z-0 overflow-hidden lg:left-[120px] lg:right-[120px]">
