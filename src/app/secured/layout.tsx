@@ -36,6 +36,10 @@ export default function SecuredLayout({
       <link rel="preconnect" href="https://c.basemaps.cartocdn.com" crossOrigin="anonymous" />
       <link rel="preconnect" href="https://tiles.openfreemap.org" crossOrigin="anonymous" />
       <link rel="preconnect" href="https://demotiles.maplibre.org" crossOrigin="anonymous" />
+      {/* Kick off the building list fetch during HTML parse, well before the
+          rent-map section enters the viewport — so the data is in the cache
+          by the time the IntersectionObserver mounts the map. */}
+      <link rel="preload" as="fetch" href="/api/properties" crossOrigin="anonymous" />
       {children}
     </>
   );

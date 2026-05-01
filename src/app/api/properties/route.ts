@@ -1,6 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 
-export const revalidate = 300; // 5-minute cache
+// Build-time pre-render so the first user never pays a function cold start
+// or a live Supabase round-trip. Combined with revalidate=300, the response
+// refreshes every 5 minutes via ISR while staying CDN-edge-cacheable.
+export const dynamic = "force-static";
+export const revalidate = 300;
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SECURED_SUPABASE_URL!;
@@ -11,7 +15,7 @@ function getSupabase() {
 export async function GET() {
   const { data, error } = await getSupabase()
     .from("maps_properties")
-    .select("id, society_name, area, configuration, rent, lat, lng")
+    .select("id, area, configuration, rent, lat, lng")
     .not("lat", "is", null)
     .not("lng", "is", null);
 
@@ -19,7 +23,7 @@ export async function GET() {
     return Response.json([], { status: 500 });
   }
 
-  const buildings = data.map((row, i) => ({
+  const buildings = data.map((row) => ({
     id: row.id,
     area: row.area,
     bhk: row.configuration,
