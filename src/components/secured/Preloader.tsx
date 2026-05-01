@@ -1,19 +1,28 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
 const STRIP_COUNT = 7;
 const STORAGE_KEY = "secured_preloader_seen";
 
+// useLayoutEffect runs synchronously before paint on the client, but warns
+// during SSR. Fall back to useEffect on the server so SSR doesn't error.
+const useIsoLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
 export function Preloader() {
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
   const [visible, setVisible] = useState(true);
-  const [skip, setSkip] = useState<boolean | null>(null);
+  // Default to showing the loader so SSR + first client render both render it,
+  // matching hydration. We only flip skip=true when sessionStorage says the
+  // user has already seen the preloader this session — checked synchronously
+  // before paint to avoid a flash.
+  const [skip, setSkip] = useState(false);
 
-  useEffect(() => {
+  useIsoLayoutEffect(() => {
     if (typeof window === "undefined") return;
     try {
       const seen = window.sessionStorage.getItem(STORAGE_KEY);
@@ -21,12 +30,10 @@ export function Preloader() {
         setSkip(true);
         setDone(true);
         setVisible(false);
-        return;
       }
     } catch {
       // sessionStorage may be unavailable (private mode); fall through to playing the preloader
     }
-    setSkip(false);
   }, []);
 
   const animate = useCallback(() => {
@@ -44,13 +51,13 @@ export function Preloader() {
   }, []);
 
   useEffect(() => {
-    if (skip !== false) return;
+    if (skip) return;
     const cleanup = animate();
     return cleanup;
   }, [animate, skip]);
 
   useEffect(() => {
-    if (done && skip === false) {
+    if (done && !skip) {
       try {
         window.sessionStorage.setItem(STORAGE_KEY, "1");
       } catch {
@@ -61,8 +68,7 @@ export function Preloader() {
     }
   }, [done, skip]);
 
-  if (!visible || skip === true) return null;
-  if (skip === null) return null;
+  if (!visible || skip) return null;
 
   return (
     <AnimatePresence>
