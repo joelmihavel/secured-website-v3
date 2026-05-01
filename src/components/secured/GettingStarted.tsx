@@ -213,8 +213,22 @@ function TenantGettingStarted({ data }: { data: GettingStartedContent }) {
     setActiveStep(step);
   });
 
+  const hasMountedRef = useRef(false);
   useEffect(() => {
-    stepButtonRefs.current[activeStep]?.scrollIntoView({
+    // Skip the initial run: with activeStep=0 on mount, scrollIntoView
+    // would scroll the page down to the carousel (which lives below the
+    // hero), yanking the user away from the first fold.
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+    const btn = stepButtonRefs.current[activeStep];
+    if (!btn) return;
+    // Only auto-center if the button is already on screen — never let
+    // scrollIntoView pull the page back to the section from elsewhere.
+    const rect = btn.getBoundingClientRect();
+    if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+    btn.scrollIntoView({
       behavior: "smooth",
       block: "nearest",
       inline: "center",
