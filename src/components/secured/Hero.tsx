@@ -509,7 +509,6 @@ export function RentMapSection() {
   const [email, setEmail] = useState("");
   const [notifySubmitted, setNotifySubmitted] = useState(false);
   const [isInCoverage, setIsInCoverage] = useState(true);
-  const [checking, setChecking] = useState(false);
   const flyToRef = useRef<((area: string) => void) | null>(null);
   const handleBuildingSelect = useCallback((b: SelectedBuilding | null) => setSelectedBuilding(b), []);
   const handleMapReady = useCallback((flyTo: (area: string) => void) => { flyToRef.current = flyTo; }, []);
@@ -566,40 +565,38 @@ export function RentMapSection() {
   const rent = parseInt(rentInput.replace(/,/g, ""), 10) || 0;
   const monthlyCashback = Math.round(rent * CASHBACK_RATE);
   const annualCashback = monthlyCashback * 12;
-  const handleCheck = useCallback(async () => {
+  const handleCheck = useCallback(() => {
     if (rent < 5000 || !selectedArea) return;
-    setChecking(true);
-    try {
-      const res = await fetch("/api/secured/check-eligibility", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ area: selectedArea, bhk: selectedBhk, rent, coords: selectedCoords }),
-      });
-      const { eligible, inCoverage } = await res.json();
-      setIsInCoverage(inCoverage);
-      setStep(eligible ? "eligible" : inCoverage ? "not-eligible" : "not-serviceable");
+    // Compute eligibility synchronously on the client. The check is pure CPU
+    // (haversine over an in-memory list), so a server round-trip would only add
+    // network latency for no value. Buildings are already loaded via the
+    // preloaded /api/properties response.
+    const bedroomCount = parseInt(selectedBhk) || 1;
+    const inCoverage =
+      selectedCoords && allBuildingCoords.length > 0
+        ? isNearProperties(selectedCoords.lat, selectedCoords.lng, allBuildingCoords)
+        : false;
+    const eligible = inCoverage && rent / bedroomCount > 18000;
+    setIsInCoverage(inCoverage);
+    setStep(eligible ? "eligible" : inCoverage ? "not-eligible" : "not-serviceable");
 
-      const closestArea = selectedCoords
-        ? Object.entries(areaCoords).reduce((best, [area, [lng, lat]]) => {
-            const d = haversineKm(selectedCoords.lat, selectedCoords.lng, lat, lng);
-            return d < best.dist ? { area, dist: d } : best;
-          }, { area: selectedArea, dist: Infinity }).area
-        : selectedArea;
-
-      const sb = getSecuredSupabase();
-      console.log("[supabase] client:", !!sb, "coords:", selectedCoords, "area:", selectedArea);
-      sb?.from("maps_properties").insert({
-        society_name: selectedCoords ? `https://www.google.com/maps?q=${selectedCoords.lat},${selectedCoords.lng}` : selectedArea,
-        area: closestArea,
-        configuration: selectedBhk,
-        rent,
-        lat: selectedCoords?.lat ?? null,
-        lng: selectedCoords?.lng ?? null,
-      }).then(({ error }) => { if (error) console.error("[supabase] insert error:", error); else console.log("[supabase] insert ok"); });
-    } finally {
-      setChecking(false);
-    }
-  }, [rent, selectedArea, selectedBhk, selectedCoords, areaCoords]);
+    // Fire-and-forget analytics insert — does not block the UI transition
+    const closestArea = selectedCoords
+      ? Object.entries(areaCoords).reduce((best, [area, [lng, lat]]) => {
+          const d = haversineKm(selectedCoords.lat, selectedCoords.lng, lat, lng);
+          return d < best.dist ? { area, dist: d } : best;
+        }, { area: selectedArea, dist: Infinity }).area
+      : selectedArea;
+    const sb = getSecuredSupabase();
+    sb?.from("maps_properties").insert({
+      society_name: selectedCoords ? `https://www.google.com/maps?q=${selectedCoords.lat},${selectedCoords.lng}` : selectedArea,
+      area: closestArea,
+      configuration: selectedBhk,
+      rent,
+      lat: selectedCoords?.lat ?? null,
+      lng: selectedCoords?.lng ?? null,
+    }).then(({ error }) => { if (error) console.error("[supabase] insert error:", error); });
+  }, [rent, selectedArea, selectedBhk, selectedCoords, areaCoords, allBuildingCoords]);
   const handleReset = useCallback(() => { setStep("form"); setRentInput(""); setNotifySubmitted(false); setPhone(""); setEmail(""); }, []);
   const handleRentChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => { const raw = e.target.value.replace(/[^0-9]/g, ""); if (raw === "") { setRentInput(""); return; } setRentInput(parseInt(raw, 10).toLocaleString("en-IN")); }, []);
   const handleNotifySubmit = useCallback(async () => {
@@ -650,7 +647,7 @@ export function RentMapSection() {
                     <input type="text" inputMode="numeric" placeholder="25,000" value={rentInput} onChange={handleRentChange} onKeyDown={(e) => e.key === "Enter" && handleCheck()} className="w-full bg-transparent text-[14px] text-white placeholder-white/40 outline-none" style={{ fontFamily: "var(--font-ui)" }} />
                   </div>
                 </div>
-                <Button fullWidth onClick={handleCheck} disabled={rent < 5000 || !selectedArea || checking}>{checking ? "Checking…" : "Check eligibility"}</Button>
+                <Button fullWidth onClick={handleCheck} disabled={rent < 5000 || !selectedArea}>Check eligibility</Button>
               </div>
               {/* Desktop: original horizontal layout */}
               <div className="hidden md:flex md:flex-row md:items-end md:gap-0">
@@ -672,7 +669,7 @@ export function RentMapSection() {
                   </div>
                 </div>
               </div>
-              <div className="mt-5 hidden md:block"><Button fullWidth onClick={handleCheck} disabled={rent < 5000 || !selectedArea || checking}>{checking ? "Checking…" : "Check eligibility"}</Button></div>
+              <div className="mt-5 hidden md:block"><Button fullWidth onClick={handleCheck} disabled={rent < 5000 || !selectedArea}>Check eligibility</Button></div>
               <div className="mt-2 flex items-center justify-center gap-1.5 md:mt-3">
                 <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#ff9a6d] shadow-[0_0_4px_rgba(255,154,109,0.5)]" />
                 <p className="text-[9px] tracking-[0.02em] text-white/70" style={{ fontFamily: "var(--font-ui)" }}>You consent to share your rental data</p>
