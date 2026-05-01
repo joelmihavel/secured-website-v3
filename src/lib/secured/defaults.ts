@@ -203,8 +203,8 @@ export const WHY_JOIN_LANDLORD_DEFAULTS: WhyJoinContent = {
 };
 
 export const DOWNLOAD_APP_DEFAULTS: DownloadAppContent = {
-  heading: "Get the Flent app to make renting",
-  headingHighlight: "simpler, faster, and stress-free.",
+  heading: "Make your rent",
+  headingHighlight: "work for you.",
   description: "Scan the QR or tap below to download and get started.",
   appStoreButtonText: "Download on App Store",
   playStoreButtonText: "Coming soon",
