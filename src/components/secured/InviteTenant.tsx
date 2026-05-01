@@ -67,7 +67,7 @@ export function InviteTenant() {
               {/* Cityscape background — behind the form card */}
               <div className="pointer-events-none absolute inset-x-[-400px] bottom-[-80px] top-[-60px] flex items-center justify-center overflow-hidden">
                 <img
-                  src="/assets/backgrounds/cityscape-dithered.png"
+                  src="/assets/backgrounds/cityscape-dithered.webp"
                   alt=""
                   aria-hidden="true"
                   className="w-full max-w-[1400px] object-contain opacity-25"

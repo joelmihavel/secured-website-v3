@@ -12,7 +12,7 @@ export function Footer({ data }: { data: FooterContent }) {
     <footer className="relative overflow-hidden bg-[#131313]">
       {/* Glitch illustration */}
       <div className="relative mx-auto w-full lg:px-[120px]">
-        <GlitchImage src="/assets/figma/roman-illustration.png" />
+        <GlitchImage src="/assets/figma/roman-illustration.webp" />
       </div>
 
       {/* CTA section — heading left, buttons right */}
