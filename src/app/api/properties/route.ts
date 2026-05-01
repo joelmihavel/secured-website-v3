@@ -1,10 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 
 // Build-time pre-render so the first user never pays a function cold start
-// or a live Supabase round-trip. Combined with revalidate=300, the response
-// refreshes every 5 minutes via ISR while staying CDN-edge-cacheable.
+// or a live Supabase round-trip. Combined with revalidate=21600 (6 hours),
+// the response refreshes only a few times per day via ISR while staying
+// CDN-edge-cacheable. Property data changes rarely, so 6h staleness is
+// effectively invisible to users and keeps Vercel ISR write costs minimal.
 export const dynamic = "force-static";
-export const revalidate = 300;
+export const revalidate = 21600;
 
 function getSupabase() {
   const url = process.env.NEXT_PUBLIC_SECURED_SUPABASE_URL!;
