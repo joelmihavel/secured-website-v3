@@ -32,7 +32,7 @@ export const HERO_LANDLORD_DEFAULTS: HeroContent = {
 };
 
 export const TRUST_DEFAULTS: TrustContent = {
-  heading: "INR 20+ crores worth of rent processed so far",
+  heading: "INR 20 crores+ worth of rent processed so far",
   description: "Across most sought-after neighbourhoods of Bengaluru",
   points: [
     "Built by the team behind Flent homes",
