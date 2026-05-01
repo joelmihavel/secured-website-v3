@@ -32,8 +32,8 @@ export const HERO_LANDLORD_DEFAULTS: HeroContent = {
 };
 
 export const TRUST_DEFAULTS: TrustContent = {
-  heading: "Already used across Bangalore",
-  description: "Thousands of rent payments already happen through Secured\nPeople across Whitefield, HSR, Indiranagar and more are already earning",
+  heading: "INR 20+ crores worth of rent processed so far",
+  description: "Across most sought-after neighbourhoods of Bengaluru",
   points: [
     "Built by the team behind Flent homes",
     "Used by working professionals across the city",
