@@ -649,21 +649,31 @@ body:has(.secured-page) {
 /* ── 3D Map — MapLibre overrides ── */
 
 .maplibregl-ctrl-group {
-  background: rgba(26, 26, 26, 0.8) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: rgba(19, 19, 19, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   border-radius: 10px !important;
   backdrop-filter: blur(8px);
   overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .maplibregl-ctrl-group button {
   background: transparent !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  transition: background-color 0.15s ease;
+}
+
+.maplibregl-ctrl-group button:last-child {
+  border-bottom: none !important;
 }
 
 .maplibregl-ctrl-group button span {
   filter: invert(1) !important;
-  opacity: 0.5;
+  opacity: 1;
+}
+
+.maplibregl-ctrl-group button:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
 }
 
 .maplibregl-ctrl-group button:hover span {
