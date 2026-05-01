@@ -9,6 +9,10 @@ import { useAsciiGlitch } from "./useAsciiGlitch";
 import type { HeroContent } from "@/lib/secured/types";
 import { getSecuredSupabase } from "@/lib/secured/supabase";
 import { downloadAppCta } from "@/lib/secured/cta";
+import { buildLandlordWhatsAppApiLink } from "@/lib/whatsapp";
+
+const LANDLORD_CALLBACK_MESSAGE =
+  "Hi! I'm a landlord and I'd like a callback about Flent Secured.";
 
 /* ── iPhone Frame (shared) ── */
 const FRAME = "/assets/illustrations/iphone-frame";
@@ -193,7 +197,14 @@ function LandlordHero({ data }: { data: HeroContent }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.45 }}
             >
-              <Button fullWidth>{data.ctaButtonText}</Button>
+              <Button
+                fullWidth
+                href={buildLandlordWhatsAppApiLink(LANDLORD_CALLBACK_MESSAGE)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {data.ctaButtonText}
+              </Button>
             </motion.div>
           </div>
 
@@ -491,9 +502,10 @@ function BhkPicker({ types, value, onChange }: { types: BhkType[]; value: BhkTyp
 }
 
 // User has been continuously in view for this many ms before we accept it as
-// real engagement and mount the heavy maplibre WebGL map. Fast scrollers blowing
-// past the section never trigger it.
-const ENGAGEMENT_LINGER_MS = 600;
+// real engagement and mount the heavy maplibre WebGL map. Tuned just above the
+// time it takes a fast scroller to traverse a 100vh section so drive-bys still
+// skip the mount but engagers see the map at near-IO-trigger speed.
+const ENGAGEMENT_LINGER_MS = 200;
 
 export function RentMapSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -687,16 +699,11 @@ export function RentMapSection() {
         {shouldMountMap ? (
           <LazyActivityMap buildings={buildings} onBuildingSelect={handleBuildingSelect} onMapReady={handleMapReady} />
         ) : (
-          // Placeholder — visually matches the dark map base while tiles
-          // would be loading. Cheap to paint, no WebGL, no network.
-          <div
-            aria-hidden="true"
-            className="h-full w-full"
-            style={{
-              background:
-                "radial-gradient(ellipse at center, #1f1f33 0%, #131313 60%, #0d0d0d 100%)",
-            }}
-          />
+          // Placeholder — transparent, so the section's #131313 background
+          // shows through. Identical to maplibre's pre-tile-load state
+          // (empty canvas over the section bg), so the swap to the real
+          // map produces no visible color change.
+          <div aria-hidden="true" className="h-full w-full" />
         )}
       </div>
 
