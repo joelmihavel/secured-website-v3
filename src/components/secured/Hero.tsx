@@ -675,7 +675,7 @@ export function RentMapSection() {
               <div className="mt-5 hidden md:block"><Button fullWidth onClick={handleCheck} disabled={rent < 5000 || !selectedArea || checking}>{checking ? "Checking…" : "Check eligibility"}</Button></div>
               <div className="mt-2 flex items-center justify-center gap-1.5 md:mt-3">
                 <div className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#ff9a6d] shadow-[0_0_4px_rgba(255,154,109,0.5)]" />
-                <p className="text-[9px] tracking-[0.02em] text-white/30" style={{ fontFamily: "var(--font-ui)" }}>You consent to share your rental data</p>
+                <p className="text-[9px] tracking-[0.02em] text-white/70" style={{ fontFamily: "var(--font-ui)" }}>You consent to share your rental data</p>
               </div>
             </div>
           ) : step === "eligible" ? (
@@ -685,16 +685,16 @@ export function RentMapSection() {
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#4ade80]/[0.15]"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg></div>
                   <p className="text-[13px] font-semibold text-[#4ade80]" style={{ fontFamily: "var(--font-ui)" }}>You&apos;re eligible for Secured benefits</p>
                 </div>
-                <button onClick={handleReset} className="rounded-full border border-white/[0.08] px-3 py-1 text-[10px] text-[#777] transition-colors hover:border-white/20 hover:text-white" style={{ fontFamily: "var(--font-ui)" }}>Edit</button>
+                <button onClick={handleReset} className="rounded-full border border-white/[0.08] px-3 py-1 text-[10px] text-white transition-colors hover:border-white/20" style={{ fontFamily: "var(--font-ui)" }}>Edit</button>
               </div>
-              <p className="mt-1 text-[10px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>{selectedBhk} in {selectedArea} · {formatINR(rent)}/mo</p>
+              <p className="mt-1 text-[10px] text-white" style={{ fontFamily: "var(--font-ui)" }}>{selectedBhk} in {selectedArea} · {formatINR(rent)}/mo</p>
               <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="flex-1">
-                  <p className="text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>1% cashback on every rent payment</p>
+                  <p className="text-[9px] font-medium uppercase tracking-[1px] text-white" style={{ fontFamily: "var(--font-ui)" }}>1% cashback on every rent payment</p>
                   <div className="mt-1.5 flex items-baseline gap-3">
                     <p className="font-display text-[24px] leading-[1] tracking-[-0.8px] text-[#ff9a6d]">{formatINR(monthlyCashback)}<span className="ml-0.5 text-[12px] text-[#ff9a6d]/50">/mo</span></p>
                     <div className="h-4 w-px bg-white/[0.08]" />
-                    <p className="font-display text-[16px] leading-[1] tracking-[-0.3px] text-white/50">{formatINR(annualCashback)}<span className="ml-0.5 text-[11px] text-white/30">/yr</span></p>
+                    <p className="font-display text-[16px] leading-[1] tracking-[-0.3px] text-white">{formatINR(annualCashback)}<span className="ml-0.5 text-[11px] text-white/70">/yr</span></p>
                   </div>
                 </div>
                 <Button href="https://apps.apple.com/in/app/secured-by-flent/id6757275258" target="_blank" rel="noopener noreferrer">Download Secured</Button>
@@ -710,10 +710,10 @@ export function RentMapSection() {
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#ef4444]/[0.12]"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#ef4444" strokeWidth="1.5" /><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" /></svg></div>
                   <p className="text-[13px] font-semibold text-[#ef4444]" style={{ fontFamily: "var(--font-ui)" }}>Area not serviceable</p>
                 </div>
-                <button onClick={handleReset} className="rounded-full border border-white/[0.08] px-3 py-1 text-[10px] text-[#777] transition-colors hover:border-white/20 hover:text-white" style={{ fontFamily: "var(--font-ui)" }}>Edit</button>
+                <button onClick={handleReset} className="rounded-full border border-white/[0.08] px-3 py-1 text-[10px] text-white transition-colors hover:border-white/20" style={{ fontFamily: "var(--font-ui)" }}>Edit</button>
               </div>
-              <p className="mt-1 text-[10px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>{selectedArea}</p>
-              <p className="mt-3 text-[12px] leading-[1.5] text-[#888]" style={{ fontFamily: "var(--font-ui)" }}>Secured isn&apos;t available in this area yet. Try a nearby location or search within Bangalore.</p>
+              <p className="mt-1 text-[10px] text-white" style={{ fontFamily: "var(--font-ui)" }}>{selectedArea}</p>
+              <p className="mt-3 text-[12px] leading-[1.5] text-white" style={{ fontFamily: "var(--font-ui)" }}>Secured isn&apos;t available in this area yet. Try a nearby location or search within Bangalore.</p>
             </div>
           ) : (
             <div className="rounded-2xl border border-white/[0.1] bg-[#131313]/98 px-6 py-5 shadow-[0_12px_48px_rgba(0,0,0,0.6)] md:px-8 md:py-6">
@@ -722,22 +722,22 @@ export function RentMapSection() {
                   <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#fbbf24]/[0.15]"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#fbbf24" strokeWidth="1.5" /><path d="M8 5v3.5" stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round" /><circle cx="8" cy="11" r="0.75" fill="#fbbf24" /></svg></div>
                   <p className="text-[13px] font-semibold text-[#fbbf24]" style={{ fontFamily: "var(--font-ui)" }}>Not eligible yet</p>
                 </div>
-                <button onClick={handleReset} className="rounded-full border border-white/[0.08] px-3 py-1 text-[10px] text-[#777] transition-colors hover:border-white/20 hover:text-white" style={{ fontFamily: "var(--font-ui)" }}>Edit</button>
+                <button onClick={handleReset} className="rounded-full border border-white/[0.08] px-3 py-1 text-[10px] text-white transition-colors hover:border-white/20" style={{ fontFamily: "var(--font-ui)" }}>Edit</button>
               </div>
-              <p className="mt-1 text-[10px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>{selectedBhk} in {selectedArea} · {formatINR(rent)}/mo</p>
-              <p className="mt-3 text-[12px] leading-[1.5] text-[#888]" style={{ fontFamily: "var(--font-ui)" }}>
+              <p className="mt-1 text-[10px] text-white" style={{ fontFamily: "var(--font-ui)" }}>{selectedBhk} in {selectedArea} · {formatINR(rent)}/mo</p>
+              <p className="mt-3 text-[12px] leading-[1.5] text-white" style={{ fontFamily: "var(--font-ui)" }}>
                 {"You're not eligible yet. Leave your details and we'll notify you the moment you qualify."}
               </p>
               {!notifySubmitted ? (
                 <div className="mt-4 flex flex-col gap-3">
                   <div className="flex flex-col gap-3 md:flex-row">
                     <div className="flex-1">
-                      <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Phone</label>
-                      <input type="tel" inputMode="tel" placeholder="+91 98765 43210" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border-b border-white/10 bg-transparent pb-1.5 text-[13px] text-white placeholder-[#444] outline-none transition-colors focus:border-[#ff9a6d]" style={{ fontFamily: "var(--font-ui)" }} />
+                      <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-white" style={{ fontFamily: "var(--font-ui)" }}>Phone</label>
+                      <input type="tel" inputMode="tel" placeholder="+91 98765 43210" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full border-b border-white/10 bg-transparent pb-1.5 text-[13px] text-white placeholder-white/40 outline-none transition-colors focus:border-[#ff9a6d]" style={{ fontFamily: "var(--font-ui)" }} />
                     </div>
                     <div className="flex-1">
-                      <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-[#555]" style={{ fontFamily: "var(--font-ui)" }}>Email</label>
-                      <input type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleNotifySubmit()} className="w-full border-b border-white/10 bg-transparent pb-1.5 text-[13px] text-white placeholder-[#444] outline-none transition-colors focus:border-[#ff9a6d]" style={{ fontFamily: "var(--font-ui)" }} />
+                      <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-white" style={{ fontFamily: "var(--font-ui)" }}>Email</label>
+                      <input type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleNotifySubmit()} className="w-full border-b border-white/10 bg-transparent pb-1.5 text-[13px] text-white placeholder-white/40 outline-none transition-colors focus:border-[#ff9a6d]" style={{ fontFamily: "var(--font-ui)" }} />
                     </div>
                   </div>
                   <Button fullWidth onClick={handleNotifySubmit} disabled={!phone && !email}>Notify me when eligible</Button>
