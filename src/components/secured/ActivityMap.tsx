@@ -160,8 +160,14 @@ export function ActivityMap({
     return new maplibregl.Marker({ element: el, anchor: "center" }).setLngLat([b.lng, b.lat]);
   }, []);
 
-  // Mount only the markers within the current viewport (plus 30% padding).
-  // With 100+ buildings, only the ~30-50 in view consume DOM/animation cost.
+  // Track the in-flight chunked-add pass so we can cancel it if the user pans
+  // again before it finishes (otherwise we'd keep adding stale markers).
+  const pendingAddRef = useRef<{ cancelled: boolean } | null>(null);
+
+  // Mount only the markers within the current viewport (plus 30% padding),
+  // and add them in small chunks scheduled via requestIdleCallback so the
+  // main thread stays responsive — the listings appear progressively over a
+  // few hundred ms instead of blocking the page during a large sync batch.
   const syncVisibleMarkers = useCallback((map: maplibregl.Map, list: BuildingData[]) => {
     const bounds = map.getBounds();
     const padX = (bounds.getEast() - bounds.getWest()) * 0.3;
@@ -189,12 +195,52 @@ export function ActivityMap({
       }
     }
 
+    // Cancel any previous chunked-add still in flight
+    if (pendingAddRef.current) {
+      pendingAddRef.current.cancelled = true;
+    }
+
+    const toAdd: BuildingData[] = [];
     for (const b of list) {
       if (visibleIds.has(b.id) && !markersRef.current.has(b.id)) {
-        const marker = buildMarker(b);
-        marker.addTo(map);
-        markersRef.current.set(b.id, marker);
+        toAdd.push(b);
       }
+    }
+
+    if (toAdd.length > 0) {
+      const token = { cancelled: false };
+      pendingAddRef.current = token;
+      const CHUNK_SIZE = 8;
+      const scheduleNext = (cb: () => void) => {
+        const w = window as Window & {
+          requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+        };
+        if (typeof w.requestIdleCallback === "function") {
+          w.requestIdleCallback(cb, { timeout: 250 });
+        } else {
+          // Fallback for Safari (no rIC) — yield to next frame
+          requestAnimationFrame(cb);
+        }
+      };
+      const addChunk = (start: number) => {
+        if (token.cancelled || !mapRef.current) return;
+        const end = Math.min(start + CHUNK_SIZE, toAdd.length);
+        for (let i = start; i < end; i++) {
+          const b = toAdd[i];
+          if (markersRef.current.has(b.id)) continue;
+          const marker = buildMarker(b);
+          marker.addTo(map);
+          markersRef.current.set(b.id, marker);
+        }
+        if (end < toAdd.length) {
+          scheduleNext(() => addChunk(end));
+        } else if (pendingAddRef.current === token) {
+          pendingAddRef.current = null;
+        }
+      };
+      // First chunk runs immediately so a few markers appear without delay,
+      // remaining chunks yield to the browser between each batch.
+      addChunk(0);
     }
 
     const sel = selectedBuildingRef.current;
