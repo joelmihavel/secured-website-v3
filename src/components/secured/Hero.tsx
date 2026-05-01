@@ -395,7 +395,7 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
   return (
     <div ref={containerRef} className="relative">
       <div className="flex items-center gap-2 border-b border-white/10 pb-1.5 transition-colors focus-within:border-white/20">
-        <svg className="flex-shrink-0 text-[#666]" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg className="flex-shrink-0 text-white" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
         <input
@@ -406,7 +406,7 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
           onFocus={() => { if (inputValue === value) setInputValue(""); }}
           onBlur={() => { if (!inputValue.trim()) setInputValue(value ?? ""); }}
           placeholder={locating ? "Locating…" : "Your society name…"}
-          className="min-w-0 flex-1 bg-transparent text-[13px] text-white placeholder-[#555] outline-none"
+          className="min-w-0 flex-1 bg-transparent text-[13px] text-white placeholder-white/40 outline-none"
           style={{ fontFamily: "var(--font-ui)" }}
         />
         <button
@@ -414,7 +414,7 @@ function GoogleAreaPicker({ value, onChange }: { value: string; onChange: (area:
           onClick={handleLocate}
           disabled={locating}
           title="Use my location"
-          className="flex-shrink-0 text-[#555] transition-colors hover:text-[#ff9a6d] disabled:opacity-40"
+          className="flex-shrink-0 text-white transition-colors hover:text-[#ff9a6d] disabled:opacity-40"
         >
           {locating
             ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
@@ -472,7 +472,7 @@ function BhkPicker({ types, value, onChange }: { types: BhkType[]; value: BhkTyp
     <div ref={containerRef} className="relative">
       <button type="button" onClick={() => setOpen(!open)} className="flex w-full items-center gap-2 border-b border-white/10 bg-transparent pb-1.5 text-left transition-colors hover:border-white/20">
         <span className="flex-1 truncate text-[13px] text-white" style={{ fontFamily: "var(--font-ui)" }}>{value}</span>
-        <svg className="flex-shrink-0 text-[#555]" width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        <svg className="flex-shrink-0 text-white" width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
       {open && (
         <div className="absolute left-0 right-0 bottom-[calc(100%+6px)] z-[600] flex max-h-[240px] flex-col overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a1a1a] shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
@@ -647,7 +647,7 @@ export function RentMapSection() {
                   <label className="mb-1 block text-[9px] font-medium uppercase tracking-[1px] text-white" style={{ fontFamily: "var(--font-ui)" }}>Monthly Rent</label>
                   <div className="flex items-baseline gap-1.5 border-b border-white/10 pb-1 transition-colors focus-within:border-[#ff9a6d]">
                     <span className="text-[14px] text-white" style={{ fontFamily: "var(--font-ui)" }}>₹</span>
-                    <input type="text" inputMode="numeric" placeholder="25,000" value={rentInput} onChange={handleRentChange} onKeyDown={(e) => e.key === "Enter" && handleCheck()} className="w-full bg-transparent text-[14px] text-white placeholder-[#444] outline-none" style={{ fontFamily: "var(--font-ui)" }} />
+                    <input type="text" inputMode="numeric" placeholder="25,000" value={rentInput} onChange={handleRentChange} onKeyDown={(e) => e.key === "Enter" && handleCheck()} className="w-full bg-transparent text-[14px] text-white placeholder-white/40 outline-none" style={{ fontFamily: "var(--font-ui)" }} />
                   </div>
                 </div>
                 <Button fullWidth onClick={handleCheck} disabled={rent < 5000 || !selectedArea || checking}>{checking ? "Checking…" : "Check eligibility"}</Button>
@@ -668,7 +668,7 @@ export function RentMapSection() {
                   <label className="mb-1.5 block text-[9px] font-medium uppercase tracking-[1px] text-white" style={{ fontFamily: "var(--font-ui)" }}>Monthly Rent</label>
                   <div className="flex items-baseline gap-1.5 border-b border-white/10 pb-1.5 transition-colors focus-within:border-[#ff9a6d]">
                     <span className="text-[14px] text-white" style={{ fontFamily: "var(--font-ui)" }}>₹</span>
-                    <input type="text" inputMode="numeric" placeholder="25,000" value={rentInput} onChange={handleRentChange} onKeyDown={(e) => e.key === "Enter" && handleCheck()} className="w-24 bg-transparent text-[14px] text-white placeholder-[#444] outline-none" style={{ fontFamily: "var(--font-ui)" }} />
+                    <input type="text" inputMode="numeric" placeholder="25,000" value={rentInput} onChange={handleRentChange} onKeyDown={(e) => e.key === "Enter" && handleCheck()} className="w-24 bg-transparent text-[14px] text-white placeholder-white/40 outline-none" style={{ fontFamily: "var(--font-ui)" }} />
                   </div>
                 </div>
               </div>
