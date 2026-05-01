@@ -12,7 +12,7 @@ export function Stats({ data }: { data: StatsContent }) {
         <div className="py-12 md:py-20 lg:px-[120px] lg:py-[80px]">
           <div className="flex flex-col gap-8 lg:gap-[40px]">
             {/* Eyebrow + heading */}
-            <div className="flex flex-col gap-3 text-center lg:gap-[16px] lg:text-left">
+            <div className="flex flex-col gap-3 text-center lg:gap-[16px]">
               <SlideUp>
                 <p
                   className="text-sm leading-[1.6] text-[#797979] md:text-base lg:text-[20px] lg:leading-[32px]"
@@ -37,7 +37,7 @@ export function Stats({ data }: { data: StatsContent }) {
 
             {/* Stats row — horizontal on desktop, stacked on mobile */}
             <FadeIn delay={0.2}>
-              <div className="flex flex-col gap-6 md:flex-row md:items-center md:gap-10 lg:gap-[64px]">
+              <div className="flex flex-col items-center gap-6 md:flex-row md:flex-wrap md:justify-center md:gap-10 lg:gap-[64px]">
                 {data.stats.map((stat, i) => (
                   <div key={i} className="flex items-center gap-3">
                     {/* Check icon */}

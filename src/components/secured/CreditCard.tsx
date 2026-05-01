@@ -68,10 +68,10 @@ export function CreditCard({ data }: { data: CreditCardContent }) {
       {data.heading && (
         <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
           <div className="py-12 md:py-20 lg:px-[120px] lg:pb-[64px] lg:pt-[64px]">
-            <div className="text-center lg:text-left">
+            <div className="text-center">
               <motion.h2
                 ref={headingRef}
-                className="mx-auto max-w-[600px] text-[28px] leading-[1.3] tracking-[-1px] text-white md:text-[36px] lg:mx-0 lg:max-w-[715px] lg:text-[40px] lg:leading-[1.5] lg:tracking-[-0.88px]"
+                className="mx-auto max-w-[600px] text-[28px] leading-[1.3] tracking-[-1px] text-white md:text-[36px] lg:max-w-[715px] lg:text-[40px] lg:leading-[1.5] lg:tracking-[-0.88px]"
                 style={{ fontFamily: "var(--font-ui)", whiteSpace: "pre-line" }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={headingInView ? { opacity: 1, y: 0 } : {}}
