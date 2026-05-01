@@ -95,7 +95,7 @@ export function TrustSection({ data, variant = "tenant" }: { data: TrustContent;
     );
   }
 
-  const headingParts = data.heading.split(/(INR 20\+ crores)/i);
+  const headingParts = data.heading.split(/(INR 20 crores\+)/i);
 
   return (
     <section className="relative bg-[#131313]">
