@@ -9,7 +9,7 @@ import { REAL_BUILDINGS } from "@/components/secured/data/real-buildings";
 export const runtime = "edge";
 export const preferredRegion = ["bom1", "sin1"];
 
-const COVERAGE_RADIUS_KM = 5;
+const COVERAGE_RADIUS_KM = 3;
 
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
