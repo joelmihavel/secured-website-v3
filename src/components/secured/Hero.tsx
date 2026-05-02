@@ -233,7 +233,7 @@ function formatINR(amount: number): string {
 
 type EligibilityStep = "form" | "eligible" | "not-eligible" | "not-serviceable";
 
-const COVERAGE_RADIUS_KM = 5;
+const COVERAGE_RADIUS_KM = 3;
 
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
