@@ -10,7 +10,7 @@ export function getWhatsAppNumber(): string {
 
 // Dedicated landlord-team WhatsApp number used for callback CTAs on
 // /secured/landlord. Separate from the main flent.in number (NEXT_PUBLIC_WHATSAPP_NUMBER).
-const LANDLORD_WHATSAPP_NUMBER = "919422639236";
+const LANDLORD_WHATSAPP_NUMBER = "919741327879";
 
 export function buildWhatsAppWaMeLink(message: string, phoneOverride?: string): string {
   const phone = phoneOverride
