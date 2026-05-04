@@ -619,7 +619,6 @@ export function ComparisonTableSection(props: ComparisonTableSectionProps) {
                 <EditCell
                   value={flentRent}
                   onChange={setFlentRent}
-                  suffix="/mo"
                   variant="mobileFlat"
                   onCommit={(newValue, previousValue) =>
                     onInputCommit("flent_rent", newValue, previousValue)
@@ -641,7 +640,6 @@ export function ComparisonTableSection(props: ComparisonTableSectionProps) {
                 <EditCell
                   value={effTradRent}
                   onChange={setTradRent}
-                  suffix="/mo"
                   variant="mobileFlat"
                   onCommit={(newValue, previousValue) =>
                     onInputCommit("traditional_rent", newValue, previousValue)
@@ -663,7 +661,6 @@ export function ComparisonTableSection(props: ComparisonTableSectionProps) {
                 <EditCell
                   value={effMaint}
                   onChange={setTradMaint}
-                  suffix="/mo"
                   variant="mobileFlat"
                   onCommit={(newValue, previousValue) =>
                     onInputCommit("traditional_maintenance", newValue, previousValue)

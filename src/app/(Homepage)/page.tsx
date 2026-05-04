@@ -26,7 +26,14 @@ export default async function Home() {
       <AsSeenIn />
       <Homes properties={properties} locations={locations} rooms={rooms} occupants={occupants} />
       <Info />
-      <MarqueeSection {...MARQUEE_DEFAULT_PROPS} />
+      <MarqueeSection
+        {...MARQUEE_DEFAULT_PROPS}
+        topPrefixText="Others connect you to "
+        topEmphasisText="landlords"
+        topStripClassName="border-0 bg-transparent"
+        topTextClassName="text-text-main/20"
+        bottomBackgroundClassName="bg-forest-green"
+      />
       <Neighborhoods locations={locations} properties={activeProperties} />
       <Community />
       <ComingSoon properties={properties} locations={locations} rooms={rooms} occupants={occupants} />
