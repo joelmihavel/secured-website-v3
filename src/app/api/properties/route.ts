@@ -25,15 +25,20 @@ export async function GET() {
     return Response.json([], { status: 500 });
   }
 
-  const buildings = data.map((row) => ({
-    id: row.id,
-    area: row.area,
-    bhk: row.configuration,
-    rent: row.rent,
-    cashback: Math.round(row.rent * 0.01) * 12,
-    lat: row.lat,
-    lng: row.lng,
-  }));
+  const buildings = data
+    .filter((row) => {
+      const bedrooms = parseInt(row.configuration) || 1;
+      return row.rent / bedrooms >= 18000;
+    })
+    .map((row) => ({
+      id: row.id,
+      area: row.area,
+      bhk: row.configuration,
+      rent: row.rent,
+      cashback: Math.round(row.rent * 0.01) * 12,
+      lat: row.lat,
+      lng: row.lng,
+    }));
 
   return Response.json(buildings, {
     headers: {
