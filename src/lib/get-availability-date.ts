@@ -23,28 +23,40 @@ export const getAvailabilityDate = (room: Room): string => {
 }
 
 export const getAvailabilityDateForProperty = (rooms: Room[]): string => {
-    const roomsAvailable = rooms.map(r => getAvailabilityDate(r))
+    if (rooms.length === 0) return OCCUPIED_LABEL;
 
-    const uniqueRoomsAvailable = [...new Set(roomsAvailable)]
+    const now = new Date();
+    const availableRooms = rooms.filter((room) => room.fieldData.available);
 
-   
-    if(uniqueRoomsAvailable.length === 1){
-        return uniqueRoomsAvailable[0]
-    }
+    if (availableRooms.length === 0) return OCCUPIED_LABEL;
 
-    if(uniqueRoomsAvailable.length === 2){
-        if(uniqueRoomsAvailable.includes(AVAILABLE_NOW_LABEL)){
-            return AVAILABLE_NOW_LABEL
+    const immediateAvailability = availableRooms.some((room) => {
+        const availableFrom = room.fieldData["available-from"];
+        if (!availableFrom) return true;
+
+        const parsedDate = new Date(availableFrom);
+        return Number.isNaN(parsedDate.getTime()) || parsedDate <= now;
+    });
+
+    if (immediateAvailability) return AVAILABLE_NOW_LABEL;
+
+    let closestFutureDate: Date | null = null;
+
+    availableRooms.forEach((room) => {
+        const availableFrom = room.fieldData["available-from"];
+        if (!availableFrom) return;
+
+        const parsedDate = new Date(availableFrom);
+        if (Number.isNaN(parsedDate.getTime()) || parsedDate <= now) return;
+
+        if (!closestFutureDate || parsedDate < closestFutureDate) {
+            closestFutureDate = parsedDate;
         }
-        const filterAvailaleFromRoom = uniqueRoomsAvailable.filter((room) => room !== OCCUPIED_LABEL)
-        if(filterAvailaleFromRoom.length === 1){
-            return filterAvailaleFromRoom[0]
-        }
-    }
+    });
 
-    if(uniqueRoomsAvailable.length === 3){
-        return AVAILABLE_NOW_LABEL
-    }
+    if (!closestFutureDate) return AVAILABLE_NOW_LABEL;
 
-    return uniqueRoomsAvailable.join(", ")
+    const day = closestFutureDate.getDate();
+    const month = closestFutureDate.toLocaleString('default', { month: 'short' });
+    return `Available from ${month} ${day}`;
 }
