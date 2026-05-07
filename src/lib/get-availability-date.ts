@@ -40,19 +40,19 @@ export const getAvailabilityDateForProperty = (rooms: Room[]): string => {
 
     if (immediateAvailability) return AVAILABLE_NOW_LABEL;
 
-    let closestFutureDate: Date | null = null;
-
-    availableRooms.forEach((room) => {
+    const closestFutureDate = availableRooms.reduce<Date | null>((closest, room) => {
         const availableFrom = room.fieldData["available-from"];
-        if (!availableFrom) return;
+        if (!availableFrom) return closest;
 
         const parsedDate = new Date(availableFrom);
-        if (Number.isNaN(parsedDate.getTime()) || parsedDate <= now) return;
+        if (Number.isNaN(parsedDate.getTime()) || parsedDate <= now) return closest;
 
-        if (!closestFutureDate || parsedDate < closestFutureDate) {
-            closestFutureDate = parsedDate;
+        if (!closest || parsedDate < closest) {
+            return parsedDate;
         }
-    });
+
+        return closest;
+    }, null);
 
     if (!closestFutureDate) return AVAILABLE_NOW_LABEL;
 
