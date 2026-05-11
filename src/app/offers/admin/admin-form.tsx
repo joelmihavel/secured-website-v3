@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/app/offers/_components/ui/button";
 import { Input } from "@/app/offers/_components/ui/input";
 import { Label } from "@/app/offers/_components/ui/label";
@@ -9,7 +9,7 @@ import { Checkbox } from "@/app/offers/_components/ui/checkbox";
 import { DEFAULT_TERMS } from "@/app/offers/_lib/constants";
 import { createOffer } from "./actions";
 import type { OfferInsert } from "@/app/offers/_types/offer";
-import { Plus, Copy } from "lucide-react";
+import { CheckCircle2, Copy, ExternalLink, MailCheck, Plus, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 
 const SUPPLY_TEAM_CREATORS = [
@@ -33,7 +33,9 @@ const FURNISHING_OPTIONS = [
 const PROPERTY_TYPE_OPTIONS = [
   "1 BHK",
   "2 BHK",
+  "2.5 BHK",
   "3 BHK",
+  "3.5 BHK",
   "4 BHK",
   "5 BHK",
   "6 BHK",
@@ -48,6 +50,12 @@ const PARKING_TYPE_OPTIONS = [
 ] as const;
 
 const UNIT_COUNT_OPTIONS = Array.from({ length: 20 }, (_, i) => String(i + 1));
+const WHATSAPP_COUNTRY_OPTIONS = [
+  { code: "+91", label: "India", localDigits: 10 },
+  { code: "+971", label: "UAE", localDigits: 9 },
+  { code: "+1", label: "US/Canada", localDigits: 10 },
+  { code: "+44", label: "UK", localDigits: 10 },
+] as const;
 
 const RENT_FREE_NONE = "__none__";
 const RENT_FREE_TBD = "__tbd__";
@@ -74,11 +82,18 @@ const RENT_INCREMENT_MODE_TBD = "tbd";
 
 const MAINTENANCE_MODE_AMOUNT = "amount";
 const MAINTENANCE_MODE_ACTUALS = "actuals";
+const MAINTENANCE_MODE_INCLUDED = "included";
 const MAINTENANCE_AS_PER_ACTUALS = "As per actuals";
+const MAINTENANCE_INCLUDED_IN_RENT = "Included in Rent";
+
+const PARTNERSHIP_BONUS_MODE_APPLICABLE = "applicable";
+const PARTNERSHIP_BONUS_MODE_NOT_APPLICABLE = "not_applicable";
 
 const initialForm: Record<string, string> = {
   landlord_name: "",
   landlord_email: "",
+  landlord_whatsapp_number: "",
+  google_maps_address_link: "",
   property_name: "",
   rent_amount: "",
   security_deposit: "",
@@ -88,6 +103,7 @@ const initialForm: Record<string, string> = {
 
 export default function AdminForm() {
   const [form, setForm] = useState(initialForm);
+  const [whatsappCountryCode, setWhatsappCountryCode] = useState("+91");
   const [furnishingState, setFurnishingState] = useState("");
   const [serviceTermChoice, setServiceTermChoice] = useState<
     "11" | "22" | "33" | "custom"
@@ -105,7 +121,9 @@ export default function AdminForm() {
     typeof DATE_MODE_DATE | typeof DATE_MODE_TBD
   >(DATE_MODE_DATE);
   const [maintenanceMode, setMaintenanceMode] = useState<
-    typeof MAINTENANCE_MODE_AMOUNT | typeof MAINTENANCE_MODE_ACTUALS
+    | typeof MAINTENANCE_MODE_AMOUNT
+    | typeof MAINTENANCE_MODE_ACTUALS
+    | typeof MAINTENANCE_MODE_INCLUDED
   >(MAINTENANCE_MODE_AMOUNT);
   const [maintenanceAmount, setMaintenanceAmount] = useState("");
   const [propertyTypeLayout, setPropertyTypeLayout] = useState("");
@@ -113,6 +131,10 @@ export default function AdminForm() {
   const [parkingType, setParkingType] = useState("");
   const [parkingUnitCount, setParkingUnitCount] = useState("1");
   const [noticePeriodChoice, setNoticePeriodChoice] = useState("1 month");
+  const [partnershipBonusMode, setPartnershipBonusMode] = useState<
+    typeof PARTNERSHIP_BONUS_MODE_APPLICABLE | typeof PARTNERSHIP_BONUS_MODE_NOT_APPLICABLE
+  >(PARTNERSHIP_BONUS_MODE_NOT_APPLICABLE);
+  const [partnershipBonusAmount, setPartnershipBonusAmount] = useState("");
 
   const [creatorName, setCreatorName] = useState("");
   const [selectedTerms, setSelectedTerms] = useState<string[]>(() =>
@@ -121,9 +143,11 @@ export default function AdminForm() {
   const [customTerm, setCustomTerm] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [emailSentOnSuccess, setEmailSentOnSuccess] = useState<boolean | null>(null);
   const [lastOfferUrl, setLastOfferUrl] = useState<string | null>(null);
   const [copyFeedback, setCopyFeedback] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const successCardRef = useRef<HTMLDivElement | null>(null);
   const isPresetCreator = SUPPLY_TEAM_CREATORS.some((name) => name === creatorName);
 
   const toggleTerm = (term: string, checked: boolean) => {
@@ -186,6 +210,7 @@ export default function AdminForm() {
     e.preventDefault();
     setError(null);
     setStatusMessage(null);
+    setEmailSentOnSuccess(null);
     setLastOfferUrl(null);
     setCopyFeedback(false);
     setSubmitting(true);
@@ -211,6 +236,25 @@ export default function AdminForm() {
 
     if (!parkingType) {
       setError("Please select a parking option.");
+      setSubmitting(false);
+      return;
+    }
+
+    const whatsappCountry = WHATSAPP_COUNTRY_OPTIONS.find(
+      (option) => option.code === whatsappCountryCode
+    );
+    const normalizedWhatsappDigits = form.landlord_whatsapp_number.replace(/\D/g, "");
+    if (!whatsappCountry || normalizedWhatsappDigits.length !== whatsappCountry.localDigits) {
+      const requiredDigits = whatsappCountry?.localDigits ?? 10;
+      setError(
+        `Please enter a valid WhatsApp number for ${whatsappCountryCode} (${requiredDigits} digits).`
+      );
+      setSubmitting(false);
+      return;
+    }
+
+    if (!form.google_maps_address_link.trim()) {
+      setError("Please enter the Google Maps address link.");
       setSubmitting(false);
       return;
     }
@@ -243,6 +287,8 @@ export default function AdminForm() {
     let maintenanceValue: string;
     if (maintenanceMode === MAINTENANCE_MODE_ACTUALS) {
       maintenanceValue = MAINTENANCE_AS_PER_ACTUALS;
+    } else if (maintenanceMode === MAINTENANCE_MODE_INCLUDED) {
+      maintenanceValue = MAINTENANCE_INCLUDED_IN_RENT;
     } else {
       const maintenanceNum = Number(maintenanceAmount);
       if (
@@ -250,16 +296,37 @@ export default function AdminForm() {
         !Number.isFinite(maintenanceNum) ||
         maintenanceNum < 0
       ) {
-        setError("Please enter a valid maintenance amount (Rs), or choose As per actuals.");
+        setError(
+          "Please enter a valid maintenance amount (Rs), or choose As per actuals or Included in Rent."
+        );
         setSubmitting(false);
         return;
       }
       maintenanceValue = String(maintenanceNum);
     }
 
+    let partnershipAssociationBonusAmount: number | null = null;
+    if (partnershipBonusMode === PARTNERSHIP_BONUS_MODE_APPLICABLE) {
+      const bonusNum = Number(partnershipBonusAmount);
+      if (
+        partnershipBonusAmount === "" ||
+        !Number.isFinite(bonusNum) ||
+        bonusNum < 0
+      ) {
+        setError(
+          "Please enter a valid Partnership Association Bonus amount (Rs), or select Not applicable."
+        );
+        setSubmitting(false);
+        return;
+      }
+      partnershipAssociationBonusAmount = bonusNum;
+    }
+
     const payload: OfferInsert = {
       landlord_name: form.landlord_name,
       landlord_email: form.landlord_email,
+      landlord_whatsapp_number: `${whatsappCountryCode}${normalizedWhatsappDigits}`,
+      google_maps_address_link: form.google_maps_address_link.trim(),
       created_by: normalizedCreatorName,
       property_name: form.property_name,
       property_type: buildPropertyTypeForPayload(propertyTypeLayout, propertyUnitCount),
@@ -278,6 +345,7 @@ export default function AdminForm() {
       rent_start_date:
         rentStartDateMode === DATE_MODE_TBD ? STORED_TBD : form.rent_start_date,
       maintenance: maintenanceValue,
+      partnership_association_bonus_amount: partnershipAssociationBonusAmount,
       notice_period: noticePeriodChoice,
       selected_terms: selectedTerms,
     };
@@ -288,8 +356,10 @@ export default function AdminForm() {
     if (result.success) {
       setLastOfferUrl(result.offerUrl);
       if (result.emailSent) {
+        setEmailSentOnSuccess(true);
         setStatusMessage(`✓ Offer created successfully. Email sent to ${form.landlord_email}`);
       } else {
+        setEmailSentOnSuccess(false);
         const reason = result.emailError ? ` (${result.emailError})` : "";
         setStatusMessage(
           `✓ Offer created. Email failed to send${reason} — please share the link manually.`
@@ -331,6 +401,12 @@ export default function AdminForm() {
     form.key_handover_date,
     form.rent_start_date,
   ]);
+
+  useEffect(() => {
+    if (!statusMessage) return;
+    successCardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    successCardRef.current?.focus();
+  }, [statusMessage]);
 
   return (
     <div className="min-h-screen bg-flent-off-white">
@@ -433,6 +509,76 @@ export default function AdminForm() {
                   value={form.landlord_email}
                   onChange={(e) => setForm((f) => ({ ...f, landlord_email: e.target.value }))}
                   placeholder="e.g. name@example.com"
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label
+                  htmlFor="landlord_whatsapp_number"
+                  className="text-xs font-semibold text-flent-brown"
+                >
+                  Landlord WhatsApp number
+                </Label>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-[190px_minmax(0,1fr)]">
+                  <select
+                    id="landlord_whatsapp_country_code"
+                    className={INPUT_LIKE_SELECT}
+                    value={whatsappCountryCode}
+                    onChange={(e) => {
+                      const nextCode = e.target.value;
+                      const nextCountry = WHATSAPP_COUNTRY_OPTIONS.find(
+                        (option) => option.code === nextCode
+                      );
+                      setWhatsappCountryCode(nextCode);
+                      if (!nextCountry) return;
+                      setForm((f) => ({
+                        ...f,
+                        landlord_whatsapp_number: f.landlord_whatsapp_number
+                          .replace(/\D/g, "")
+                          .slice(0, nextCountry.localDigits),
+                      }));
+                    }}
+                    required
+                  >
+                    {WHATSAPP_COUNTRY_OPTIONS.map((option) => (
+                      <option key={option.code} value={option.code}>
+                        {option.label} ({option.code})
+                      </option>
+                    ))}
+                  </select>
+                  <Input
+                    id="landlord_whatsapp_number"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={form.landlord_whatsapp_number}
+                    onChange={(e) => {
+                      const selectedCountry = WHATSAPP_COUNTRY_OPTIONS.find(
+                        (option) => option.code === whatsappCountryCode
+                      );
+                      const maxDigits = selectedCountry?.localDigits ?? 10;
+                      const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, maxDigits);
+                      setForm((f) => ({ ...f, landlord_whatsapp_number: digitsOnly }));
+                    }}
+                    placeholder="Enter WhatsApp number"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label
+                  htmlFor="google_maps_address_link"
+                  className="text-xs font-semibold text-flent-brown"
+                >
+                  Google Maps address link
+                </Label>
+                <Input
+                  id="google_maps_address_link"
+                  type="url"
+                  value={form.google_maps_address_link}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, google_maps_address_link: e.target.value }))
+                  }
+                  placeholder="https://maps.google.com/..."
                   required
                 />
               </div>
@@ -599,13 +745,18 @@ export default function AdminForm() {
                   value={maintenanceMode}
                   onChange={(e) => {
                     const v = e.target.value;
-                    if (v === MAINTENANCE_MODE_AMOUNT || v === MAINTENANCE_MODE_ACTUALS) {
+                    if (
+                      v === MAINTENANCE_MODE_AMOUNT ||
+                      v === MAINTENANCE_MODE_ACTUALS ||
+                      v === MAINTENANCE_MODE_INCLUDED
+                    ) {
                       setMaintenanceMode(v);
                     }
                   }}
                 >
                   <option value={MAINTENANCE_MODE_AMOUNT}>Specify amount (Rs)</option>
                   <option value={MAINTENANCE_MODE_ACTUALS}>{MAINTENANCE_AS_PER_ACTUALS}</option>
+                  <option value={MAINTENANCE_MODE_INCLUDED}>{MAINTENANCE_INCLUDED_IN_RENT}</option>
                 </select>
                 {maintenanceMode === MAINTENANCE_MODE_AMOUNT && (
                   <Input
@@ -616,6 +767,44 @@ export default function AdminForm() {
                     value={maintenanceAmount}
                     onChange={(e) => setMaintenanceAmount(e.target.value)}
                     placeholder="e.g. 5000"
+                  />
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label
+                  htmlFor="partnership_bonus_mode"
+                  className="text-xs font-semibold text-flent-brown"
+                >
+                  Partnership Association Bonus
+                </Label>
+                <select
+                  id="partnership_bonus_mode"
+                  className={INPUT_LIKE_SELECT}
+                  value={partnershipBonusMode}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (
+                      v === PARTNERSHIP_BONUS_MODE_APPLICABLE ||
+                      v === PARTNERSHIP_BONUS_MODE_NOT_APPLICABLE
+                    ) {
+                      setPartnershipBonusMode(v);
+                    }
+                  }}
+                  required
+                >
+                  <option value={PARTNERSHIP_BONUS_MODE_APPLICABLE}>Applicable</option>
+                  <option value={PARTNERSHIP_BONUS_MODE_NOT_APPLICABLE}>Not applicable</option>
+                </select>
+                {partnershipBonusMode === PARTNERSHIP_BONUS_MODE_APPLICABLE && (
+                  <Input
+                    id="partnership_bonus_amount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={partnershipBonusAmount}
+                    onChange={(e) => setPartnershipBonusAmount(e.target.value)}
+                    placeholder="Amount (Rs)"
+                    required
                   />
                 )}
               </div>
@@ -865,37 +1054,80 @@ export default function AdminForm() {
             </div>
           )}
           {statusMessage && (
-            <div className="text-sm font-medium text-flent-forest">
-              {statusMessage}
-            </div>
-          )}
-          {lastOfferUrl && (
-            <div className="space-y-2 rounded-lg border border-flent-pastel-brown bg-flent-off-white/80 px-4 py-3">
-              <p className="text-xs font-semibold text-flent-brown">Offer link</p>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <Input
-                  readOnly
-                  value={lastOfferUrl}
-                  className="font-mono text-xs text-flent-black sm:min-w-0 sm:flex-1"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(lastOfferUrl);
-                      setCopyFeedback(true);
-                      window.setTimeout(() => setCopyFeedback(false), 2000);
-                    } catch {
-                      setCopyFeedback(false);
-                    }
-                  }}
-                  className="shrink-0 border-flent-pastel-brown text-sm font-semibold text-flent-brown hover:border-flent-brown hover:bg-flent-pastel-brown/40"
-                >
-                  <Copy className="mr-1.5 h-4 w-4" />
-                  {copyFeedback ? "Copied" : "Copy link"}
-                </Button>
+            <div
+              ref={successCardRef}
+              tabIndex={-1}
+              className="space-y-3 rounded-xl border border-green-300 bg-green-50/90 px-4 py-4 shadow-sm outline-none"
+              role="status"
+              aria-live="polite"
+            >
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-green-700" />
+                <div className="space-y-1">
+                  <p className="text-base font-semibold text-green-900">Offer created successfully</p>
+                  <p className="text-sm font-medium text-green-900/90">{statusMessage}</p>
+                </div>
               </div>
+              <div
+                className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium ${
+                  emailSentOnSuccess
+                    ? "border-green-300 bg-white text-green-900"
+                    : "border-amber-300 bg-amber-50 text-amber-900"
+                }`}
+              >
+                {emailSentOnSuccess ? (
+                  <MailCheck className="h-4 w-4 shrink-0" />
+                ) : (
+                  <TriangleAlert className="h-4 w-4 shrink-0" />
+                )}
+                <span>
+                  {emailSentOnSuccess
+                    ? "Email delivery confirmed."
+                    : "Offer was created, but email failed. Share the link manually."}
+                </span>
+              </div>
+              {lastOfferUrl && (
+                <div className="space-y-2 rounded-lg border border-green-200 bg-white px-3 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-green-800">
+                    Offer link
+                  </p>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <Input
+                      readOnly
+                      value={lastOfferUrl}
+                      className="font-mono text-xs text-flent-black sm:min-w-0 sm:flex-1"
+                    />
+                    <div className="flex gap-2">
+                      <a
+                        href={lastOfferUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-1 rounded-md border border-green-300 bg-white px-3 py-2 text-sm font-semibold text-green-900 hover:border-green-500 hover:bg-green-100"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Open offer
+                      </a>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(lastOfferUrl);
+                            setCopyFeedback(true);
+                            window.setTimeout(() => setCopyFeedback(false), 2000);
+                          } catch {
+                            setCopyFeedback(false);
+                          }
+                        }}
+                        className="shrink-0 border-green-300 bg-white text-sm font-semibold text-green-900 hover:border-green-500 hover:bg-green-100"
+                      >
+                        <Copy className="mr-1.5 h-4 w-4" />
+                        {copyFeedback ? "Copied" : "Copy link"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
           <button
@@ -903,7 +1135,11 @@ export default function AdminForm() {
             disabled={submitting}
             className="cta-button cta-button--sm w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {submitting ? "Creating offer..." : "Create offer & send email"}
+            {submitting
+              ? "Creating offer..."
+              : statusMessage
+                ? "Create another offer"
+                : "Create offer & send email"}
           </button>
         </form>
       </main>

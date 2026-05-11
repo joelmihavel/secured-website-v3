@@ -4,9 +4,9 @@ import { createServerClient } from "@/app/offers/_lib/supabase/server";
 
 const TYPEFORM_URL = "https://flent.typeform.com/to/TfSGfvX0";
 const DRAFT_TRIPARTITE_LEAVE_LICENSE_URL =
-  "https://docs.google.com/document/d/11vcofm8uWhjQ3iq82mHq2jPEW7fuWt9k/edit";
+  "https://docs.google.com/document/d/1F90TjIIJcQLKf39m4PABS2krB78hQSELcFr73rVZ8nU/edit?usp=sharing";
 const DRAFT_AGREEMENT_URL =
-  "https://docs.google.com/document/d/1F90TjIIJcQLKf39m4PABS2krB78hQSELcFr73rVZ8nU/edit?tab=t.0";
+  "https://docs.google.com/document/d/11vcofm8uWhjQ3iq82mHq2jPEW7fuWt9k/edit";
 
 /** Public HTTPS URL so images load in email clients (localhost / preview URLs do not). */
 const FLENT_EMAIL_LOGO_URL = "https://www.flent.in/flent-logo-black.png";
@@ -80,10 +80,14 @@ type OfferRow = {
   rent_start_date: string;
   rent_free_period: string;
   maintenance?: string | null;
+  partnership_association_bonus_amount?: number | string | null;
   notice_period: string;
   selected_terms: unknown;
   agreed: boolean;
+  created_at: string;
 };
+
+const OFFER_EXPIRY_WINDOW_MS = 48 * 60 * 60 * 1000;
 
 function buildConfirmationEmailHtml(params: {
   landlordName: string;
@@ -100,6 +104,7 @@ function buildConfirmationEmailHtml(params: {
   rentFreePeriod: string;
   maintenance: string;
   noticePeriod: string;
+  partnershipAssociationBonusAmount: number | null;
   terms: string[];
   agreedAtIso: string;
 }): string {
@@ -118,6 +123,7 @@ function buildConfirmationEmailHtml(params: {
     rentStartDate,
     rentFreePeriod,
     noticePeriod,
+    partnershipAssociationBonusAmount,
     terms,
     agreedAtIso,
   } = params;
@@ -131,7 +137,7 @@ function buildConfirmationEmailHtml(params: {
     ? terms.map((t) => `<li style="margin:0 0 8px;">${escapeHtml(t)}</li>`).join("")
     : `<li style="margin:0;">No additional terms selected.</li>`;
 
-  const commercialRows: [string, string][] = [
+  const commercialPrefix: [string, string][] = [
     ["Property name / address", propertyName],
     ["Property type", propertyType],
     ["Furnishing state", furnishingState],
@@ -139,12 +145,29 @@ function buildConfirmationEmailHtml(params: {
     ["Monthly rent (₹)", formatCurrencyInEmail(rentAmount)],
     ["Security deposit (₹)", formatCurrencyInEmail(securityDeposit)],
     ["Maintenance", formatMaintenanceInEmail(maintenance)],
+  ];
+
+  const partnershipBonusRows: [string, string][] =
+    partnershipAssociationBonusAmount != null &&
+    Number.isFinite(partnershipAssociationBonusAmount)
+      ? [
+          [
+            "Partnership Association Bonus",
+            formatCurrencyInEmail(partnershipAssociationBonusAmount),
+          ],
+        ]
+      : [];
+
+  const commercialAfterBonus: [string, string][] = [
     ["Service term", serviceTerm],
     ["Rent increment", rentIncrement],
     ["Key handover date", formatDateInEmail(keyHandoverDate)],
     ["Rent start date", formatDateInEmail(rentStartDate)],
     ["Rent-free period", rentFreePeriod],
     ["Notice period", noticePeriod],
+  ];
+
+  const commercialStaticRows: [string, string][] = [
     [
       "Metered Utilities",
       "Payable by tenants as per actuals. Flent will assist the tenants in this process.",
@@ -153,6 +176,17 @@ function buildConfirmationEmailHtml(params: {
       "Move-in/out formalities",
       "Charges and formalities are the tenants' responsibility (if any). Flent will coordinate with the society, assist the landlord and tenants in this process.",
     ],
+    [
+      "★ Important note",
+      "Should there be any disagreement or inability to proceed with the mutually discussed repairs, we may have to discontinue the arrangement before the rent start date. In such a scenario, we would kindly request a full refund of the token or security deposit.",
+    ],
+  ];
+
+  const commercialRows: [string, string][] = [
+    ...commercialPrefix,
+    ...partnershipBonusRows,
+    ...commercialAfterBonus,
+    ...commercialStaticRows,
   ];
 
   return `
@@ -181,33 +215,42 @@ function buildConfirmationEmailHtml(params: {
             .join("")}
         </tbody>
       </table>
-      <p style="margin: 0 0 10px; font-size: 15px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #000000;">Terms &amp; conditions included</p>
+      <p style="margin: 0 0 10px; font-size: 15px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #000000;">Terms &amp; conditions mutually agreed upon</p>
       <ul style="margin: 0 0 24px; padding-left: 20px; font-size: 15px; color: #000000;">
         ${termItems}
       </ul>
-      <p style="margin: 0 0 16px; font-size: 15px; color: #000000;">
-        To get everything set up smoothly, please complete your Onboarding Form below. It only takes a few minutes.
+      <p style="margin: 0 0 10px; font-size: 15px; font-weight: 700; color: #000000;">
+        What's next?
       </p>
+      <p style="margin: 0 0 6px; font-size: 15px; font-weight: 700; color: #000000;">Step 1</p>
+      <p style="margin: 0 0 16px; font-size: 15px; color: #000000;">Complete Your Onboarding Form</p>
       <a href="${TYPEFORM_URL}" style="display: inline-block; background: #111827; color: #ffffff; text-decoration: none; padding: 12px 22px; border-radius: 0 14px 14px 0; border: 2px solid #ffffff; font-weight: 600; font-size: 15px;">
         Complete Onboarding Form →
       </a>
-      <p style="margin: 24px 0 0; font-size: 15px; color: #000000;">
-        Once your onboarding form is submitted, we'll transfer the token amount in your bank within 24 hours and share the authorization agreement with you, updated with your details, for your review. Upon approval, we'll initiate e-stamp and e-signing. Find a <a href="${DRAFT_AGREEMENT_URL}" style="color:rgb(0, 30, 255); text-decoration: underline;">draft of the agreement</a> here.
+      <p style="margin: 24px 0 6px; font-size: 15px; font-weight: 700; color: #000000;">Step 2</p>
+      <p style="margin: 0; font-size: 15px; font-weight: 700; color: #000000;">Token Transfer &amp; Authorization Agreement</p>
+      <p style="margin: 10px 0 0; font-size: 15px; color: #000000;">
+        Once your onboarding form is submitted, we'll transfer the token amount in your bank within 24 hours and share the authorization agreement with you, updated with your details, for your review. Upon approval, we'll initiate e-stamp and e-signing.
       </p>
+      <p style="margin: 10px 0 0; font-size: 15px; color: #000000;">
+        <a href="${DRAFT_AGREEMENT_URL}" style="color:rgb(0, 30, 255); text-decoration: underline;">View draft authorization agreement →</a>
+      </p>
+      <p style="margin: 16px 0 6px; font-size: 15px; font-weight: 700; color: #000000;">Step 3</p>
+      <p style="margin: 0; font-size: 15px; font-weight: 700; color: #000000;">Tripartite Leave and License Agreement</p>
       <p style="margin: 16px 0 0; font-size: 15px; color: #000000;">
         Once the Authorization Agreement is signed &amp; the ideal tenant(s) is identified, Flent will share the tripartite leave and license agreement for your review and signature. You will also receive each registered tenant's profile, background verification report (which may take up to two weeks), and other supporting documentation.
       </p>
-      <p style="margin: 16px 0 0; font-size: 15px; color: #000000;">
-        Our team ensures that all relevant details and updates are shared transparently with the landlord, society, and other stakeholders for a smooth onboarding experience. Find the <a href="${DRAFT_TRIPARTITE_LEAVE_LICENSE_URL}" style="color:rgb(0, 51, 255); text-decoration: underline;">draft tripartite leave and license agreement</a> here.
+      <p style="margin: 10px 0 0; font-size: 15px; color: #000000;">
+        <a href="${DRAFT_TRIPARTITE_LEAVE_LICENSE_URL}" style="color:rgb(0, 51, 255); text-decoration: underline;">View draft tripartite agreement →</a>
       </p>
-      <p style="margin: 24px 0 0; font-size: 15px; color: #000000;">
-        If you have any questions at all, reach out — we're here.
+      <p style="margin: 16px 0 0; font-size: 15px; color: #000000;">
+        Our team ensures that all relevant details and updates are shared transparently with the landlord, society, and other stakeholders for a smooth onboarding experience.
       </p>
       <p style="margin: 10px 0 0; font-size: 15px; color: #000000;">
         This email serves as a record of your accepted terms. Please keep it for your reference.
       </p>
       <p style="margin: 10px 0 0; font-size: 15px; color: #000000;">
-        Should there be any disagreement or inability to proceed with the mutually discussed repairs, we may have to discontinue the arrangement before the rent start date. In such a scenario, we would kindly request a full refund of the token or security deposit.
+        We are here to answer all your questions, so feel free to email us with your questions at raghav@flent.in / ashish@flent.in or give us a call at +91 99801 15003.
       </p>
       <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 15px; color: #000000;">
         <p style="margin: 0 0 4px; color: #000000;">Regards,</p>
@@ -261,6 +304,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true });
   }
 
+  const createdAtMs = Date.parse(offer.created_at);
+  if (!Number.isFinite(createdAtMs)) {
+    return NextResponse.json(
+      { success: false, error: "Offer expiry could not be validated" },
+      { status: 500 }
+    );
+  }
+
+  const offerExpiresAtMs = createdAtMs + OFFER_EXPIRY_WINDOW_MS;
+  if (Date.now() >= offerExpiresAtMs) {
+    return NextResponse.json(
+      { success: false, expired: true, error: "Offer has expired" },
+      { status: 410 }
+    );
+  }
+
   const { error: updateError } = await supabase
     .from("offers")
     .update({ agreed: true, agreed_at: agreedAt })
@@ -283,6 +342,13 @@ export async function POST(request: Request) {
   if (resendApiKey && offer.landlord_email) {
     try {
       const resend = new Resend(resendApiKey);
+      const rawBonus = offer.partnership_association_bonus_amount;
+      const bonusParsed =
+        rawBonus != null && rawBonus !== "" ? Number(rawBonus) : NaN;
+      const partnershipAssociationBonusAmount = Number.isFinite(bonusParsed)
+        ? bonusParsed
+        : null;
+
       const html = buildConfirmationEmailHtml({
         landlordName: offer.landlord_name,
         propertyName: offer.property_name,
@@ -298,6 +364,7 @@ export async function POST(request: Request) {
         rentStartDate: String(offer.rent_start_date),
         rentFreePeriod: String(offer.rent_free_period),
         noticePeriod: String(offer.notice_period),
+        partnershipAssociationBonusAmount,
         terms,
         agreedAtIso: agreedAt,
       });
@@ -305,8 +372,8 @@ export async function POST(request: Request) {
       const { data: emailData, error: emailError } = await resend.emails.send({
         from: "Flent <landlords@email.flent.in>",
         to: offer.landlord_email,
-        cc: ["homeowners@flent.in"],
-        replyTo: "aniket@flent.in",
+        cc: ["homeowners@flent.in", "ashish@flent.in"],
+        replyTo: "ashish@flent.in",
         subject: `Congratulations! Welcome to the Flent family, ${offer.landlord_name} 🎉`,
         html,
       });
