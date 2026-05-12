@@ -4,7 +4,7 @@ import React from "react";
 import { OpenSection } from "@/components/layout/OpenSection";
 import { Button } from "@/components/ui/Button";
 import Image from "next/image";
-import { getPropertyWhatsappLink } from "@/constants";
+import { getPropertyInterestMessage } from "@/constants";
 import { useMobile } from "@/hooks/useMobile";
 import { IconPhone as PhoneIcon, IconMessageCircle as MessageCircle } from "@tabler/icons-react";
 import { useWhatsAppCta } from "@/hooks/useWhatsAppCta";
@@ -50,9 +50,9 @@ interface HowItWorksProps {
 
 export const HowItWorks = ({ propertyName }: HowItWorksProps) => {
   const isMobile = useMobile();
-  const whatsAppCta = useWhatsAppCta(getPropertyWhatsappLink(propertyName), {
-    source: "how_it_works",
-    propertyName,
+  const whatsAppCta = useWhatsAppCta(getPropertyInterestMessage(propertyName), {
+    format: "wa.me",
+    tracking: { source: "how_it_works", propertyName },
   });
   return (
     <OpenSection id="how-it-works" className="py-20">

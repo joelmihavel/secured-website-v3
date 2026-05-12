@@ -1,18 +1,26 @@
 "use client";
 
-import { useCallback } from "react";
-import { useMobile } from "@/hooks/useMobile";
-import { openChat } from "@/lib/open-chat";
-import { appendWaxToWhatsAppUrl, getWaxSessionCode } from "@/lib/wax";
+import { useCallback, useEffect, useState } from "react";
+import {
+  composeWhatsAppLink,
+  getWhatsAppNumber,
+  type WhatsAppLinkFormat,
+} from "@/lib/whatsapp";
+import { getWaxSessionCode } from "@/lib/wax";
 import {
   trackWhatsAppCtaClicked,
   WhatsAppCtaSource,
 } from "@/lib/posthog-tracking";
 
 /**
- * Props to spread onto a Button (or <a>) that opens WhatsApp.
- * On desktop: prevents navigation and opens URL in a new tab via openChat().
- * On mobile: allows default link behavior (opens WhatsApp app or web).
+ * Props to spread onto a Button (or `<a>`) that opens WhatsApp.
+ *
+ * `href` is rendered eagerly with the latest known WAX code so copy-link,
+ * cmd-click, right-click "open in new tab", and share-link all carry attribution.
+ * `onClick` re-reads the WAX code synchronously and rewrites
+ * `e.currentTarget.href` so actual click navigation always uses the freshest
+ * value. There is no `preventDefault` and no `window.open` — native navigation
+ * fires on both desktop and mobile so the WhatsApp app launches correctly.
  */
 export interface WhatsAppCtaProps {
   href: string;
@@ -29,26 +37,48 @@ export interface WhatsAppTrackingContext {
   ctaId?: string;
 }
 
+export interface UseWhatsAppCtaOptions {
+  format: WhatsAppLinkFormat;
+  tracking?: WhatsAppTrackingContext;
+}
+
 /**
- * Hook for WhatsApp / "Talk to us" / "Get a Call Back" CTAs.
- * Returns href, target, rel, and onClick so you can spread onto <Button href={...} />.
- * Use with data-cta-id and data-cta-context for PostHog tracking (Button tracks the click).
+ * Hook for WhatsApp CTAs.
  *
- * @param url - WhatsApp URL (e.g. from getPropertyWhatsappLink or WHATSAPP_LINK)
- * @param tracking - Optional tracking context for whatsapp_cta_clicked
- * @returns Props to spread onto Button: href, target, rel, onClick
+ * Subscribes to the `wax:ready` window event dispatched by
+ * `public/scripts/wax-attribution.js` after WAX is written to localStorage, so
+ * the eager `href` updates as soon as the script finishes initialising. This
+ * closes the race where React hydration completes before the attribution script
+ * has written its session code.
+ *
+ * @param message - The message body to prefill (without any WAX marker).
+ * @param options - Format ("wa.me" or "api.whatsapp.com") plus optional tracking.
  *
  * @example
- *   const whatsAppProps = useWhatsAppCta(getPropertyWhatsappLink(propertyName));
- *   <Button {...whatsAppProps} data-cta-id={CTA_IDS.LIGHTBOX_CHAT_WITH_US} data-cta-context="lightbox">
+ *   const whatsAppProps = useWhatsAppCta(
+ *     getPropertyInterestMessage(propertyName),
+ *     { format: "wa.me", tracking: { source: "lightbox", propertyName } }
+ *   );
+ *   <Button {...whatsAppProps} data-cta-id={CTA_IDS.LIGHTBOX_CHAT_WITH_US}>
  *     Chat with us
  *   </Button>
  */
 export function useWhatsAppCta(
-  url: string,
-  tracking?: WhatsAppTrackingContext
+  message: string,
+  options: UseWhatsAppCtaOptions
 ): WhatsAppCtaProps {
-  const isMobile = useMobile();
+  const { format, tracking } = options;
+  const [waxCode, setWaxCode] = useState("");
+
+  useEffect(() => {
+    setWaxCode(getWaxSessionCode());
+    const onReady = () => setWaxCode(getWaxSessionCode());
+    window.addEventListener("wax:ready", onReady);
+    return () => window.removeEventListener("wax:ready", onReady);
+  }, []);
+
+  const number = getWhatsAppNumber();
+  const href = composeWhatsAppLink({ message, format, number, waxCode });
 
   const onClick = useCallback(
     (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -63,18 +93,18 @@ export function useWhatsAppCta(
         });
       }
 
-      if (!isMobile) {
-        e.preventDefault();
-        const waxCode = getWaxSessionCode();
-        const urlWithWax = appendWaxToWhatsAppUrl(url, waxCode);
-        openChat(urlWithWax);
-      }
+      e.currentTarget.href = composeWhatsAppLink({
+        message,
+        format,
+        number,
+        waxCode: getWaxSessionCode(),
+      });
     },
-    [isMobile, url, tracking]
+    [message, format, number, tracking]
   );
 
   return {
-    href: url,
+    href,
     target: "_blank",
     rel: "noopener noreferrer",
     onClick,

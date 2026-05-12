@@ -61,6 +61,11 @@
     try {
       localStorage.setItem(CONFIG.storageKey, JSON.stringify(data));
       log('Saved attribution data:', data);
+      try {
+        window.dispatchEvent(new CustomEvent('wax:ready', {
+          detail: { code: data && data.sessionCode }
+        }));
+      } catch (e) {}
     } catch (error) {
       console.error('Error saving attribution data:', error);
     }

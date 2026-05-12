@@ -2,7 +2,7 @@
 
 import { useState, useEffect, type FormEvent } from "react"
 import { Eye } from "lucide-react"
-import { buildWhatsAppApiLink } from "@/lib/whatsapp"
+import { useWhatsAppCta } from "@/hooks/useWhatsAppCta"
 
 // Generate a "stable but dynamic" viewer count that changes every few minutes
 function getViewerCount(): number {
@@ -62,6 +62,10 @@ export function QualificationForm() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [viewerCount, setViewerCount] = useState(9)
+  const whatsAppCta = useWhatsAppCta(
+    "Found you via ads, excited to know more about Flent",
+    { format: "api.whatsapp.com" }
+  )
 
   // Set viewer count on client side and update periodically
   useEffect(() => {
@@ -129,11 +133,7 @@ export function QualificationForm() {
           <div className="mt-6 border-t border-border pt-6">
             <p className="mb-3 text-sm text-muted-foreground">Can't wait?</p>
             <a
-              href={buildWhatsAppApiLink(
-                "Found you via ads, excited to know more about Flent"
-              )}
-              target="_blank"
-              rel="noopener noreferrer"
+              {...whatsAppCta}
               className="inline-flex items-center gap-2 rounded-full bg-flent-green px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-flent-green/90"
             >
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">

@@ -3,20 +3,19 @@
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Button } from "@/components/ui/Button";
 import { CTA_IDS } from "@/lib/cta-ids";
-import { buildWhatsAppApiLink } from "@/lib/whatsapp";
 import { useWhatsAppCta } from "@/hooks/useWhatsAppCta";
 
 const HOME_INVENTORY_WHATSAPP_MESSAGE =
   "Curious to know more about Flent-tell me everything!";
 
 export function HomeInventorySection() {
-  const whatsAppCta = useWhatsAppCta(
-    buildWhatsAppApiLink(HOME_INVENTORY_WHATSAPP_MESSAGE),
-    {
+  const whatsAppCta = useWhatsAppCta(HOME_INVENTORY_WHATSAPP_MESSAGE, {
+    format: "api.whatsapp.com",
+    tracking: {
       source: "rent_calculator",
       ctaId: CTA_IDS.RENT_CALCULATOR_HOME_INVENTORY_CHAT,
-    }
-  );
+    },
+  });
 
   return (
     <section className="mt-5">

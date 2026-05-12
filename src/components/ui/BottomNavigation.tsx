@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { IconChevronUp as ChevronUp, IconPhone as PhoneIcon } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
-import { getPropertyWhatsappLink, WHATSAPP_LINK } from "@/constants";
+import { DEFAULT_INTEREST_MESSAGE, getPropertyInterestMessage } from "@/constants";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Property } from "@/lib/webflow";
 import { useMobile } from "@/hooks/useMobile";
@@ -30,7 +30,7 @@ const defaultPropertyNavLinks: NavLink[] = [
 interface BottomNavigationProps {
   property?: Property;
   customLinks?: NavLink[];
-  customWhatsappLink?: string;
+  customMessage?: string;
   showAtId?: string;
   showChat?: boolean;
 }
@@ -93,7 +93,7 @@ function useActiveSectionOnScroll(navLinks: NavLink[], showAtId: string) {
 export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   property,
   customLinks,
-  customWhatsappLink,
+  customMessage,
   showAtId = "rooms",
   showChat = true,
 }) => {
@@ -106,14 +106,19 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   const { activeSection, setActiveSection, showMobileNav } =
     useActiveSectionOnScroll(navLinks, showAtId);
 
-  const finalWhatsappLink = customWhatsappLink
-    ? customWhatsappLink
-    : (property ? getPropertyWhatsappLink(property.fieldData.name) : WHATSAPP_LINK);
+  const finalMessage = customMessage
+    ? customMessage
+    : property
+      ? getPropertyInterestMessage(property.fieldData.name)
+      : DEFAULT_INTEREST_MESSAGE;
 
-  const whatsAppCta = useWhatsAppCta(finalWhatsappLink, {
-    source: "bottom_nav",
-    propertySlug: property?.fieldData.slug,
-    propertyName: property?.fieldData.name,
+  const whatsAppCta = useWhatsAppCta(finalMessage, {
+    format: "wa.me",
+    tracking: {
+      source: "bottom_nav",
+      propertySlug: property?.fieldData.slug,
+      propertyName: property?.fieldData.name,
+    },
   });
 
   const handleLinkClick = (e: React.MouseEvent<HTMLElement>, href: string) => {

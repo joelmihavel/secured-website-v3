@@ -40,7 +40,7 @@ import {
 } from "@/lib/property-utils";
 import { motion } from "framer-motion";
 import { NotificationModal } from "@/components/ui/NotificationModal";
-import { getPropertyWhatsappLink } from "@/constants";
+import { getPropertyInterestMessage } from "@/constants";
 import { LockInSlider } from "@/components/homes/LockInSlider";
 import {
   LockInPeriod,
@@ -129,11 +129,14 @@ export const RoomSelection = ({
 }: RoomSelectionProps) => {
   const isMobile = useMobile();
   const whatsAppCta = useWhatsAppCta(
-    getPropertyWhatsappLink(property.fieldData.name),
+    getPropertyInterestMessage(property.fieldData.name),
     {
-      source: "property_page",
-      propertySlug: property.fieldData.slug,
-      propertyName: property.fieldData.name,
+      format: "wa.me",
+      tracking: {
+        source: "property_page",
+        propertySlug: property.fieldData.slug,
+        propertyName: property.fieldData.name,
+      },
     }
   );
   const isDebugMode = useDebugMode();

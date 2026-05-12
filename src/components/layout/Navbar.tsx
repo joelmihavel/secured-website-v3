@@ -15,8 +15,9 @@ import {
 } from "@/components/ui/breadcrumb";
 import { useBreadcrumb } from "@/context/BreadcrumbContext";
 import { cn } from "@/lib/utils";
-import { WHATSAPP_LINK } from "@/constants";
+import { DEFAULT_INTEREST_MESSAGE } from "@/constants";
 import { useCTATracking } from "@/hooks/useCTATracking";
+import { useWhatsAppCta } from "@/hooks/useWhatsAppCta";
 import { CTA_IDS, navbarBreadcrumbCtaId } from "@/lib/cta-ids";
 
 /** Single config for main nav links (All Homes, Our Story, Secured, For Owners). Used by both hamburger and expanded nav. */
@@ -84,6 +85,7 @@ const NavbarContent = ({ variant, activeTab, onTabChange }: NavbarProps) => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { trackCTAClick } = useCTATracking();
+    const contactCta = useWhatsAppCta(DEFAULT_INTEREST_MESSAGE, { format: "wa.me" });
     const isHome = pathname === "/";
     const isPropertyDetail = pathname.startsWith('/homes/') && pathname.split('/').length === 3;
     const { neighborhoodName } = useBreadcrumb();
@@ -553,15 +555,14 @@ const NavbarContent = ({ variant, activeTab, onTabChange }: NavbarProps) => {
                                 Our Story
                             </Button>
                             <Button
-                                href={WHATSAPP_LINK}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                                {...contactCta}
                                 className="w-full"
                                 size="sm"
                                 variant="ghost"
                                 data-cta-id={CTA_IDS.NAVBAR_CONTACT_US}
                                 data-cta-context="navbar"
-                                onClick={() => {
+                                onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                                    contactCta.onClick(e);
                                     setIsOpen(false);
                                 }}
                             >
