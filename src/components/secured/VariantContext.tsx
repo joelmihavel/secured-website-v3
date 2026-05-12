@@ -27,7 +27,10 @@ export function VariantProvider({ children }: { children: React.ReactNode }) {
   const setVariant = useCallback((v: Variant) => {
     setVariantState(v);
     const url = v === "landlord" ? "/secured/landlord" : "/secured";
-    window.history.pushState({}, "", url);
+    // Use replaceState directly (not pushState) so the browser back button
+    // doesn't treat tenant↔landlord as separate history entries, and skip
+    // the Next.js router entirely to prevent an RSC re-fetch.
+    window.history.replaceState(window.history.state, "", url);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 

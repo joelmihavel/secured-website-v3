@@ -30,6 +30,10 @@ import type { LucideIcon } from "lucide-react";
 type TimelineStep = {
   title: string;
   copy: string;
+  draftLink?: {
+    label: string;
+    href: string;
+  };
   icon: LucideIcon;
   bgColor: string;
   /** Calendar days from "today" for the dynamic date label (step 1 uses 0 → "Today"). */
@@ -54,6 +58,10 @@ const timelineSteps: TimelineStep[] = [
   {
     title: "Review and sign your agreement.",
     copy: "Post onboarding, we'll prepare the Authorization Agreement with your details and share it for review. Upon approval, we'll initiate e-stamp and e-signing. The remaining 50% of the deposit is transferred once the agreement is signed.",
+    draftLink: {
+      label: "View Authorization Agreement Draft",
+      href: "https://docs.google.com/document/d/11vcofm8uWhjQ3iq82mHq2jPEW7fuWt9k/edit?usp=sharing&ouid=116516460509675432141&rtpof=true&sd=true",
+    },
     icon: FileText,
     bgColor: "#ddd0c7",
     dayOffsetFromToday: 2,
@@ -75,6 +83,10 @@ const timelineSteps: TimelineStep[] = [
   {
     title: "Your verified tenant moves in. Your rent starts.",
     copy: "Once we place verified tenants, Flent will share the tripartite leave and license agreement for your review and signature to complete the rental agreement process. From the agreed rent start date, your monthly rent is paid in advance regardless of tenant placement.",
+    draftLink: {
+      label: "View Tripartite Agreement Draft",
+      href: "https://docs.google.com/document/d/1F90TjIIJcQLKf39m4PABS2krB78hQSELcFr73rVZ8nU/edit?usp=sharing",
+    },
     icon: Users,
     bgColor: "#ffe2d8",
     dayOffsetFromToday: 30,
@@ -104,25 +116,25 @@ const TERM_INFO: Record<TermInfoId, string> = {
   property_type:
     "Your home's details that Flent will manage under this partnership.",
   furnishing_state:
-    "How the home is equipped when Flent takes over — unfurnished, partially furnished, or fully furnished.",
+    "How the home is equipped when Flent takes over: unfurnished, partially furnished, or fully furnished.",
   parking:
     "Parking included with your property (covered, open, etc).",
   monthly_rent:
-    "Your guaranteed monthly payout — in your account, every month, no follow-ups needed.",
+    "Your guaranteed monthly rent payout in your account, every month, no follow-ups needed.",
   security_deposit:
     "The deposit Flent pays upfront to begin. Half is transferred post onboarding, the rest on agreement signing.",
   service_term:
     "The duration of Flent's managed-services commitment for your property.",
   rent_increment:
-    "The guaranteed rent increment applied annually over the service term.",
+    "The guaranteed rent increment % applied annually over the service term.",
   key_handover_date:
     "The date Flent takes possession of the keys so inspections and preparation can start.",
   staging_period:
-    "The window between key handover and rent start — when we furnish, stage, and get your home tenant-ready.",
+    "The window between key handover and rent start date, when we furnish, stage, and get your home tenant-ready.",
   rent_start_date:
     "The date your monthly rent begins. From here, it hits your account like clockwork.",
   maintenance:
-    "Monthly maintenance for the property — a fixed amount or as per actuals, as agreed.",
+    "Monthly/Quarterly maintenance for the property - a fixed amount or as per actuals, as agreed.",
   notice_period:
     "The time required to end the partnership, so arrangements can be planned.",
 };
@@ -332,6 +344,8 @@ const slideVariants = {
   }),
 };
 
+const OFFER_EXPIRY_WINDOW_MS = 48 * 60 * 60 * 1000;
+
 function formatMaintenance(s: string): string {
   const t = s.trim();
   if (!t) return "—";
@@ -386,6 +400,21 @@ function formatCurrency(n: number) {
   }).format(n);
 }
 
+function getOfferExpiryTime(createdAt: string): number | null {
+  const createdAtMs = Date.parse(createdAt);
+  if (!Number.isFinite(createdAtMs)) return null;
+  return createdAtMs + OFFER_EXPIRY_WINDOW_MS;
+}
+
+function formatExpiryCountdown(msRemaining: number): string {
+  const safeMs = Math.max(0, msRemaining);
+  const totalSeconds = Math.floor(safeMs / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds).padStart(2, "0")}s`;
+}
+
 export function OfferWizard({ offer }: { offer: Offer }) {
   const [hasAgreed, setHasAgreed] = useState(offer.agreed);
   const [step, setStep] = useState(() => (offer.agreed ? 4 : 1));
@@ -397,6 +426,7 @@ export function OfferWizard({ offer }: { offer: Offer }) {
   const [expandedTimelineIndex, setExpandedTimelineIndex] = useState<number | null>(
     null,
   );
+  const [nowMs, setNowMs] = useState(() => Date.now());
   const [onboardingToday, setOnboardingToday] = useState(() => new Date());
   const reduceMotion = useReducedMotion();
   const timelineScrollScopeRef = useRef<HTMLDivElement>(null);
@@ -411,6 +441,12 @@ export function OfferWizard({ offer }: { offer: Offer }) {
     const id = setInterval(sync, 60_000);
     return () => clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    if (hasAgreed) return;
+    const id = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [hasAgreed]);
 
   const flowSteps = [
     { id: 1, label: "Introduction" },
@@ -431,7 +467,18 @@ export function OfferWizard({ offer }: { offer: Offer }) {
     setStep(target);
   };
 
+  const offerExpiresAtMs = getOfferExpiryTime(offer.created_at);
+  const remainingMs = offerExpiresAtMs == null ? null : offerExpiresAtMs - nowMs;
+  const isExpired = !hasAgreed && remainingMs != null && remainingMs <= 0;
+  const expiryCountdown =
+    remainingMs != null ? formatExpiryCountdown(remainingMs) : null;
+
   const handleAgree = async () => {
+    if (isExpired) {
+      setAgreeError("This offer has expired and can no longer be accepted.");
+      return;
+    }
+
     setAgreeError(null);
     setAgreeLoading(true);
     try {
@@ -440,9 +487,18 @@ export function OfferWizard({ offer }: { offer: Offer }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ offerId: offer.id }),
       });
-      const data = (await res.json()) as { success?: boolean };
-      if (!data.success) {
-        setAgreeError("Something went wrong. Please try again.");
+      const data = (await res.json()) as {
+        success?: boolean;
+        expired?: boolean;
+        error?: string;
+      };
+      if (!res.ok || !data.success) {
+        if (data.expired) {
+          setNowMs(Date.now());
+          setAgreeError("This offer has expired and can no longer be accepted.");
+          return;
+        }
+        setAgreeError(data.error ?? "Something went wrong. Please try again.");
         return;
       }
       setHasAgreed(true);
@@ -482,8 +538,36 @@ export function OfferWizard({ offer }: { offer: Offer }) {
     if (step !== 2) setActiveInfoId(null);
   }, [step]);
 
-  const showStepper = step < 4;
+  const showStepper = step < 4 && !isExpired;
   const normalizedTerms = (offer.selected_terms ?? []).map(normalizeTerm);
+
+  if (isExpired) {
+    return (
+      <div className="min-h-screen bg-flent-off-white">
+        <main className="mx-auto flex min-h-screen w-full max-w-4xl items-center justify-center px-4 py-12 md:px-8">
+          <motion.section
+            key="offer-expired"
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+            className="w-full rounded-[2rem] border border-flent-pastel-brown/60 bg-white px-6 py-10 text-center shadow-[0_16px_44px_rgba(47,34,21,0.12)] md:px-10 md:py-12"
+          >
+            <img src="/flent-logo-black.png" alt="Flent" className="mx-auto h-10 w-auto" />
+            <p className="mt-7 text-[0.82rem] font-bold uppercase tracking-[0.14em] text-flent-brown">
+              OFFER EXPIRED
+            </p>
+            <h1 className="headline-display mt-3 text-[2rem] font-medium text-flent-black md:text-[2.5rem]">
+              This offer is no longer active.
+            </h1>
+            <p className="mx-auto mt-4 max-w-2xl text-[1rem] font-medium text-flent-black/75">
+              This offer was valid for 48 hours from creation and can no longer be
+              accepted. Please connect with the Flent team to get a refreshed offer.
+            </p>
+          </motion.section>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -837,6 +921,17 @@ export function OfferWizard({ offer }: { offer: Offer }) {
                     isCoarsePointer={isCoarsePointer}
                     valueBold={false}
                   />
+                  {offer.partnership_association_bonus_amount != null &&
+                    Number.isFinite(offer.partnership_association_bonus_amount) && (
+                      <FieldCard
+                        label="Partnership Association Bonus"
+                        value={formatCurrency(offer.partnership_association_bonus_amount)}
+                        activeInfoId={activeInfoId}
+                        setActiveInfoId={setActiveInfoId}
+                        isCoarsePointer={isCoarsePointer}
+                        valueBold={false}
+                      />
+                    )}
                   <FieldCard
                     label="Service term"
                     value={offer.service_term}
@@ -1055,6 +1150,16 @@ export function OfferWizard({ offer }: { offer: Offer }) {
                                     <p className="mt-4 max-w-3xl border-t border-flent-black/10 pt-4 text-[1rem] font-medium text-flent-black/80 ml-[3.75rem]">
                                       {item.copy}
                                     </p>
+                                    {item.draftLink ? (
+                                      <a
+                                        href={item.draftLink.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="ml-[3.75rem] mt-3 inline-flex w-fit items-center rounded-full border border-flent-black/10 bg-white px-4 py-2 text-sm font-semibold text-flent-forest shadow-sm transition-colors hover:bg-white/90"
+                                      >
+                                        {item.draftLink.label} →
+                                      </a>
+                                    ) : null}
                                   </motion.div>
                                 )}
                               </AnimatePresence>
@@ -1212,6 +1317,12 @@ export function OfferWizard({ offer }: { offer: Offer }) {
                     transition={{ duration: 0.2 }}
                     className="flex w-full flex-col items-stretch gap-2 sm:order-2 sm:ml-auto sm:w-auto sm:items-end"
                   >
+                    {expiryCountdown ? (
+                      <p className="inline-flex w-full min-w-[260px] items-center justify-center gap-2 rounded-full border border-[#4a3527] bg-[#1b1613] px-5 py-2.5 text-[1.05rem] font-semibold text-[#f6dfcf] sm:w-auto">
+                        <span className="h-2 w-2 rounded-full bg-[#f2654a]" aria-hidden />
+                        Expires in {expiryCountdown}
+                      </p>
+                    ) : null}
                     <button
                       type="button"
                       onClick={handleAgree}

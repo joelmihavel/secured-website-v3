@@ -105,7 +105,7 @@ export default function TermsOfUsePage() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4 font-zin">10. GOVERNING LAW</h2>
           <p>
-            These Terms shall be governed by and construed in accordance with the laws of India.
+            These Terms shall be governed by and construed in accordance with the laws of India, and the courts at Bangalore shall have exclusive jurisdiction over any disputes arising out of or in connection with these Terms.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4 font-zin">11. SEVERABILITY</h2>

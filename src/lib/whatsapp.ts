@@ -100,3 +100,7 @@ export function buildWhatsAppApiLink(message: string): string {
     number: getWhatsAppNumber(),
   });
 }
+
+export function buildLandlordWhatsAppApiLink(message: string): string {
+  return buildWhatsAppApiLink(message, LANDLORD_WHATSAPP_NUMBER);
+}

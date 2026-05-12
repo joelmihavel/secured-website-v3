@@ -11,7 +11,7 @@ interface WordRevealProps {
 
 export function WordReveal({ children, className = "", delay = 0 }: WordRevealProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { margin: "-20px 0px -20px 0px", once: false });
+  const isInView = useInView(ref, { margin: "-20px 0px -20px 0px", once: true });
   const words = children.split(" ");
 
   return (
@@ -45,7 +45,7 @@ interface SlideUpProps {
 
 export function SlideUp({ children, className = "", delay = 0 }: SlideUpProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { margin: "-20px 0px -20px 0px", once: false });
+  const isInView = useInView(ref, { margin: "-20px 0px -20px 0px", once: true });
 
   return (
     <div ref={ref} className={`overflow-hidden ${className}`}>

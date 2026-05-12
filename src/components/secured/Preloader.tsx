@@ -1,15 +1,40 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
 const STRIP_COUNT = 7;
+const STORAGE_KEY = "secured_preloader_seen";
+
+// useLayoutEffect runs synchronously before paint on the client, but warns
+// during SSR. Fall back to useEffect on the server so SSR doesn't error.
+const useIsoLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 export function Preloader() {
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
   const [visible, setVisible] = useState(true);
+  // Default to showing the loader so SSR + first client render both render it,
+  // matching hydration. We only flip skip=true when sessionStorage says the
+  // user has already seen the preloader this session — checked synchronously
+  // before paint to avoid a flash.
+  const [skip, setSkip] = useState(false);
+
+  useIsoLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const seen = window.sessionStorage.getItem(STORAGE_KEY);
+      if (seen === "1") {
+        setSkip(true);
+        setDone(true);
+        setVisible(false);
+      }
+    } catch {
+      // sessionStorage may be unavailable (private mode); fall through to playing the preloader
+    }
+  }, []);
 
   const animate = useCallback(() => {
     let current = 0;
@@ -26,18 +51,24 @@ export function Preloader() {
   }, []);
 
   useEffect(() => {
+    if (skip) return;
     const cleanup = animate();
     return cleanup;
-  }, [animate]);
+  }, [animate, skip]);
 
   useEffect(() => {
-    if (done) {
+    if (done && !skip) {
+      try {
+        window.sessionStorage.setItem(STORAGE_KEY, "1");
+      } catch {
+        // ignore
+      }
       const timeout = setTimeout(() => setVisible(false), 1400);
       return () => clearTimeout(timeout);
     }
-  }, [done]);
+  }, [done, skip]);
 
-  if (!visible) return null;
+  if (!visible || skip) return null;
 
   return (
     <AnimatePresence>

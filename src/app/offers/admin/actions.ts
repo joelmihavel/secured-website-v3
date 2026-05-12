@@ -81,10 +81,10 @@ function formatOfferEmailHtml(params: {
         We've put together your personalised Flent offer for your property at <strong>${safeProperty}</strong> — and we think you'll like what you see.
       </p>
       <p style="margin: 0 0 16px; font-size: 15px; color: #000000;">
-        At Flent, our job is simple: make sure your home is always looked after, your rent arrives on time every month, and you never have to chase anyone for anything. You've already had a taste of how we work and that same care and attentiveness is what you'll get, every single day.
+        At Flent, our job is simple: make sure your home is always looked after, your rent arrives on time every month, and you never have to chase anyone for anything.
       </p>
       <p style="margin: 0 0 20px; font-size: 15px; color: #000000;">
-        Your offer is ready to view. Go through it at your own pace, and if anything needs clarifying, we're just a message away.
+        Your offer is ready to view. Go through it at your own pace, and if anything needs clarifying, we're just a message away. Although please note that this is a time-bound offer &amp; it will <strong>expire in 48 hours</strong> if it remains unaccepted.
       </p>
       <a href="${offerUrl}" style="display: inline-block; background: #111827; color: #ffffff; text-decoration: none; padding: 12px 22px; border-radius: 0 14px 14px 0; border: 2px solid #ffffff; font-weight: 600; font-size: 15px;">
         View Your Offer →
@@ -126,8 +126,8 @@ export async function sendOfferEmail(params: {
   const { data, error } = await resend.emails.send({
     from: "Flent <landlords@email.flent.in>",
     to: params.landlord_email,
-    cc: ["homeowners@flent.in"],
-    replyTo: "homeowners@flent.in",
+    cc: ["homeowners@flent.in", "ashish@flent.in"],
+    replyTo: "ashish@flent.in",
     subject,
     html,
   });
@@ -166,6 +166,8 @@ export async function createOffer(formData: OfferInsert): Promise<CreateOfferRes
       .insert({
         landlord_name: formData.landlord_name,
         landlord_email: formData.landlord_email,
+        landlord_whatsapp_number: formData.landlord_whatsapp_number,
+        google_maps_address_link: formData.google_maps_address_link,
         created_by: formData.created_by,
         property_name: formData.property_name,
         property_type: formData.property_type,
@@ -179,6 +181,7 @@ export async function createOffer(formData: OfferInsert): Promise<CreateOfferRes
         rent_free_period: formData.rent_free_period,
         rent_start_date: formData.rent_start_date,
         maintenance: formData.maintenance,
+        partnership_association_bonus_amount: formData.partnership_association_bonus_amount,
         notice_period: formData.notice_period,
         selected_terms: formData.selected_terms,
       })

@@ -4,109 +4,115 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import type { FooterContent } from "@/lib/secured/types";
 import { buildWhatsAppApiLink } from "@/lib/whatsapp";
+import { DotGrid } from "./ui/DotGrid";
+import { GlitchImage } from "./ui/GlitchImage";
 
 export function Footer({ data }: { data: FooterContent }) {
   return (
-    <footer className="relative flex flex-col items-center overflow-hidden bg-[#131313] px-6 pb-[140px] pt-8 md:px-16 md:pb-[220px] md:pt-20 lg:px-[120px]">
-      {/* Background halftone dot pattern — tiled across entire footer */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        aria-hidden="true"
-        style={{
-          backgroundImage: "url(/assets/backgrounds/footer-halftone-tile.svg)",
-          backgroundRepeat: "repeat",
-          backgroundSize: "720px 360px",
-        }}
-      />
-
-      <div className="relative z-10 flex w-full max-w-[600px] flex-col items-center gap-6 md:gap-8 xl:max-w-[700px] 2xl:max-w-[800px] 3xl:max-w-[1000px] 4xl:max-w-[1300px] 5xl:max-w-[1800px]">
-        {/* Flent icon */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <Image
-            src="/assets/logos/flent-icon-footer.svg"
-            alt="Flent"
-            width={32}
-            height={38}
-            className="3xl:w-[48px] 3xl:h-[56px] 4xl:w-[64px] 4xl:h-[76px] 5xl:w-[96px] 5xl:h-[114px]"
-          />
-        </motion.div>
-
-        {/* Explore + Contact buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="flex w-full flex-col items-center gap-3 md:w-[70%]"
-        >
-          <a
-            href="https://www.flent.in/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex w-full items-center justify-center rounded-xl bg-[#202020] px-6 py-4 text-sm leading-5 text-white transition-colors 3xl:text-base 3xl:py-5 4xl:text-lg 4xl:py-6 5xl:text-xl 5xl:py-8"
-            style={{
-              fontFamily: "var(--font-display)",
-              boxShadow: "0px 78px 47px rgba(0,0,0,0.05), 0px 35px 35px rgba(0,0,0,0.09), 0px 9px 19px rgba(0,0,0,0.1)",
-            }}
-          >
-            {data.exploreLabel}
-          </a>
-          <a
-            href={buildWhatsAppApiLink(
-              "Curious to know more about Flent—tell me everything! [WAX-UK6N]"
-            )}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex w-full items-center justify-center rounded-xl bg-[#202020] px-6 py-4 text-sm leading-5 text-white transition-colors 3xl:text-base 3xl:py-5 4xl:text-lg 4xl:py-6 5xl:text-xl 5xl:py-8"
-            style={{
-              fontFamily: "var(--font-display)",
-              boxShadow: "0px 78px 47px rgba(0,0,0,0.05), 0px 35px 35px rgba(0,0,0,0.09), 0px 9px 19px rgba(0,0,0,0.1)",
-            }}
-          >
-            {data.contactLabel}
-          </a>
-        </motion.div>
-
-        {/* Orange vertical line + diamond */}
-        <motion.div
-          initial={{ scaleY: 0 }}
-          whileInView={{ scaleY: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex origin-top flex-col items-center pt-4 md:pt-8"
-        >
-          <div className="h-12 w-px bg-[#ff9a6d] md:h-20 3xl:h-28 4xl:h-36 5xl:h-48" />
-          <svg className="w-3 h-3 3xl:w-4 3xl:h-4 4xl:w-5 4xl:h-5 5xl:w-7 5xl:h-7" viewBox="0 0 12 12" fill="none">
-            <path d="M6 0L12 6L6 12L0 6L6 0Z" fill="#FF9A6D" />
-          </svg>
-        </motion.div>
-
-        {/* Tagline + copyright */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="flex flex-col items-center gap-4 pt-4 md:pt-8"
-        >
-          <div className="flex flex-col items-center">
-            <span className="font-body text-center text-[28px] leading-[130%] text-[#797979] md:text-[36px] lg:text-[48px] xl:text-[56px] 2xl:text-[64px] 3xl:text-[76px] 4xl:text-[96px] 5xl:text-[128px]">
-              {data.taglineLine1}
-            </span>
-            <span className="font-body text-center text-[28px] leading-[130%] text-[#ff9a6d] md:text-[36px] lg:text-[48px] xl:text-[56px] 2xl:text-[64px] 3xl:text-[76px] 4xl:text-[96px] 5xl:text-[128px]">
-              {data.taglineLine2}
-            </span>
-          </div>
-          <p className="font-body text-center text-xs uppercase leading-[18px] tracking-[1px] text-[#5a5a5a] md:text-sm 3xl:text-base 4xl:text-lg 5xl:text-xl">
-            {data.copyright}
-          </p>
-        </motion.div>
+    <footer className="relative overflow-hidden bg-[#131313]">
+      {/* Glitch illustration */}
+      <div className="relative mx-auto w-full lg:px-[120px]">
+        <GlitchImage src="/assets/figma/roman-illustration.webp" />
       </div>
+
+      {/* CTA section — heading left, buttons right */}
+      <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
+        <div className="py-12 md:py-16 lg:px-[120px] lg:py-[64px]">
+          <div className="flex flex-col items-center gap-8 text-center md:flex-row md:items-center md:justify-between md:gap-[32px] md:text-left">
+            {/* Left — heading */}
+            <motion.h2
+              className="text-[28px] leading-[1.3] tracking-[-0.5px] md:text-[36px] lg:max-w-[715px] lg:text-[40px] lg:leading-[1.5] lg:tracking-[-0.88px]"
+              style={{ fontFamily: "var(--font-ui)" }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              <span className="text-white">{data.taglineLine1} </span>
+              <span className="text-[#ff9a6d]">{data.taglineLine2}</span>
+            </motion.h2>
+
+            {/* Right — action buttons */}
+            <motion.div
+              className="flex w-full flex-col gap-1 md:w-[320px] md:flex-shrink-0"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+            >
+              <a
+                href="https://www.flent.in/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center rounded-[12px] bg-[#202020] px-6 py-4 text-[14px] leading-[20px] text-white transition-colors hover:bg-[#282828]"
+                style={{
+                  fontFamily: "var(--font-body)",
+                  boxShadow:
+                    "0px 78px 23.5px rgba(0,0,0,0.05), 0px 35px 17.5px rgba(0,0,0,0.09), 0px 9px 9.5px rgba(0,0,0,0.1)",
+                }}
+              >
+                Explore Flent
+              </a>
+              <a
+                href={buildWhatsAppApiLink(
+                  "Curious to know more about Flent—tell me everything! [WAX-UK6N]"
+                )}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center rounded-[12px] bg-[#202020] px-6 py-4 text-[14px] leading-[20px] text-white transition-colors hover:bg-[#282828]"
+                style={{
+                  fontFamily: "var(--font-body)",
+                  boxShadow:
+                    "0px 78px 23.5px rgba(0,0,0,0.05), 0px 35px 17.5px rgba(0,0,0,0.09), 0px 9px 9.5px rgba(0,0,0,0.1)",
+                }}
+              >
+                Contact Us
+              </a>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom bar */}
+      <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
+        <div className="lg:px-[120px]">
+          <div className="flex flex-col items-center justify-between gap-3 py-8 md:flex-row lg:py-[64px]">
+            {/* Left — Secured by flent */}
+            <div className="flex items-center gap-2">
+              <span
+                className="text-[18px] leading-[1.2] tracking-[-0.5px] text-[#ff9a6d] md:text-[23.8px]"
+                style={{ fontFamily: "var(--font-body)" }}
+              >
+                Secured
+              </span>
+              <span
+                className="text-[16px] font-light leading-[1.2] tracking-[-0.8px] text-white md:text-[22.4px]"
+                style={{ fontFamily: "var(--font-ui)" }}
+              >
+                by
+              </span>
+              <Image
+                src="/assets/icons/flent-wordmark-white.svg"
+                alt="flent"
+                width={50}
+                height={18}
+                className="h-[14px] w-auto md:h-[18px]"
+              />
+            </div>
+
+            {/* Right — copyright */}
+            <p
+              className="text-xs uppercase text-[#bababa] md:text-[14px] md:leading-[20px]"
+              style={{ fontFamily: "var(--font-ui)" }}
+            >
+              {data.copyright}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom dot grid — fading out downward */}
+      <DotGrid />
     </footer>
   );
 }

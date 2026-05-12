@@ -30,6 +30,12 @@ async function getOffer(id: string): Promise<Offer | null> {
     rent_free_period: row.rent_free_period as string,
     rent_start_date: row.rent_start_date as string,
     maintenance: String(row.maintenance ?? ""),
+    partnership_association_bonus_amount: (() => {
+      const v = row.partnership_association_bonus_amount;
+      if (v == null || v === "") return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    })(),
     lock_in: row.lock_in != null ? String(row.lock_in) : "",
     notice_period: row.notice_period as string,
     selected_terms: Array.isArray(row.selected_terms) ? (row.selected_terms as string[]) : [],

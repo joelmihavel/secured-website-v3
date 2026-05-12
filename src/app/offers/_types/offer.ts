@@ -15,6 +15,7 @@ export type Offer = {
   rent_free_period: string;
   rent_start_date: string;
   maintenance: string;
+  partnership_association_bonus_amount: number | null;
   lock_in: string;
   notice_period: string;
   selected_terms: string[];
@@ -26,6 +27,8 @@ export type Offer = {
 export type OfferInsert = {
   landlord_name: string;
   landlord_email: string;
+  landlord_whatsapp_number: string;
+  google_maps_address_link: string;
   created_by: string;
   property_name: string;
   property_type: string;
@@ -39,6 +42,7 @@ export type OfferInsert = {
   rent_free_period: string;
   rent_start_date: string;
   maintenance: string;
+  partnership_association_bonus_amount: number | null;
   notice_period: string;
   selected_terms: string[];
 };
