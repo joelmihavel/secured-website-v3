@@ -24,7 +24,7 @@ export function TickerBar() {
   return (
     <div
       className="w-full overflow-x-hidden bg-flent-green py-2.5"
-      role="marquee"
+      role="region"
       aria-label="Key features of Flent homes"
     >
       <div className="animate-ticker flex w-max gap-6 text-flent-yellow">
