@@ -6,7 +6,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Button } from "@/components/ui/Button";
 import { CTA_IDS } from "@/lib/cta-ids";
-import { buildWhatsAppApiLink } from "@/lib/whatsapp";
 import { useWhatsAppCta } from "@/hooks/useWhatsAppCta";
 import type { ComparisonMode } from "../types";
 
@@ -52,13 +51,13 @@ function BeyondNumbersSectionContent({
   withoutItems,
 }: Pick<BeyondNumbersSectionProps, "withItems" | "withoutItems">) {
   const [mobileTab, setMobileTab] = useState<MobileTab>("withFlent");
-  const whatsAppCta = useWhatsAppCta(
-    buildWhatsAppApiLink(BEYOND_NUMBERS_WHATSAPP_MESSAGE),
-    {
+  const whatsAppCta = useWhatsAppCta(BEYOND_NUMBERS_WHATSAPP_MESSAGE, {
+    format: "api.whatsapp.com",
+    tracking: {
       source: "rent_calculator",
       ctaId: CTA_IDS.RENT_CALCULATOR_HOME_INVENTORY_CHAT,
-    }
-  );
+    },
+  });
 
   const maxRows = Math.max(withItems.length, withoutItems.length);
 

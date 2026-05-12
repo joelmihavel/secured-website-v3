@@ -38,7 +38,7 @@ import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { AnimatePresence, motion } from "framer-motion";
-import { getPropertyWhatsappLink } from "@/constants";
+import { getPropertyInterestMessage } from "@/constants";
 import { useMobile } from "@/hooks/useMobile";
 import { useWhatsAppCta } from "@/hooks/useWhatsAppCta";
 import { CTA_IDS } from "@/lib/cta-ids";
@@ -71,9 +71,9 @@ export const GridLightBox = ({
   isOccupied,
 }: GridLightBoxProps) => {
   const isMobile = useMobile();
-  const whatsAppCta = useWhatsAppCta(getPropertyWhatsappLink(propertyName), {
-    source: "lightbox",
-    propertyName,
+  const whatsAppCta = useWhatsAppCta(getPropertyInterestMessage(propertyName), {
+    format: "wa.me",
+    tracking: { source: "lightbox", propertyName },
   });
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(

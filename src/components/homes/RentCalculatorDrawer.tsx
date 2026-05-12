@@ -22,7 +22,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useCTATracking } from "@/hooks/useCTATracking";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getPropertyWhatsappLink } from "@/constants";
+import { getPropertyInterestMessage } from "@/constants";
 import { useMobile } from "@/hooks/useMobile";
 import { useWhatsAppCta } from "@/hooks/useWhatsAppCta";
 import { CTA_IDS } from "@/lib/cta-ids";
@@ -200,13 +200,16 @@ export const RentCalculatorDrawer = ({
   const isMobile = useMobile();
   const { trackCTAClick } = useCTATracking();
   const whatsAppCta = useWhatsAppCta(
-    getPropertyWhatsappLink(propertyName),
+    getPropertyInterestMessage(propertyName),
     {
-      source: "rent_calculator",
-      propertySlug: slug,
-      propertyName,
-      propertyArea,
-      ctaId: CTA_IDS.RENT_CALCULATOR_TALK_TO_US,
+      format: "wa.me",
+      tracking: {
+        source: "rent_calculator",
+        propertySlug: slug,
+        propertyName,
+        propertyArea,
+        ctaId: CTA_IDS.RENT_CALCULATOR_TALK_TO_US,
+      },
     }
   );
   const lockInLottie = useLottieData(

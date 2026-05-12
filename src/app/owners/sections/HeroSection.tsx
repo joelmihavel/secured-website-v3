@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import Image from "next/image";
 import { OpenSection } from "@/components/layout/OpenSection";
 import { CTA_IDS } from "@/lib/cta-ids";
-import { buildWhatsAppWaMeLink } from "@/lib/whatsapp";
+import { getWhatsAppLinkNow } from "@/lib/whatsapp";
 
 interface HeroSectionProps {
     badge?: string;
@@ -41,9 +41,11 @@ export const HeroSection = ({
     },
 }: Partial<HeroSectionProps> = {}) => {
     const handleWhatsAppClick = () => {
-        const whatsappMessage = "Hi! I'm interested in listing my property with Flent.";
-        const whatsappUrl = buildWhatsAppWaMeLink(whatsappMessage);
-        window.open(whatsappUrl, "_blank");
+        const whatsappUrl = getWhatsAppLinkNow(
+            "Hi! I'm interested in listing my property with Flent.",
+            { format: "wa.me" }
+        );
+        window.open(whatsappUrl, "_blank", "noopener,noreferrer");
     };
 
     return (
