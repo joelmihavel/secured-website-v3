@@ -1,64 +1,92 @@
 "use client"
 
+import { useRef } from "react"
 import Image from "next/image"
+import { motion, useInView } from "framer-motion"
 import { triggerFormAttention } from "@landing-pages/home-concierge/lib/form-attention"
 
 const properties = [
   {
-    name: "Arbour",
-    location: "HSR Layout",
-    bhk: "2 BHK",
-    sqft: "1,200 sqft",
-    price: "32,500",
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/66dd2d17a528a79d9b79a3dc_66dd2ba38058bad06fc252a1_DSC06965-HDR-pJ11za1rSjeBq1YHNhyfWn4WTzY4xw.webp",
-    available: "Available Now",
-  },
-  {
-    name: "Muse",
-    location: "Ulsoor",
-    bhk: "2 BHK",
-    sqft: "1,700 sqft",
-    price: "35,000",
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/696b3cbfd96293529d90d477_Banner-hyrYOewdhH7EvTJhZvISxFk7p11dqD.avif",
-    available: "2 rooms left",
-  },
-  {
-    name: "Carnation",
+    name: "Arcade",
     location: "Bellandur",
     bhk: "3 BHK",
-    sqft: "1,800 sqft",
-    price: "28,000",
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/699d12d6bb108884319e42c9_6990535687d258b94db0c88d_Banner-kgqFJpUTfMP14UMQZrKyJihJ3z64Iw.webp",
+    sqft: "1,700 sqft",
+    price: "33,000",
+    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Arcade-tVDtwFu4kcwJLAtpCOGYAIjXR18vwe.avif",
     available: "Available Now",
   },
   {
-    name: "Aer",
-    location: "Whitefield",
-    bhk: "3 BHK",
-    sqft: "1,800 sqft",
-    price: "30,000",
-    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/680f24661ae144471217a01f_680f20b16cbc9c5939b49c70_Banner-s8nbpMvVvviQfu4s2NkDYpwttAmPOg.avif",
+    name: "Nexus",
+    location: "Bellandur",
+    bhk: "2 BHK",
+    sqft: "1,450 sqft",
+    price: "37,000",
+    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Nexus-2xU0jtVj2b0lSjEJ0GJy4BHmFaLyq6.avif",
     available: "1 room left",
+  },
+  {
+    name: "Fairmont",
+    location: "HSR Layout",
+    bhk: "3 BHK",
+    sqft: "2,000 sqft",
+    price: "36,000",
+    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Fairmont-XM8c8dba8yL3sCluRK5zYni0C9TFwc.avif",
+    available: "1 room left",
+  },
+  {
+    name: "Belmont",
+    location: "HSR Layout",
+    bhk: "3 BHK",
+    sqft: "2,000 sqft",
+    price: "35,000",
+    image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Belmont-2CpagZ5EyT7IemZI7KBy65y3yPJfnc.avif",
+    available: "2 rooms left",
   },
 ]
 
+const gridVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.1 } },
+}
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 28 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+}
+
 export function PropertyCards() {
+  const ref = useRef<HTMLElement>(null)
+  const inView = useInView(ref, { once: true, margin: "-100px" })
+
   return (
-    <section>
-      <h2 className="mb-6 font-serif text-3xl font-bold text-flent-dark lg:text-4xl">
+    <section ref={ref}>
+      <motion.h2
+        initial={{ opacity: 0, y: 16 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="mb-6 font-serif text-3xl font-bold text-flent-dark lg:text-4xl"
+      >
         View some of our homes
-      </h2>
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+      </motion.h2>
+
+      <motion.div
+        variants={gridVariants}
+        initial="hidden"
+        animate={inView ? "show" : "hidden"}
+        className="grid grid-cols-1 gap-5 sm:grid-cols-2"
+      >
         {properties.map((property) => (
-          <button
+          <motion.button
             key={property.name}
+            variants={cardVariants}
+            whileHover={{ y: -4, transition: { type: "spring", stiffness: 400, damping: 20 } }}
             type="button"
             onClick={triggerFormAttention}
-            className="group cursor-pointer overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+            className="group cursor-pointer overflow-hidden rounded-2xl border border-border bg-card text-left shadow-sm hover:shadow-lg"
           >
             {/* Arch-shaped image */}
-            <div className="relative mx-4 mt-4 overflow-hidden" style={{ borderRadius: "999px 999px 12px 12px" }}>
-              <div className="aspect-[4/3]">
+            <div className="relative mx-4 mt-4 arch-clip">
+              <div className="relative aspect-[4/3]">
                 <Image
                   src={property.image}
                   alt={`${property.name} — ${property.location}`}
@@ -99,18 +127,21 @@ export function PropertyCards() {
                 </span>
               </p>
             </div>
-          </button>
+          </motion.button>
         ))}
-      </div>
+      </motion.div>
 
       {/* View more homes CTA */}
-      <button
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={inView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.4, delay: 0.5 }}
         type="button"
         onClick={triggerFormAttention}
-        className="mt-6 w-full rounded-lg bg-flent-dark px-6 py-4 text-sm font-bold text-card transition-colors hover:bg-flent-dark/90"
+        className="btn-retro mt-6 w-full rounded-lg bg-flent-dark px-6 py-4 text-sm font-bold text-card hover:bg-flent-dark/90"
       >
         {"View more homes →"}
-      </button>
+      </motion.button>
     </section>
   )
 }

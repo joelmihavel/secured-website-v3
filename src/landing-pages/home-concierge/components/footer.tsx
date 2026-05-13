@@ -9,7 +9,8 @@ export function Footer() {
           alt="Flent"
           width={80}
           height={32}
-          className="h-8 w-auto"
+          className="h-8"
+          style={{ width: "auto" }}
         />
         <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
           Fully furnished designer homes in Bangalore for folks looking

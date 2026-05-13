@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
+import { motion, useInView } from "framer-motion"
 import { Armchair, ChefHat, ConciergeBell, Wrench, BadgeCheck, DoorOpen } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -57,27 +58,54 @@ const features: Feature[] = [
   },
 ]
 
-function FeatureCard({ feature, shouldNudge }: { feature: Feature; shouldNudge: boolean }) {
+function FeatureCard({
+  feature,
+  index,
+  inView,
+  shouldNudge,
+}: {
+  feature: Feature
+  index: number
+  inView: boolean
+  shouldNudge: boolean
+}) {
   const [flipped, setFlipped] = useState(false)
   const [hasNudged, setHasNudged] = useState(false)
   const Icon = feature.icon
 
-  useEffect(() => {
-    if (shouldNudge && !hasNudged && !flipped) {
-      setHasNudged(true)
+  const applyNudge = shouldNudge && !hasNudged && !flipped
+
+  function handleFlip() {
+    setFlipped((f) => !f)
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault()
+      handleFlip()
     }
-  }, [shouldNudge, hasNudged, flipped])
+  }
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.4, delay: index * 0.08, ease: "easeOut" }}
       className="perspective-1000 h-28 cursor-pointer lg:h-auto lg:cursor-default"
-      onClick={() => setFlipped(!flipped)}
+      onClick={handleFlip}
+      role="button"
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      aria-label={`${feature.title}: ${feature.description}`}
     >
       <div
         className={`relative h-full w-full transition-transform duration-500 lg:transform-none ${
           flipped ? "[transform:rotateY(180deg)]" : ""
-        } ${hasNudged && !flipped ? "animate-nudge-flip" : ""}`}
+        } ${applyNudge ? "animate-nudge-flip" : ""}`}
         style={{ transformStyle: "preserve-3d" }}
+        onAnimationEnd={() => {
+          if (applyNudge) setHasNudged(true)
+        }}
       >
         {/* Front - Icon & Title */}
         <div
@@ -85,8 +113,7 @@ function FeatureCard({ feature, shouldNudge }: { feature: Feature; shouldNudge: 
           style={{ backfaceVisibility: "hidden" }}
         >
           <div
-            className={`mb-3 flex h-10 w-8 items-center justify-center lg:mb-4 lg:h-14 lg:w-11 ${feature.bgColor}`}
-            style={{ borderRadius: "999px 999px 6px 6px" }}
+            className={`mb-3 flex h-10 w-8 items-center justify-center arch-clip-sm lg:mb-4 lg:h-14 lg:w-11 ${feature.bgColor}`}
           >
             <Icon className={`h-4 w-4 lg:h-5 lg:w-5 ${feature.iconColor}`} strokeWidth={2.5} />
           </div>
@@ -108,41 +135,41 @@ function FeatureCard({ feature, shouldNudge }: { feature: Feature; shouldNudge: 
           </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
 export function Features() {
-  const sectionRef = useRef<HTMLElement>(null)
+  const ref = useRef<HTMLElement>(null)
+  const inView = useInView(ref, { once: true, margin: "-100px" })
   const [shouldNudge, setShouldNudge] = useState(false)
 
   useEffect(() => {
-    const section = sectionRef.current
-    if (!section) return
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          // Delay the nudge slightly so users see the cards first
-          setTimeout(() => setShouldNudge(true), 300)
-          observer.disconnect()
-        }
-      },
-      { threshold: 0.3 }
-    )
-
-    observer.observe(section)
-    return () => observer.disconnect()
-  }, [])
+    if (!inView) return
+    // Delay nudge until cards have finished staggering in (6 cards × 80ms + 400ms duration ≈ 880ms)
+    const timer = setTimeout(() => setShouldNudge(true), 900)
+    return () => clearTimeout(timer)
+  }, [inView])
 
   return (
-    <section ref={sectionRef}>
-      <h2 className="mb-5 font-serif text-2xl font-bold text-flent-dark lg:mb-8 lg:text-4xl">
+    <section ref={ref}>
+      <motion.h2
+        initial={{ opacity: 0, y: 16 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="mb-5 font-serif text-2xl font-bold text-flent-dark lg:mb-8 lg:text-4xl"
+      >
         What comes with every door
-      </h2>
+      </motion.h2>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-5">
-        {features.map((feature) => (
-          <FeatureCard key={feature.title} feature={feature} shouldNudge={shouldNudge} />
+        {features.map((feature, index) => (
+          <FeatureCard
+            key={feature.title}
+            feature={feature}
+            index={index}
+            inView={inView}
+            shouldNudge={shouldNudge}
+          />
         ))}
       </div>
     </section>
