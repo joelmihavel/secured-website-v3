@@ -133,7 +133,7 @@ function TweetImage({ src }: { src: string }) {
     <div className="inline-block shrink-0 overflow-hidden rounded-lg shadow-sm lg:rounded-xl">
       <Image
         src={src}
-        alt="Social proof from a Flent resident on X"
+        alt="Social proof from a Flent tenant on X"
         width={320}
         height={400}
         className="h-48 w-auto object-contain lg:h-72"
@@ -158,7 +158,7 @@ export function Testimonials() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="font-serif text-2xl font-bold text-flent-dark lg:text-4xl"
       >
-        What residents say
+        What tenants say
       </motion.h2>
 
       <motion.div

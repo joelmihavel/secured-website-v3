@@ -22,7 +22,7 @@ export function Navbar() {
       className="pointer-events-none fixed z-[65] w-full"
       style={{ top: scrolled ? 30 : 24 }}
       animate={{ top: scrolled ? 30 : 24 }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
     >
         {/* Background — fades in on scroll */}
         <motion.div
@@ -37,7 +37,7 @@ export function Navbar() {
             paddingTop: scrolled ? 12 : variant === "tenant" ? 40 : 24,
             paddingBottom: scrolled ? 12 : 8,
           }}
-          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
         >
           {/* Logo — morphs from stacked to inline */}
           <a
@@ -51,7 +51,7 @@ export function Navbar() {
                 flexDirection: scrolled ? "row" as const : "column" as const,
                 alignItems: scrolled ? "center" : "flex-end",
               }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
             >
               <span
                 className="text-[18px] leading-[1.2] tracking-[-0.5px] text-[#ff9a6d] md:text-[23.8px]"
@@ -62,7 +62,7 @@ export function Navbar() {
               <motion.div
                 className="flex items-center gap-2"
                 animate={{ marginLeft: scrolled ? 8 : 0, marginTop: scrolled ? 0 : 3 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
               >
                 <span
                   className="text-[16px] font-light leading-[1.2] tracking-[-0.8px] text-white md:text-[22.4px]"

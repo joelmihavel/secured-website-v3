@@ -97,7 +97,7 @@ function StickyCard({
         style={{ rotate: rotation }}
         initial={{ opacity: 0, y: 60, scale: 0.92 }}
         animate={isInView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 60, scale: 0.92 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }}
       >
         <div className="relative" style={{ aspectRatio: "270 / 321" }}>
           <img
@@ -280,7 +280,7 @@ function TenantGettingStarted({ data }: { data: GettingStartedContent }) {
                       initial="enter"
                       animate="center"
                       exit="exit"
-                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] as const }}
                       className="absolute inset-0"
                     >
                       <Image
@@ -429,7 +429,7 @@ function TenantGettingStarted({ data }: { data: GettingStartedContent }) {
                         initial="enter"
                         animate="center"
                         exit="exit"
-                        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] as const }}
                         className="absolute inset-0"
                       >
                         <Image

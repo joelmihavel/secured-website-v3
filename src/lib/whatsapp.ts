@@ -102,5 +102,12 @@ export function buildWhatsAppApiLink(message: string): string {
 }
 
 export function buildLandlordWhatsAppApiLink(message: string): string {
-  return buildWhatsAppApiLink(message, LANDLORD_WHATSAPP_NUMBER);
+  const landlordNumber = sanitizeWhatsappNumber(
+    process.env.LANDLORD_WHATSAPP_NUMBER
+  ) || getWhatsAppNumber();
+  return composeWhatsAppLink({
+    message,
+    format: "api.whatsapp.com",
+    number: landlordNumber,
+  });
 }

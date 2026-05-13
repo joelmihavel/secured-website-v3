@@ -28,7 +28,7 @@ function CountUp({
     hasAnimated.current = true
     const controls = animate(0, end, {
       duration: 1.8,
-      ease: [0.16, 1, 0.3, 1],
+      ease: [0.16, 1, 0.3, 1] as const,
       onUpdate: (v) => setCount(Math.round(v)),
     })
     return controls.stop

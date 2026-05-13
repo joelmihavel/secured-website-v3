@@ -172,7 +172,7 @@ export function QualificationForm() {
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -40 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
           >
             {/* Green header */}
             <div className="relative overflow-hidden bg-flent-green px-6 py-8">
@@ -265,7 +265,7 @@ export function QualificationForm() {
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -40 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
           >
             {/* Dark header */}
             <div className="relative overflow-hidden bg-flent-dark px-6 py-7">

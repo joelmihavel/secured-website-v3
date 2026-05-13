@@ -33,7 +33,7 @@ function BenefitCard({
       className={`relative flex h-full flex-col gap-4 border-[0.3px] border-[#4d4d4d] p-5 md:p-6 lg:-ml-[0.3px] lg:-mt-[0.3px] lg:gap-4 lg:px-[40px] lg:py-[48px] ${spanClass}`}
       initial={{ opacity: 0, y: 24 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-      transition={{ duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] as const }}
     >
       {tag && (
         <div className="absolute right-4 top-4 lg:right-6 lg:top-6">

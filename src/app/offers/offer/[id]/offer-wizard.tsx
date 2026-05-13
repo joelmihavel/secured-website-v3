@@ -678,7 +678,7 @@ export function OfferWizard({ offer }: { offer: Offer }) {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] as const }}
               className="relative flex min-h-[80vh] flex-col"
             >
               <motion.header
@@ -825,7 +825,7 @@ export function OfferWizard({ offer }: { offer: Offer }) {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] as const }}
               className="mt-4"
             >
               <div className="doorframe-wide bg-white/95 px-6 py-9 shadow-sm md:px-10 md:py-12">
@@ -1031,7 +1031,7 @@ export function OfferWizard({ offer }: { offer: Offer }) {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] as const }}
               className="mt-6 space-y-16"
             >
               <div className="flex justify-center">
@@ -1079,7 +1079,7 @@ export function OfferWizard({ offer }: { offer: Offer }) {
                             transition={{
                               duration: 0.4,
                               delay: index * 0.08,
-                              ease: [0.25, 0.1, 0.25, 1],
+                              ease: [0.25, 0.1, 0.25, 1] as const,
                             }}
                             whileHover={{ y: -4 }}
                             className="relative"
@@ -1143,7 +1143,7 @@ export function OfferWizard({ offer }: { offer: Offer }) {
                                     exit={{ height: 0, opacity: 0 }}
                                     transition={{
                                       duration: 0.25,
-                                      ease: [0.25, 0.1, 0.25, 1],
+                                      ease: [0.25, 0.1, 0.25, 1] as const,
                                     }}
                                     className="overflow-hidden"
                                   >
@@ -1223,7 +1223,7 @@ export function OfferWizard({ offer }: { offer: Offer }) {
                           transition={{
                             duration: 0.35,
                             delay: index * 0.05,
-                            ease: [0.25, 0.1, 0.25, 1],
+                            ease: [0.25, 0.1, 0.25, 1] as const,
                           }}
                           whileHover={{ y: -2 }}
                         >
@@ -1351,7 +1351,7 @@ export function OfferWizard({ offer }: { offer: Offer }) {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+              transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] as const }}
               className="flex min-h-[70vh] flex-col items-center justify-center pb-8 pt-4 text-center md:min-h-[65vh]"
             >
               <motion.div

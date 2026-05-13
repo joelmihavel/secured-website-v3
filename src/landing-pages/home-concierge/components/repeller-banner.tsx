@@ -5,12 +5,7 @@ import { motion, useInView } from "framer-motion"
 
 const noItems = [
   { text: "No 1BHKs or standalone studios" },
-  { text: "No rooms under ₹28,000/month" },
-]
-
-const yesItems = [
-  { text: "Private rooms · ₹28,000 – ₹42,000/mo" },
-  { text: "Full 2 & 3BHK homes · from ₹60,000/mo" },
+  { text: "No rooms under ₹26,000/month" },
 ]
 
 const listVariants = {
@@ -20,7 +15,7 @@ const listVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, x: 20 },
-  show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+  show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const } },
 }
 
 export function RepellerBanner() {
@@ -34,7 +29,7 @@ export function RepellerBanner() {
         <motion.p
           initial={{ opacity: 0, x: -60 }}
           animate={inView ? { opacity: 1, x: 0 } : {}}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
           className="shrink-0 font-serif text-5xl font-black italic text-flent-red lg:text-8xl"
         >
           No.
@@ -44,13 +39,13 @@ export function RepellerBanner() {
           <motion.div
             initial={{ opacity: 0, x: 40 }}
             animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const, delay: 0.15 }}
           >
             <h2 className="mb-1.5 font-serif text-xl font-bold text-card lg:text-3xl">
               This isn&apos;t for everyone.
             </h2>
             <p className="max-w-xl text-sm leading-relaxed text-card/70 lg:text-base">
-              If you&apos;re looking for a 1BHK or a room under ₹28k, we&apos;re
+              If you&apos;re looking for a 1BHK or a room under ₹26k, we&apos;re
               not it. Flent is for people who value design, privacy, and
               city-ready living.
             </p>
@@ -71,18 +66,6 @@ export function RepellerBanner() {
               >
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-flent-red/20 text-xs font-bold text-flent-red">
                   ✕
-                </span>
-                {item.text}
-              </motion.li>
-            ))}
-            {yesItems.map((item) => (
-              <motion.li
-                key={item.text}
-                variants={itemVariants}
-                className="flex items-center gap-2.5 text-sm font-semibold text-card lg:text-base"
-              >
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-green-500/20 text-xs font-bold text-green-400">
-                  ✓
                 </span>
                 {item.text}
               </motion.li>

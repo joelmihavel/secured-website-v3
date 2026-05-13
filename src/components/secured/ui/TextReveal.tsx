@@ -24,7 +24,7 @@ export function WordReveal({ children, className = "", delay = 0 }: WordRevealPr
             animate={isInView ? { y: 0, opacity: 1 } : { y: "100%", opacity: 0 }}
             transition={{
               duration: isInView ? 0.5 : 0.2,
-              ease: [0.25, 0.1, 0.25, 1],
+              ease: [0.25, 0.1, 0.25, 1] as const,
               delay: isInView ? delay + i * 0.04 : 0,
             }}
           >
@@ -54,7 +54,7 @@ export function SlideUp({ children, className = "", delay = 0 }: SlideUpProps) {
         animate={isInView ? { y: 0, opacity: 1 } : { y: "100%", opacity: 0 }}
         transition={{
           duration: isInView ? 0.6 : 0.2,
-          ease: [0.25, 0.1, 0.25, 1],
+          ease: [0.25, 0.1, 0.25, 1] as const,
           delay: isInView ? delay : 0,
         }}
       >

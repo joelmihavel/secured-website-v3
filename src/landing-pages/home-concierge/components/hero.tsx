@@ -6,7 +6,7 @@ import { triggerFormAttention } from "@landing-pages/home-concierge/lib/form-att
 const qualificationPills = [
   { label: "Fully furnished", border: "border-flent-red", dot: "bg-flent-red" },
   { label: "Secured areas", border: "border-flent-violet", dot: "bg-flent-violet" },
-  { label: "Rooms from ₹25k/mo", border: "border-flent-green", dot: "bg-flent-green" },
+  { label: "Rooms from ₹26k/mo", border: "border-flent-green", dot: "bg-flent-green" },
   { label: "Low deposits", border: "border-flent-orange", dot: "bg-flent-orange" },
   { label: "24/7 support", border: "border-flent-red", dot: "bg-flent-red" },
   { label: "Kitchen ready", border: "border-flent-yellow", dot: "bg-flent-yellow" },
@@ -54,7 +54,7 @@ export function Hero() {
         className="mb-8 max-w-xl text-lg leading-relaxed text-muted-foreground"
       >
         Private rooms from{" "}
-        <span className="font-semibold text-flent-dark">₹25,000/mo</span>
+        <span className="font-semibold text-flent-dark">₹26,000/mo</span>
         {" "}· Full homes from{" "}
         <span className="font-semibold text-flent-dark">₹60,000/mo</span>
         . Fully furnished, move-in ready. No brokerage, no landlord drama.

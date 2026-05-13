@@ -1,9 +1,9 @@
 export function TickerBar() {
   const items = [
     "Fully Furnished",
-    "24/7 Resident Support",
+    "24/7 Tenant Support",
     "Minimal Deposits",
-    "Private rooms from \u20B925,000/month",
+    "Private rooms from \u20B926,000/month",
     "Kitchenware included",
     "Move in with just your clothes",
     "No brokerage. No deposit drama",
