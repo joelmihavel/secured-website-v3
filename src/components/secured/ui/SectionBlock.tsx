@@ -36,7 +36,7 @@ export function SectionBlock({
             style={{ fontFamily: "var(--font-ui)" }}
             initial={{ opacity: 0, x: -12 }}
             animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -12 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }}
           >
             {padNum ? `[${padNum}] ` : ""}{label}
           </motion.span>
@@ -46,7 +46,7 @@ export function SectionBlock({
               style={{ fontFamily: "var(--font-ui)" }}
               initial={{ opacity: 0, x: 12 }}
               animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 12 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }}
             >
               / ITEM {number} : {totalItems}
             </motion.span>
@@ -60,7 +60,7 @@ export function SectionBlock({
           className="max-w-[900px] font-display text-[24px] leading-[1.25] tracking-[-1px] md:text-[32px] lg:text-[40px] xl:text-[46px] 3xl:text-[56px] 4xl:text-[68px] 5xl:text-[90px]"
           initial={{ opacity: 0, y: 24 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-          transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] as const }}
         >
           <span className="text-white">{heading}</span>
           {headingMuted && (

@@ -107,27 +107,30 @@ function FeatureCard({
           if (applyNudge) setHasNudged(true)
         }}
       >
-        {/* Front - Icon & Title */}
+        {/* Front */}
         <div
-          className="absolute inset-0 rounded-xl border border-border bg-card p-4 shadow-sm lg:relative lg:rounded-2xl lg:p-6 lg:backface-visible"
+          className="absolute inset-0 rounded-xl border border-border/60 bg-card p-4 shadow-[0_2px_10px_rgba(0,0,0,0.05)] lg:relative lg:rounded-2xl lg:p-4 lg:backface-visible"
           style={{ backfaceVisibility: "hidden" }}
         >
-          <div
-            className={`mb-3 flex h-10 w-8 items-center justify-center arch-clip-sm lg:mb-4 lg:h-14 lg:w-11 ${feature.bgColor}`}
-          >
-            <Icon className={`h-4 w-4 lg:h-5 lg:w-5 ${feature.iconColor}`} strokeWidth={2.5} />
+          {/* Icon + title on same line */}
+          <div className="mb-2 flex items-center gap-2.5 lg:mb-3">
+            <div
+              className={`flex h-7 w-6 shrink-0 items-center justify-center arch-clip-sm lg:h-8 lg:w-7 ${feature.bgColor}`}
+            >
+              <Icon className={`h-3 w-3 lg:h-3.5 lg:w-3.5 ${feature.iconColor}`} strokeWidth={2} />
+            </div>
+            <h3 className="text-[13px] font-semibold leading-tight text-flent-dark lg:text-sm">
+              {feature.title}
+            </h3>
           </div>
-          <h3 className="text-sm font-bold text-flent-dark lg:mb-1.5 lg:text-base">
-            {feature.title}
-          </h3>
-          <p className="hidden text-sm leading-relaxed text-muted-foreground lg:block">
+          <p className="hidden text-xs leading-relaxed text-muted-foreground lg:block">
             {feature.description}
           </p>
         </div>
 
-        {/* Back - Description (mobile only) */}
+        {/* Back (mobile flip) */}
         <div
-          className="absolute inset-0 flex items-center rounded-xl border border-border bg-flent-dark p-4 shadow-sm lg:hidden [transform:rotateY(180deg)]"
+          className="absolute inset-0 flex items-center rounded-xl border border-border/60 bg-flent-dark p-4 lg:hidden [transform:rotateY(180deg)]"
           style={{ backfaceVisibility: "hidden" }}
         >
           <p className="text-sm leading-relaxed text-white">
@@ -146,7 +149,6 @@ export function Features() {
 
   useEffect(() => {
     if (!inView) return
-    // Delay nudge until cards have finished staggering in (6 cards × 80ms + 400ms duration ≈ 880ms)
     const timer = setTimeout(() => setShouldNudge(true), 900)
     return () => clearTimeout(timer)
   }, [inView])
@@ -161,7 +163,7 @@ export function Features() {
       >
         What comes with every door
       </motion.h2>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-5">
+      <div className="grid grid-cols-2 gap-3 lg:gap-4 xl:grid-cols-3">
         {features.map((feature, index) => (
           <FeatureCard
             key={feature.title}

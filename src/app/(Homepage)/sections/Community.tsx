@@ -410,7 +410,7 @@ export const Community = () => {
                                     transition={{
                                         type: "tween",
                                         duration: 0.25,
-                                        ease: [0.25, 0.1, 0.25, 1],
+                                        ease: [0.25, 0.1, 0.25, 1] as const,
                                     }}
                                     style={{
                                         pointerEvents: index === 0 ? 'auto' : 'none',

@@ -515,7 +515,7 @@ function GrowthScene({ className = "" }: { className?: string }) {
               }}
               initial={{ height: 0 }}
               animate={v ? { height: `${h}%` } : { height: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 + i * 0.04, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.6, delay: 0.1 + i * 0.04, ease: [0.22, 1, 0.36, 1] as const }}
             />
           ))}
         </div>
@@ -547,7 +547,7 @@ function SetupFastScene({ className = "" }: { className?: string }) {
               strokeLinecap="round" strokeDasharray="452"
               initial={{ strokeDashoffset: 452 }}
               animate={v ? { strokeDashoffset: 30 } : { strokeDashoffset: 452 }}
-              transition={{ duration: 1.2, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 1.2, delay: 0.2, ease: [0.22, 1, 0.36, 1] as const }}
               transform="rotate(-90 80 80)"
             />
           </svg>

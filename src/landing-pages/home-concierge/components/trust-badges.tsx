@@ -4,7 +4,7 @@ const badges = [
   {
     icon: Users,
     value: "500+",
-    label: "Happy Residents",
+    label: "Happy Tenants",
   },
   {
     icon: Star,
@@ -18,8 +18,8 @@ const badges = [
   },
   {
     icon: Clock,
-    value: "24hr",
-    label: "Response Time",
+    value: "12hr",
+    label: "Callback Guarantee",
   },
 ]
 

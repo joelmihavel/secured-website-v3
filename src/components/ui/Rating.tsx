@@ -30,7 +30,7 @@ export const Rating = ({ reviews }: RatingProps) => {
                             viewport={{ once: true, margin: "-100px" }}
                             transition={{
                                 duration: 0.6,
-                                ease: [0.34, 1.56, 0.64, 1],
+                                ease: [0.34, 1.56, 0.64, 1] as const,
                                 staggerChildren: 0.1
                             }}
                         >
@@ -44,7 +44,7 @@ export const Rating = ({ reviews }: RatingProps) => {
                                     transition={{
                                         duration: 0.5,
                                         delay: index * 0.1,
-                                        ease: [0.34, 1.56, 0.64, 1]
+                                        ease: [0.34, 1.56, 0.64, 1] as const
                                     }}
                                 >
                                     <Star
@@ -62,7 +62,7 @@ export const Rating = ({ reviews }: RatingProps) => {
                                 transition={{
                                     duration: 0.5,
                                     delay: 0.4,
-                                    ease: [0.34, 1.56, 0.64, 1]
+                                    ease: [0.34, 1.56, 0.64, 1] as const
                                 }}
                             >
                                 <Star
