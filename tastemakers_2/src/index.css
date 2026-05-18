@@ -1,0 +1,50 @@
+/* Fonts are loaded by the root Next.js layout — @font-face not needed here. */
+
+.tastemakers-root {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  color: #E8F5F0;
+  background: #000d09;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+.tastemakers-root h1,
+.tastemakers-root h2,
+.tastemakers-root h3,
+.tastemakers-root h4,
+.tastemakers-root h5,
+.tastemakers-root h6 {
+  font-family: 'Zin Display Condensed', serif;
+}
+
+.font-zin {
+  font-family: 'Zin Display Condensed', serif;
+  font-weight: 100;
+}
+
+.font-zin-italic {
+  font-family: 'Zin Display Condensed', serif;
+  font-style: italic;
+  font-weight: 100;
+}
+
+.grain {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 0.6px, transparent 0.6px);
+  background-size: 3px 3px;
+  mix-blend-mode: soft-light;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

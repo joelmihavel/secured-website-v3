@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Footer } from "@/components/layout/Footer";
 
-const EXCLUDED_ROUTES = ["/secured", "/home-concierge", "/offers"];
+const EXCLUDED_ROUTES = ["/secured", "/home-concierge", "/offers", "/tastemakers"];
 
 export function ConditionalFooter() {
   const pathname = usePathname();
