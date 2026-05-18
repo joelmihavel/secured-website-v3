@@ -7,8 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "test:hubspot-social": "npx tsx api/social-links-hubspot.test.ts"
+    "preview": "vite preview"
   },
   "dependencies": {
     "clsx": "^2.1.1",
