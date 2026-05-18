@@ -1,7 +1,5 @@
 // ─── HubSpot helpers (inlined — Vercel only compiles API entry files to JS) ──
 
-import { socialLinksToHubSpotProperties } from './social-links-hubspot'
-
 type TastemakerApplicationPayload = {
   fullName: string
   email: string
@@ -14,6 +12,22 @@ const HUBSPOT_API = 'https://api.hubapi.com'
 
 /** Customer Type (`customer_type`) single-select — internal option value in HubSpot. */
 const CUSTOMER_TYPE_AFFILIATE_APPLICANT = 'Affiliate Applicant'
+
+/** HubSpot contact custom property — first / LinkedIn profile URL. */
+const HUBSPOT_PROP_AFFILIATE_LINKEDIN = 'affiliate__linkedin'
+
+/** HubSpot contact custom property — additional profile URLs (multi-line text). */
+const HUBSPOT_PROP_AFFILIATE_SOCIAL_LINKS = 'afilliatesociallinks'
+
+function socialLinksToHubSpotProperties(socialLinks: string[]): Record<string, string> {
+  const normalized = socialLinks.map((u) => u.trim()).filter(Boolean)
+  const properties: Record<string, string> = {}
+  const linkedIn = normalized[0]
+  if (linkedIn) properties[HUBSPOT_PROP_AFFILIATE_LINKEDIN] = linkedIn
+  const extras = normalized.slice(1)
+  if (extras.length > 0) properties[HUBSPOT_PROP_AFFILIATE_SOCIAL_LINKS] = extras.join(', ')
+  return properties
+}
 
 function splitName(fullName: string): { firstname: string; lastname: string } {
   const trimmed = fullName.trim()
