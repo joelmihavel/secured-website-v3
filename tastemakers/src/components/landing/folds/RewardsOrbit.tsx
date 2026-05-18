@@ -352,7 +352,7 @@ export function RewardsOrbit() {
         delay={0.1}
         className={cn(
           'z-[1] w-full max-w-[min(720px,92vw)] px-3 text-center',
-          'relative left-auto top-auto mx-auto translate-x-0 max-md:mt-6 max-md:pb-1 max-md:pt-0',
+          'relative left-auto top-auto mx-auto translate-x-0 max-md:-mt-2 max-md:pb-1 max-md:pt-0',
           'md:relative md:inset-auto md:mx-auto md:mt-0 md:max-w-[min(720px,92vw)] md:px-0 md:pb-0 md:pt-0',
         )}
       >
@@ -362,7 +362,14 @@ export function RewardsOrbit() {
               <a
                 href="#apply"
                 aria-label="Jump to tastemaker application form"
-                className="relative z-[2] block cursor-pointer rounded-sm text-[#E8F5F0] outline-none transition-[color,text-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-[rgba(252,249,244,0.95)] focus-visible:ring-1 focus-visible:ring-[#f4f1ea]/25 active:text-[rgba(252,249,244,0.88)]"
+                className={cn(
+                  'relative z-[2] block cursor-pointer rounded-sm underline decoration-1 underline-offset-[0.32em]',
+                  'text-[#E8F5F0] decoration-[rgba(232,245,240,0.28)]',
+                  'outline-none transition-[color,text-decoration-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+                  'hover:text-[rgba(252,249,244,0.95)] hover:decoration-[rgba(252,249,244,0.55)]',
+                  'active:text-[rgba(252,249,244,0.88)] active:decoration-[rgba(232,245,240,0.38)]',
+                  'focus-visible:ring-1 focus-visible:ring-[#f4f1ea]/25',
+                )}
               >
                 Apply Now.
               </a>
