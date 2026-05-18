@@ -1,8 +1,0 @@
-export { HeroSection } from '@tastemakers/components/landing/folds/HeroSection'
-export { SocialProofWall } from '@tastemakers/components/landing/folds/SocialProofWall'
-export { RewardsOrbit } from '@tastemakers/components/landing/folds/RewardsOrbit'
-export { InteractiveTracks } from '@tastemakers/components/landing/folds/InteractiveTracks'
-export { CinematicStatement } from '@tastemakers/components/landing/folds/CinematicStatement'
-export { TastemakersWall } from '@tastemakers/components/landing/folds/TastemakersWall'
-export { ApplicationFold } from '@tastemakers/components/landing/folds/ApplicationFold'
-export { Footer } from '@tastemakers/components/landing/folds/Footer'

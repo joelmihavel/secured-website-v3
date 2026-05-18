@@ -28,12 +28,6 @@
       ],
       "@landing-pages/*": [
         "./src/landing-pages/*"
-      ],
-      "@tastemakers/*": [
-        "./tastemakers_2/src/*"
-      ],
-      "@tastemakers-api/*": [
-        "./tastemakers_2/api/*"
       ]
     }
   },

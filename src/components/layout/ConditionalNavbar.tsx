@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 
-const EXCLUDED_ROUTES = ["/secured", "/home-concierge", "/offers", "/tastemakers"];
+const EXCLUDED_ROUTES = ["/secured", "/home-concierge", "/offers"];
 
 export function ConditionalNavbar() {
   const pathname = usePathname();
