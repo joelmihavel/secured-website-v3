@@ -41,15 +41,6 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    // Tastemakers affiliate landing is a standalone Vite deploy. The Vite app
-    // builds with `base: '/tastemakers/'` and a strip-prefix rewrite in its own
-    // `vercel.json`, so `flent.in/tastemakers/*` and `<deploy>/tastemakers/*`
-    // both resolve to the same content. Override the destination origin via
-    // `TASTEMAKERS_DEPLOY_URL` once the deploy is live.
-    const tastemakersDeploy =
-      process.env.TASTEMAKERS_DEPLOY_URL?.replace(/\/$/, "") ||
-      "https://flent-tastemakers.vercel.app";
-
     return [
       {
         source: "/renewal-guide",
@@ -58,14 +49,6 @@ const nextConfig: NextConfig = {
       {
         source: "/renewal-guide/:path*",
         destination: "https://tenant-renewals.vercel.app/:path*",
-      },
-      {
-        source: "/tastemakers",
-        destination: `${tastemakersDeploy}/tastemakers`,
-      },
-      {
-        source: "/tastemakers/:path*",
-        destination: `${tastemakersDeploy}/tastemakers/:path*`,
       },
     ];
   },
