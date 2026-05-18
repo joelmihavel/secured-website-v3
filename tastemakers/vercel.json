@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/tastemakers/api/(.*)", "destination": "/api/$1" },
+    { "source": "/tastemakers/(.*)", "destination": "/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

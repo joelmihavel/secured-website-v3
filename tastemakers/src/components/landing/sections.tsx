@@ -1,0 +1,8 @@
+export { HeroSection } from '@/components/landing/folds/HeroSection'
+export { SocialProofWall } from '@/components/landing/folds/SocialProofWall'
+export { RewardsOrbit } from '@/components/landing/folds/RewardsOrbit'
+export { InteractiveTracks } from '@/components/landing/folds/InteractiveTracks'
+export { CinematicStatement } from '@/components/landing/folds/CinematicStatement'
+export { TastemakersWall } from '@/components/landing/folds/TastemakersWall'
+export { ApplicationFold } from '@/components/landing/folds/ApplicationFold'
+export { Footer } from '@/components/landing/folds/Footer'

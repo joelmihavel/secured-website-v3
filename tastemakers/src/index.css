@@ -1,0 +1,100 @@
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'Zin Display Condensed';
+  src: url('/font/ZinDisplayCondensed.otf') format('opentype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Plus Jakarta Sans variable — files from Fontshare bundle (PlusJakartaSans_Complete WEB) */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/font/plus-jakarta/PlusJakartaSans-Variable.woff2') format('woff2');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/font/plus-jakarta/PlusJakartaSans-VariableItalic.woff2') format('woff2');
+  font-weight: 200 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+@theme {
+  --font-display: 'Zin Display Condensed', serif;
+  --font-zin: 'Zin Display Condensed', serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+:root {
+  --font-zin: 'Zin Display Condensed', serif;
+  font-family: var(--font-sans);
+  color: #E8F5F0;
+  background: #000d09;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #000d09;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-zin);
+}
+
+.font-zin {
+  font-family: var(--font-zin);
+  font-weight: 100;
+}
+
+.font-zin-italic {
+  font-family: var(--font-zin);
+  font-style: italic;
+  font-weight: 100;
+}
+
+.grain {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 0.6px, transparent 0.6px);
+  background-size: 3px 3px;
+  mix-blend-mode: soft-light;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
