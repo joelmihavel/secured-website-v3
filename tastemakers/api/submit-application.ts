@@ -1,5 +1,7 @@
 // ─── HubSpot helpers (inlined — Vercel only compiles API entry files to JS) ──
 
+import { socialLinksToHubSpotProperties } from './social-links-hubspot'
+
 type TastemakerApplicationPayload = {
   fullName: string
   email: string
@@ -67,6 +69,7 @@ async function upsertContact(payload: TastemakerApplicationPayload, token: strin
     ...(firstname.trim() ? { firstname: firstname.trim() } : {}),
     ...(lastname.trim() ? { lastname: lastname.trim() } : {}),
     ...(payload.city.trim() ? { city: payload.city.trim() } : {}),
+    ...socialLinksToHubSpotProperties(payload.socialLinks),
   }
 
   const detailsProp = env.HUBSPOT_APPLICATION_DETAILS_PROPERTY?.trim()
