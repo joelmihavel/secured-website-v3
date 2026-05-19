@@ -54,58 +54,18 @@ function hubspotSubmitDevPlugin(): Plugin {
   }
 }
 
-/** Default share image: invite ticket art (`public/images/Meta Image 2.png`). Override: VITE_OG_IMAGE (use `/tastemakers/...` if absolute from site root). */
-const DEFAULT_OG_IMAGE_FILENAME = 'images/Meta Image 2.png'
-
-function normalizePublicPath(raw: string | undefined): string {
-  const t = raw?.trim() || `${APP_BASE}${DEFAULT_OG_IMAGE_FILENAME}`
-  return t.startsWith('/') ? t : `/${t}`
-}
-
-/** Spaces in filenames must become %20 in og:image URLs for reliable crawlers. */
-function encodeOgImagePath(uriPath: string): string {
-  return uriPath
-    .split('/')
-    .map((seg) => (seg === '' ? '' : encodeURIComponent(seg)))
-    .join('/')
-}
-
 /**
- * WhatsApp / Facebook / LinkedIn need an absolute https `og:image`; relative URLs are often ignored.
- * Merge `process.env` with `loadEnv()` — Vercel dashboard vars live in `process.env`, not `.env` files.
+ * Share preview image (`public/images/Meta Image 2.png`), as served on production.
+ * Override for staging/tests: set `VITE_OG_IMAGE_URL` to a full https URL at build time.
  */
-function siteOriginForOg(env: Record<string, string | undefined>): string | undefined {
-  const trimmed =
-    env.VITE_SITE_ORIGIN?.trim().replace(/\/$/, '') ||
-    env.SITE_URL?.trim().replace(/\/$/, '')
-  if (trimmed) return trimmed
+const CANONICAL_OG_IMAGE_URL =
+  'https://www.flent.in/tastemakers/images/Meta%20Image%202.png'
 
-  const prod = env.VERCEL_PROJECT_PRODUCTION_URL?.trim()
-  if (prod) {
-    return prod.startsWith('http') ? prod.replace(/\/$/, '') : `https://${prod.replace(/\/$/, '')}`
-  }
-
-  const vercel = env.VERCEL_URL?.trim()
-  if (vercel) return `https://${vercel}`
-  return undefined
-}
-
-function ogImageAbsoluteUrlPlugin(
-  env: Record<string, string | undefined>,
-  ogImagePath: string,
-): Plugin {
+function ogImageAbsoluteUrlPlugin(env: Record<string, string | undefined>): Plugin {
   return {
     name: 'og-image-absolute-url',
     transformIndexHtml(html) {
-      const origin = siteOriginForOg(env)
-      const imagePathEncoded = encodeOgImagePath(ogImagePath)
-      const imageUrl = origin ? `${origin}${imagePathEncoded}` : imagePathEncoded
-      if (!origin) {
-        console.warn(
-          '[vite] og:image has no site origin — using a relative path. Social crawlers usually require an absolute https URL.\n' +
-            '  Set VITE_SITE_ORIGIN (e.g. https://www.flent.in) in .env.production or Vercel env, or rely on VERCEL_URL during the Vercel build.',
-        )
-      }
+      const imageUrl = env.VITE_OG_IMAGE_URL?.trim() || CANONICAL_OG_IMAGE_URL
       return html.split('__OG_IMAGE_URL__').join(imageUrl)
     },
   }
@@ -116,11 +76,10 @@ export default defineConfig(({ mode }) => {
   const envFromFiles = loadEnv(mode, process.cwd(), '')
   /** Vercel / CI inject vars into `process.env`; `loadEnv` only reads `.env*` files. */
   const env: Record<string, string | undefined> = { ...envFromFiles, ...process.env }
-  const ogImagePath = normalizePublicPath(env.VITE_OG_IMAGE)
 
   return {
     base: APP_BASE,
-    plugins: [react(), tailwindcss(), ogImageAbsoluteUrlPlugin(env, ogImagePath), hubspotSubmitDevPlugin()],
+    plugins: [react(), tailwindcss(), ogImageAbsoluteUrlPlugin(env), hubspotSubmitDevPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
