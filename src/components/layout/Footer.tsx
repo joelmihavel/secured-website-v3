@@ -126,7 +126,7 @@ export const Footer = () => {
                                       href: "https://empty-bite-b73.notion.site/Flent-Hiring-Guide-42ffc8b1ff6648869f4c45f85ec5a1b8", 
                                       external: true 
                                   },
-                                  { label: "Join Tastemakers (NEW)", href: "/tastemakers" }
+                                  { label: "Become an Affiliate", href: "/tastemakers" }
                                 ].map((item) => (
                                     <li key={item.label}>
                                         <Link
