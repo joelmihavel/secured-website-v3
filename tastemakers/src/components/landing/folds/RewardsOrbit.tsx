@@ -6,6 +6,8 @@ import { cinematicScrollSpring } from '@/components/landing/shared/cinematicScro
 import { FoldReveal } from '@/components/landing/shared/FoldReveal'
 import { useCinematicIntensity } from '@/components/landing/shared/useCinematicIntensity'
 import { assetUrl, cn } from '@/lib/utils'
+import { TASTEMAKERS_CTA_IDS } from '@/lib/cta-ids'
+import { onTrackedCtaClick } from '@/lib/posthog'
 
 /** Desktop: arcY / rotate via flex row + overlap. */
 const orbitPlaceholders = [
@@ -362,6 +364,13 @@ export function RewardsOrbit() {
               <a
                 href="#apply"
                 aria-label="Jump to tastemaker application form"
+                onClick={onTrackedCtaClick({
+                  cta_id: TASTEMAKERS_CTA_IDS.REWARDS_APPLY,
+                  cta_text: 'Apply Now',
+                  cta_type: 'link',
+                  cta_destination: '#apply',
+                  page_section: 'rewards_orbit',
+                })}
                 className={cn(
                   'relative z-[2] block cursor-pointer rounded-sm underline decoration-1 underline-offset-[0.32em]',
                   'text-[#E8F5F0] decoration-[rgba(232,245,240,0.28)]',

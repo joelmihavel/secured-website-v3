@@ -77,6 +77,11 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
+        source: "/tastemaker",
+        destination: "/tastemakers",
+        permanent: true,
+      },
+      {
         source: "/properties/:path*",
         destination: "/homes/:path*",
         permanent: true,

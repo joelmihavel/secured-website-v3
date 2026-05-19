@@ -16,6 +16,8 @@ import { FoldReveal } from '@/components/landing/shared/FoldReveal'
 import { MobileSnapCarousel } from '@/components/landing/shared/MobileSnapCarousel'
 import { useCinematicIntensity } from '@/components/landing/shared/useCinematicIntensity'
 import { cn } from '@/lib/utils'
+import { TASTEMAKERS_CTA_IDS } from '@/lib/cta-ids'
+import { onTrackedCtaClick } from '@/lib/posthog'
 
 function useTouchFlipEnabled() {
   const [enabled, setEnabled] = useState(false)
@@ -286,6 +288,13 @@ export function InteractiveTracks() {
             href="#apply"
             aria-label="Jump to tastemaker application form"
             className="flex cursor-pointer items-baseline gap-[0.35em] font-display text-sm font-light tracking-[0.16em] text-[rgba(244,241,234,0.78)] outline-none transition-[color,text-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-[rgba(252,249,244,0.95)] focus-visible:ring-1 focus-visible:ring-[#f4f1ea]/25 active:text-[rgba(252,249,244,0.88)]"
+            onClick={onTrackedCtaClick({
+              cta_id: TASTEMAKERS_CTA_IDS.TRACKS_APPLY,
+              cta_text: 'Apply now',
+              cta_type: 'link',
+              cta_destination: '#apply',
+              page_section: 'interactive_tracks',
+            })}
           >
             <span>Apply now</span>
             {reduceMotion ? (

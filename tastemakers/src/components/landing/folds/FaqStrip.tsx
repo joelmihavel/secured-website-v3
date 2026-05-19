@@ -1,3 +1,6 @@
+import { TASTEMAKERS_CTA_IDS } from '@/lib/cta-ids'
+import { onTrackedCtaClick } from '@/lib/posthog'
+
 const primary = 'text-[rgba(255,255,255,0.92)]'
 
 function FaqArrowIcon({ className }: { className?: string }) {
@@ -31,6 +34,13 @@ export function FaqStrip() {
           <a
             href={`${import.meta.env.BASE_URL}faq`}
             className={`${primary} mt-3 inline-flex items-center gap-1.5 text-[clamp(0.9375rem,2.6vw,1.0625rem)] font-normal tracking-[0.01em] underline decoration-[rgba(255,255,255,0.42)] underline-offset-[0.35em] transition-colors hover:text-white hover:decoration-[rgba(255,255,255,0.65)] md:mt-2`}
+            onClick={onTrackedCtaClick({
+              cta_id: TASTEMAKERS_CTA_IDS.FAQ,
+              cta_text: "Read the FAQ's",
+              cta_type: 'link',
+              cta_destination: `${import.meta.env.BASE_URL}faq`,
+              page_section: 'faq_strip',
+            })}
           >
             Read the FAQ&apos;s
             <FaqArrowIcon className="-mt-px shrink-0 opacity-[0.88]" />
