@@ -358,7 +358,7 @@ export function RewardsOrbit() {
       >
         <motion.div style={{ y: unlockY }}>
           <h2 className="text-[#E8F5F0]">
-            <span className="flex flex-col items-center gap-1.5 font-sans text-[calc(0.875rem+1.5px)] font-normal leading-[calc(1.38em-4.25px)] tracking-[0.01em] text-[#E8F5F0]">
+            <span className="flex flex-col items-center gap-[calc(0.375rem+6px)] font-sans text-[calc(0.875rem+1.5px)] font-normal leading-[calc(1.38em-4.25px)] tracking-[0.01em] text-[#E8F5F0]">
               <a
                 href="#apply"
                 aria-label="Jump to tastemaker application form"
@@ -371,7 +371,7 @@ export function RewardsOrbit() {
                   'focus-visible:ring-1 focus-visible:ring-[#f4f1ea]/25',
                 )}
               >
-                Apply Now.
+                Apply Now
               </a>
               <span className="block">Unlock the full catalogue.</span>
             </span>
