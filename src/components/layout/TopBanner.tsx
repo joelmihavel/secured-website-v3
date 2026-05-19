@@ -5,21 +5,12 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import styles from "./TopBanner.module.css";
 
+const MARQUEE_TEXT =
+  "Recommend Flent in your network • Earn rewards upto 1 lakh • Unlock Bangalore's best brands";
+
 const MarqueeItem = () => (
   <div className={styles["marquee-css__item"]}>
-    <p className={styles["marquee-css__item-p"]}>Recommend Flent in your network</p>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" fill="currentColor" className={styles["marquee-css__item-svg"]}>
-      <path d="M17.6777 32.3223C12.9893 27.6339 6.63041 25 0 25C6.63041 25 12.9893 22.3661 17.6777 17.6777C22.3661 12.9893 25 6.63041 25 0C25 6.63041 27.6339 12.9893 32.3223 17.6777C37.0107 22.3661 43.3696 25 50 25C43.3696 25 37.0107 27.6339 32.3223 32.3223C27.6339 37.0107 25 43.3696 25 50C25 43.3696 22.3661 37.0107 17.6777 32.3223Z" fill="currentColor" />
-    </svg>
-    <p className={styles["marquee-css__item-p"]}>Earn rewards upto 1 lakh</p>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" fill="currentColor" className={styles["marquee-css__item-svg"]}>
-      <path d="M17.6777 32.3223C12.9893 27.6339 6.63041 25 0 25C6.63041 25 12.9893 22.3661 17.6777 17.6777C22.3661 12.9893 25 6.63041 25 0C25 6.63041 27.6339 12.9893 32.3223 17.6777C37.0107 22.3661 43.3696 25 50 25C43.3696 25 37.0107 27.6339 32.3223 32.3223C27.6339 37.0107 25 43.3696 25 50C25 43.3696 22.3661 37.0107 17.6777 32.3223Z" fill="currentColor" />
-    </svg>
-    {/* Added Text and Separator SVG below */}
-    <p className={styles["marquee-css__item-p"]}>Unlock Bangalore’s best brands</p>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" fill="currentColor" className={styles["marquee-css__item-svg"]}>
-      <path d="M17.6777 32.3223C12.9893 27.6339 6.63041 25 0 25C6.63041 25 12.9893 22.3661 17.6777 17.6777C22.3661 12.9893 25 6.63041 25 0C25 6.63041 27.6339 12.9893 32.3223 17.6777C37.0107 22.3661 43.3696 25 50 25C43.3696 25 37.0107 27.6339 32.3223 32.3223C27.6339 37.0107 25 43.3696 25 50C25 43.3696 22.3661 37.0107 17.6777 32.3223Z" fill="currentColor" />
-    </svg>
+    <p className={styles["marquee-css__item-p"]}>{MARQUEE_TEXT}</p>
   </div>
 );
 
@@ -111,7 +102,7 @@ export const TopBanner = () => {
   if (!shouldRender) return null;
 
   return (
-    <Link href="/secured" className="block w-full">
+    <Link href="/tastemakers" className="block w-full">
       <div
         ref={containerRef}
         data-css-marquee=""

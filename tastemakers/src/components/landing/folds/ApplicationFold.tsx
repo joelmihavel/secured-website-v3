@@ -13,6 +13,11 @@ import { cinematicScrollSpring } from '@/components/landing/shared/cinematicScro
 import { FoldReveal } from '@/components/landing/shared/FoldReveal'
 import { useCinematicIntensity } from '@/components/landing/shared/useCinematicIntensity'
 import { cn } from '@/lib/utils'
+import {
+  trackTastemakerApplicationSubmitAttempted,
+  trackTastemakerApplicationSubmitFailed,
+  trackTastemakerApplicationSubmitSucceeded,
+} from '@/lib/posthog'
 
 type SubmitStatus = 'idle' | 'loading' | 'success' | 'error'
 
@@ -50,16 +55,24 @@ export function ApplicationFold() {
     if (!fullName || !email || !city || !homeAnswer) {
       setSubmitStatus('error')
       setErrorMessage('Please fill in name, email, city, and your answer.')
+      trackTastemakerApplicationSubmitFailed({
+        error_message: 'validation_missing_required_fields',
+      })
       return
     }
     if (socialRaw.length === 0) {
       setSubmitStatus('error')
       setErrorMessage('Please add at least one profile link.')
+      trackTastemakerApplicationSubmitFailed({
+        error_message: 'validation_missing_social_links',
+      })
       return
     }
 
     setSubmitStatus('loading')
     setErrorMessage('')
+    const submitStartedAt = performance.now()
+    trackTastemakerApplicationSubmitAttempted()
 
     try {
       const res = await fetch(`${import.meta.env.BASE_URL}api/submit-application`, {
@@ -76,15 +89,21 @@ export function ApplicationFold() {
       const data = (await res.json()) as { ok?: boolean; message?: string }
       if (!res.ok || !data.ok) {
         setSubmitStatus('error')
-        setErrorMessage(data.message ?? 'Something went wrong. Try again later.')
+        const message = data.message ?? 'Something went wrong. Try again later.'
+        setErrorMessage(message)
+        trackTastemakerApplicationSubmitFailed({ error_message: message })
         return
       }
       setSubmitStatus('success')
+      trackTastemakerApplicationSubmitSucceeded({
+        submit_latency_ms: Math.round(performance.now() - submitStartedAt),
+      })
       formRef.current?.reset()
       setSocialLinkCount(1)
     } catch {
       setSubmitStatus('error')
       setErrorMessage('Network error. Check your connection and try again.')
+      trackTastemakerApplicationSubmitFailed({ error_message: 'network_error' })
     }
   }
 

@@ -8,6 +8,8 @@ import {
 import { FloatingKey } from '@/components/landing/shared/FloatingKey'
 import { HeroMobileShare } from '@/components/landing/shared/HeroMobileShare'
 import { assetUrl, cn } from '@/lib/utils'
+import { TASTEMAKERS_CTA_IDS } from '@/lib/cta-ids'
+import { onTrackedCtaClick } from '@/lib/posthog'
 
 /** Same easing/duration as `FloatingKey` inner motion; ~40% y / ~40° rotate amplitude for subtler captions. */
 const MOBILE_HERO_CAPTION_FLOAT = {
@@ -87,6 +89,13 @@ export function HeroSection() {
             href="#apply"
             aria-label="Jump to tastemaker application form"
             className={mobileApplyClasses}
+            onClick={onTrackedCtaClick({
+              cta_id: TASTEMAKERS_CTA_IDS.HERO_APPLY,
+              cta_text: 'Apply Now',
+              cta_type: 'link',
+              cta_destination: '#apply',
+              page_section: 'hero',
+            })}
           >
             Apply Now
           </a>
@@ -151,6 +160,13 @@ export function HeroSection() {
               href="#apply"
               aria-label="Jump to tastemaker application form"
               className="inline-flex items-center justify-center rounded-full bg-[#D4A853] px-[2.6875rem] py-[calc(0.59375rem+1px)] font-medium tracking-wide text-white transition duration-500 text-[calc(1.125rem+1px)] hover:-translate-y-1 hover:shadow-[0_10px_30px_rgba(212,168,83,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A853]/50"
+              onClick={onTrackedCtaClick({
+                cta_id: TASTEMAKERS_CTA_IDS.HERO_APPLY,
+                cta_text: 'Apply now',
+                cta_type: 'link',
+                cta_destination: '#apply',
+                page_section: 'hero',
+              })}
             >
               Apply now
             </a>

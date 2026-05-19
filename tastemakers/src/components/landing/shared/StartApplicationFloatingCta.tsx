@@ -8,6 +8,8 @@ import {
   useSpring,
 } from 'framer-motion'
 import { cinematicScrollSpring } from '@/components/landing/shared/cinematicScrollSpring'
+import { TASTEMAKERS_CTA_IDS } from '@/lib/cta-ids'
+import { onTrackedCtaClick } from '@/lib/posthog'
 
 const NEXT_SECTION_ID = 'tastemakers-wall'
 
@@ -125,6 +127,13 @@ export function StartApplicationFloatingCta({ cinematicSectionRef }: Props) {
         tabIndex={targetOpacity > 0.04 ? 0 : -1}
         className="flex cursor-pointer items-baseline gap-[0.35em] font-display text-sm font-light tracking-[0.16em] outline-none focus-visible:ring-1 focus-visible:ring-[#f4f1ea]/25 md:text-[0.9375rem]"
         aria-label="Jump to tastemaker application form"
+        onClick={onTrackedCtaClick({
+          cta_id: TASTEMAKERS_CTA_IDS.FLOATING_APPLY,
+          cta_text: 'Apply now',
+          cta_type: 'link',
+          cta_destination: '#apply',
+          page_section: 'floating_cta',
+        })}
       >
         <span>Apply now</span>
         {reduceMotion ? (
