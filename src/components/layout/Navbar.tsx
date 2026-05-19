@@ -24,6 +24,7 @@ import { CTA_IDS, navbarBreadcrumbCtaId } from "@/lib/cta-ids";
 const NAV_MENU_LINKS = [
   { name: "All Homes", href: "/homes", sectionId: "", ctaId: CTA_IDS.NAVBAR_HOMES },
   { name: "Our Story", path: "/about", ctaId: CTA_IDS.NAVBAR_ABOUT },
+  { name: "Become an Affiliate", path: "/tastemaker", ctaId: CTA_IDS.TASTEMAKER_AFFILIATE },
   { name: "Secured", path: "/secured", ctaId: CTA_IDS.NAVBAR_SECURED, pastelColor: "orange" as const },
   { name: "For Owners", path: "/owners", ctaId: CTA_IDS.NAVBAR_OWNERS, pastelColor: "violet" as const, showRightIcon: true },
 ] as const;
