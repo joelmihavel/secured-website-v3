@@ -68,6 +68,7 @@ export const CTA_IDS = {
   NAVBAR_LOGO: "navbar_logo",
   NAVBAR_LOGO_SECURE: "navbar_logo_secure",
   NAVBAR_BACK: "navbar_back",
+  NAVBAR_TASTEMAKER: "navbar_tastemaker_affiliate",
   NAVBAR_HOMES: "navbar_homes",
   NAVBAR_ABOUT: "navbar_about",
   NAVBAR_CONTACT_US: "navbar_contact_us",
