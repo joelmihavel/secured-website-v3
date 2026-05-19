@@ -6,7 +6,7 @@ import Link from "next/link";
 import styles from "./TopBanner.module.css";
 
 const MARQUEE_TEXT =
-  "Recommend Flent in your network • Earn rewards upto 1 lakh • Unlock Bangalore's best brands";
+  "Recommend Flent in your network • Earn rewards upto 1 lakh • Unlock Bangalore's best brands • ";
 
 const MarqueeItem = () => (
   <div className={styles["marquee-css__item"]}>
