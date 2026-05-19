@@ -54,12 +54,20 @@ function hubspotSubmitDevPlugin(): Plugin {
   }
 }
 
-/** Default share image: dedicated Fold 1 screenshot for link previews only (`public/og-fold1-hero.png`). */
-const DEFAULT_OG_IMAGE_FILENAME = 'og-fold1-hero.png'
+/** Default share image: invite ticket art (`public/images/Meta Image 2.png`). Override: VITE_OG_IMAGE (use `/tastemakers/...` if absolute from site root). */
+const DEFAULT_OG_IMAGE_FILENAME = 'images/Meta Image 2.png'
 
 function normalizePublicPath(raw: string | undefined): string {
   const t = raw?.trim() || `${APP_BASE}${DEFAULT_OG_IMAGE_FILENAME}`
   return t.startsWith('/') ? t : `/${t}`
+}
+
+/** Spaces in filenames must become %20 in og:image URLs for reliable crawlers. */
+function encodeOgImagePath(uriPath: string): string {
+  return uriPath
+    .split('/')
+    .map((seg) => (seg === '' ? '' : encodeURIComponent(seg)))
+    .join('/')
 }
 
 /**
@@ -90,8 +98,8 @@ function ogImageAbsoluteUrlPlugin(
     name: 'og-image-absolute-url',
     transformIndexHtml(html) {
       const origin = siteOriginForOg(env)
-      const path = ogImagePath
-      const imageUrl = origin ? `${origin}${path}` : path
+      const imagePathEncoded = encodeOgImagePath(ogImagePath)
+      const imageUrl = origin ? `${origin}${imagePathEncoded}` : imagePathEncoded
       if (!origin) {
         console.warn(
           '[vite] og:image has no site origin — using a relative path. Social crawlers usually require an absolute https URL.\n' +
