@@ -252,9 +252,9 @@ export function CinematicStatement() {
           <div className="mt-14 max-md:overflow-x-visible md:mt-28">
             <FoldReveal delay={0.16} staticOnMobile>
               <h2 className={cn(PRINCIPAL_HEADLINE_CLASSNAME, 'mb-6 text-left text-[#dff2ec] md:mb-8')}>
-                We make it easy for
+                The toolkit behind
                 <br />
-                you to win.
+                your taste.
               </h2>
             </FoldReveal>
             <div className="md:hidden">
