@@ -69,54 +69,36 @@ const featureCards = [
   },
 ] as const
 
+/** One aspect for every fold‑5 feature visual so inner cream frames align; images use `object-contain` (no crop). */
+const FEATURE_VISUAL_FRAME_CLASS =
+  'relative w-full overflow-hidden rounded-[1.25rem] bg-[#f4f1ea] aspect-[1622/970] md:rounded-[1.5rem]'
+
+const FEATURE_VISUAL_CONFIG = {
+  dashboard: {
+    asset: 'folds/personal-dashboard.png' as const,
+    alt: 'Personal dashboard showing referrals, approvals, payouts, and rewards',
+  },
+  assets: {
+    asset: 'folds/ready-to-share.png' as const,
+    alt: 'Ready-to-share campaigns, invite links, and assets across social channels',
+  },
+  resources: {
+    asset: 'folds/guides-resources.png' as const,
+    alt: 'Guides and resources: content buckets, playbooks, creative direction, and posting guides',
+  },
+  payouts: {
+    asset: 'folds/reliable-payouts.png' as const,
+    alt: 'Reliable payouts: earnings tracked, verified, and paid out directly',
+  },
+} as const
+
 function FeatureVisual({ type }: { type: (typeof featureCards)[number]['visual'] }) {
-  if (type === 'dashboard') {
-    return (
-      <div className="relative w-full overflow-hidden rounded-[1.25rem] bg-[#f4f1ea] aspect-[1622/970] md:rounded-[1.5rem]">
-        <img
-          src={assetUrl('folds/personal-dashboard.png')}
-          alt="Personal dashboard showing referrals, approvals, payouts, and rewards"
-          className="h-full w-full object-contain object-center"
-          loading="lazy"
-          decoding="async"
-        />
-      </div>
-    )
-  }
-
-  if (type === 'assets') {
-    return (
-      <div className="relative w-full overflow-hidden rounded-[1.25rem] bg-[#f4f1ea] aspect-[1024/615] md:rounded-[1.5rem]">
-        <img
-          src={assetUrl('folds/ready-to-share.png')}
-          alt="Ready-to-share campaigns, invite links, and assets across social channels"
-          className="h-full w-full object-contain object-center"
-          loading="lazy"
-          decoding="async"
-        />
-      </div>
-    )
-  }
-
-  if (type === 'resources') {
-    return (
-      <div className="relative w-full overflow-hidden rounded-[1.25rem] bg-[#f4f1ea] aspect-[1024/614] md:rounded-[1.5rem]">
-        <img
-          src={assetUrl('folds/guides-resources.png')}
-          alt="Guides and resources: content buckets, playbooks, creative direction, and posting guides"
-          className="h-full w-full object-contain object-center"
-          loading="lazy"
-          decoding="async"
-        />
-      </div>
-    )
-  }
-
+  const { asset, alt } = FEATURE_VISUAL_CONFIG[type]
   return (
-    <div className="relative w-full overflow-hidden rounded-[1.25rem] bg-[#f4f1ea] aspect-[1024/576] md:rounded-[1.5rem]">
+    <div className={FEATURE_VISUAL_FRAME_CLASS}>
       <img
-        src={assetUrl('folds/reliable-payouts.png')}
-        alt="Reliable payouts: earnings tracked, verified, and paid out directly"
+        src={assetUrl(asset)}
+        alt={alt}
         className="h-full w-full object-contain object-center"
         loading="lazy"
         decoding="async"

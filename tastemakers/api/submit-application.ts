@@ -15,6 +15,9 @@ const HUBSPOT_API = 'https://api.hubapi.com'
 /** Customer Type (`customer_type`) single-select — internal option value in HubSpot. */
 const CUSTOMER_TYPE_AFFILIATE_APPLICANT = 'Affiliate Applicant'
 
+/** CRM internal name for the “what makes a house a home” application answer. */
+const HUBSPOT_PROP_AFFILIATE_ANSWER = 'affiliate__answer'
+
 function splitName(fullName: string): { firstname: string; lastname: string } {
   const trimmed = fullName.trim()
   if (!trimmed) return { firstname: '', lastname: '' }
@@ -71,6 +74,9 @@ async function upsertContact(payload: TastemakerApplicationPayload, token: strin
     ...(payload.city.trim() ? { city: payload.city.trim() } : {}),
     ...socialLinksToHubSpotProperties(payload.socialLinks),
   }
+
+  const homeAnswerTrimmed = payload.homeAnswer.trim()
+  if (homeAnswerTrimmed) properties[HUBSPOT_PROP_AFFILIATE_ANSWER] = homeAnswerTrimmed
 
   const detailsProp = env.HUBSPOT_APPLICATION_DETAILS_PROPERTY?.trim()
   const detailsBlob = buildDetailsBlob(payload)
