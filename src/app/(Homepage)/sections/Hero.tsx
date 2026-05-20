@@ -41,7 +41,7 @@ export const Hero = ({ properties = [] }: HeroProps) => {
 
     return (
         <div
-            className="relative flex flex-col w-full h-screen min-h-[600px] md:justify-center items-center overflow-hidden"
+            className="relative flex flex-col w-full h-screen min-h-[600px] box-border md:pt-[calc(var(--top-banner-height,0px)+6.5rem)] md:justify-center items-center overflow-hidden"
         >
             {/* Background Pattern Layer */}
             <div

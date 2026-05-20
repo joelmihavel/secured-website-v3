@@ -6,7 +6,11 @@ import { OpenSection } from "@/components/layout/OpenSection";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { GridLightBox } from "./GridLightBox";
-import { PhotoCategory } from "@/lib/property-utils";
+import {
+  PhotoCategory,
+  getPropertyPhotoUrls,
+  getRoomGalleryUrls,
+} from "@/lib/property-utils";
 import {
   IconUser as User,
   IconSmoking as Cigarette,
@@ -196,7 +200,7 @@ export const RoomSelection = ({
     const breakdown = getPropertyRentBreakdown(property, lockIn);
     setCalculatorData({
       title: "Full House",
-      image: property.fieldData["property-thumbnail"]?.url || "",
+      image: getPropertyPhotoUrls(property)[0] || "",
       lockInPeriod: lockIn,
       breakdown,
       isFullHouse: true,
@@ -248,9 +252,7 @@ export const RoomSelection = ({
       });
     })
     .map((room) => {
-      const gallery = room.fieldData["image-gallery"] || [];
-      const featureImage = room.fieldData["feature-image"];
-      const allImages = featureImage ? [featureImage, ...gallery] : gallery;
+      const roomGalleryUrls = getRoomGalleryUrls(room);
 
       // Find occupant for this room using room.fieldData.occupant reference (consistent with PropertyCard)
       const occupant = room.fieldData.occupant
@@ -288,7 +290,7 @@ export const RoomSelection = ({
             foodPreference: occupant.fieldData["food-preference"],
           }
           : null,
-        images: allImages.map((img) => img.url),
+        images: roomGalleryUrls,
         raw: room,
       };
     });
