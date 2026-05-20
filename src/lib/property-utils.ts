@@ -40,6 +40,34 @@ export function getPropertyPhotoUrls(property: Property): string[] {
         .filter(Boolean) as string[];
 }
 
+const UPCOMING_CARD_PLACEHOLDER = "/images/placeholder.jpg";
+
+function getWebflowImageUrl(
+    field: { url: string; alt?: string } | undefined
+): string | undefined {
+    const url = field?.url?.trim();
+    return url || undefined;
+}
+
+/**
+ * Image for upcoming (coming-soon) property cards.
+ * Prefers CMS thumbnail, then featured photo, then first gallery photo.
+ */
+export function getUpcomingPropertyCardImageUrl(property: Property): string {
+    const thumbnail = getWebflowImageUrl(property.fieldData["property-thumbnail"]);
+    if (thumbnail) return thumbnail;
+
+    const featured = getWebflowImageUrl(
+        property.fieldData["property-featured-photo"]
+    );
+    if (featured) return featured;
+
+    const gallery = getPropertyPhotoUrls(property)[0];
+    if (gallery) return gallery;
+
+    return UPCOMING_CARD_PLACEHOLDER;
+}
+
 /** Ordered room gallery URLs from CMS `image-gallery` (hero = index 0). */
 export function getRoomGalleryUrls(room: Room): string[] {
     return (room.fieldData["image-gallery"] ?? [])

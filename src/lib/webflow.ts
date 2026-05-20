@@ -67,11 +67,12 @@ export interface Property extends WebflowItem {
   fieldData: {
     name: string;
     slug: string;
-    // Deprecated in app — use property-photos only (fields may still exist in CMS).
-    // "property-thumbnail"?: { url: string; alt?: string };
+    /** Card/teaser image — used on upcoming property cards (with blur). */
+    "property-thumbnail"?: { url: string; alt?: string };
     "property-photos"?: { url: string; alt?: string }[];
     "property-video"?: { url: string; metadata?: Record<string, unknown> };
-    // "property-featured-photo"?: { url: string; alt?: string };
+    /** Hero/marketing image — fallback for upcoming cards when thumbnail is empty. */
+    "property-featured-photo"?: { url: string; alt?: string };
     "property-long-description"?: string;
     "property-description"?: string;
     "rent-in-rupees"?: string;
