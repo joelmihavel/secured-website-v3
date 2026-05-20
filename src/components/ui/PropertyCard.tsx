@@ -28,6 +28,7 @@ import {
   getDiscountEndDateFormatted,
   getLowestRoomRentForLockIn,
   getPropertyPhotoUrls,
+  getUpcomingPropertyCardImageUrl,
 } from "@/lib/property-utils";
 import { getCompanyLogo } from "@/lib/company-logos";
 
@@ -318,14 +319,15 @@ export const PropertyCard = ({
   const [ribbonPhase, setRibbonPhase] = useState(0);
   const isDebugMode = useDebugMode();
 
-  const images = React.useMemo(
-    () => getPropertyPhotoUrls(property),
-    [property]
-  );
-
-  const imageUrl = images[currentImageIndex] || "/images/placeholder.jpg";
-
   const isComingSoon = variant === "coming-soon";
+
+  const imageUrl = React.useMemo(() => {
+    if (isComingSoon) {
+      return getUpcomingPropertyCardImageUrl(property);
+    }
+    const images = getPropertyPhotoUrls(property);
+    return images[currentImageIndex] || "/images/placeholder.jpg";
+  }, [property, isComingSoon, currentImageIndex]);
   const isOccupied = !isComingSoon && !property.fieldData.available;
 
   const hasActiveDiscount = propertyHasDiscount(property) === true;
