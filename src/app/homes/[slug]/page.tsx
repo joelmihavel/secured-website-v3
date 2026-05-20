@@ -73,10 +73,8 @@ export async function generateMetadata({
       property.fieldData["property-long-description"] ||
       baseDescription;
 
-    // Use property featured photo or thumbnail for OG image
     const ogImage =
-      property.fieldData["property-featured-photo"]?.url ||
-      property.fieldData["property-thumbnail"]?.url ||
+      property.fieldData["property-photos"]?.[0]?.url ||
       `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.flent.in"}/images/og-image.jpg`;
 
     return {

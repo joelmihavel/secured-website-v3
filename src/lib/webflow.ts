@@ -67,10 +67,11 @@ export interface Property extends WebflowItem {
   fieldData: {
     name: string;
     slug: string;
-    "property-thumbnail"?: { url: string; alt?: string };
+    // Deprecated in app — use property-photos only (fields may still exist in CMS).
+    // "property-thumbnail"?: { url: string; alt?: string };
     "property-photos"?: { url: string; alt?: string }[];
     "property-video"?: { url: string; metadata?: Record<string, unknown> };
-    "property-featured-photo"?: { url: string; alt?: string };
+    // "property-featured-photo"?: { url: string; alt?: string };
     "property-long-description"?: string;
     "property-description"?: string;
     "rent-in-rupees"?: string;
@@ -171,7 +172,8 @@ export interface Room extends WebflowItem {
     "3-month-cost-2"?: string;
     "6-month-cost-2"?: string;
     "area-sq-ft"?: number;
-    "feature-image"?: { url: string; alt?: string };
+    // Deprecated in app — use image-gallery only (field may still exist in CMS).
+    // "feature-image"?: { url: string; alt?: string };
     "image-gallery"?: { url: string; alt?: string }[];
     balcony?: boolean;
     "dedicated-workspace"?: boolean;

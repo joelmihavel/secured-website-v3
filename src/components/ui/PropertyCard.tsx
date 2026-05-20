@@ -27,6 +27,7 @@ import {
   getRibbonDiscountSavings,
   getDiscountEndDateFormatted,
   getLowestRoomRentForLockIn,
+  getPropertyPhotoUrls,
 } from "@/lib/property-utils";
 import { getCompanyLogo } from "@/lib/company-logos";
 
@@ -317,15 +318,8 @@ export const PropertyCard = ({
   const [ribbonPhase, setRibbonPhase] = useState(0);
   const isDebugMode = useDebugMode();
 
-  // Build array of all available images
   const images = React.useMemo(
-    () =>
-      [
-        property.fieldData["property-thumbnail"]?.url ||
-          property.fieldData["property-featured-photo"]?.url,
-        ...(property.fieldData["property-photos"]?.map((photo) => photo.url) ||
-          []),
-      ].filter(Boolean) as string[],
+    () => getPropertyPhotoUrls(property),
     [property]
   );
 

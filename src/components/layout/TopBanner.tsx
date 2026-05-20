@@ -5,12 +5,28 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import styles from "./TopBanner.module.css";
 
-const MARQUEE_TEXT =
-  "Recommend Flent in your network • Earn rewards upto 1 lakh • Unlock Bangalore's best brands";
+const MARQUEE_PART_1 = "Recommend Flent in your network";
+const MARQUEE_PART_2 = "Earn rewards upto 1 lakh";
+
+const MarqueeSeparator = () => (
+  <span className={styles["marquee-css__separator"]} aria-hidden="true">
+    <svg
+      className={styles["marquee-css__separator-svg"]}
+      viewBox="0 0 8 8"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle cx="4" cy="4" r="4" fill="currentColor" />
+    </svg>
+  </span>
+);
 
 const MarqueeItem = () => (
   <div className={styles["marquee-css__item"]}>
-    <p className={styles["marquee-css__item-p"]}>{MARQUEE_TEXT}</p>
+    <p className={styles["marquee-css__item-p"]}>{MARQUEE_PART_1}</p>
+    <MarqueeSeparator />
+    <p className={styles["marquee-css__item-p"]}>{MARQUEE_PART_2}</p>
+    <MarqueeSeparator />
   </div>
 );
 

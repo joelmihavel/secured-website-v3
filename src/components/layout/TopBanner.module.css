@@ -52,6 +52,20 @@
   height: 1em;
 }
 
+.marquee-css__separator {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-main);
+}
+
+.marquee-css__separator-svg {
+  width: 0.375em;
+  height: 0.375em;
+  flex: none;
+}
+
 @keyframes translateX { 
 	to {
     transform: translateX(-100%);

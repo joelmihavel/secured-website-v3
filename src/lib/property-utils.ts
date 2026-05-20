@@ -33,58 +33,50 @@ export interface PhotoCategory {
     images: string[];
 }
 
+/** Ordered property gallery URLs from CMS `property-photos` (hero = index 0). */
+export function getPropertyPhotoUrls(property: Property): string[] {
+    return (property.fieldData["property-photos"] ?? [])
+        .map((p) => p.url)
+        .filter(Boolean) as string[];
+}
+
+/** Ordered room gallery URLs from CMS `image-gallery` (hero = index 0). */
+export function getRoomGalleryUrls(room: Room): string[] {
+    return (room.fieldData["image-gallery"] ?? [])
+        .map((img) => img.url)
+        .filter(Boolean) as string[];
+}
+
 export const getPropertyImagesData = (property: Property, rooms: Room[]) => {
-    // Get all property photos
-    const photos = property.fieldData["property-photos"] || [];
-    const thumbnailUrl = property.fieldData["property-thumbnail"]?.url;
-    const featuredUrl = property.fieldData["property-featured-photo"]?.url;
+    const propertyPhotos = getPropertyPhotoUrls(property);
 
-    // Build image array (Common Areas + Rooms)
     const allImages = [
-        thumbnailUrl,
-        featuredUrl,
-        ...photos.map(p => p.url),
-        ...rooms.flatMap(room => {
-            const gallery = room.fieldData["image-gallery"] || [];
-            const featureImage = room.fieldData["feature-image"];
-            return featureImage ? [featureImage, ...gallery] : gallery;
-        }).map(img => img.url)
-    ].filter(Boolean) as string[];
+        ...propertyPhotos,
+        ...rooms.flatMap((room) => getRoomGalleryUrls(room)),
+    ];
 
-    // Build photo categories from rooms
-    const roomCategories = rooms.map(room => {
-        const gallery = room.fieldData["image-gallery"] || [];
-        const featureImage = room.fieldData["feature-image"];
-        const roomImages = featureImage ? [featureImage, ...gallery] : gallery;
-
-        return {
+    const roomCategories = rooms
+        .map((room) => ({
             name: room.fieldData["room-name"] || room.fieldData.name || "Room",
-            images: roomImages.map(img => img.url)
-        };
-    }).filter(category => category.images.length > 0);
-
-    // Create Common Areas category from property photos
-    const commonAreaImages = [
-        thumbnailUrl,
-        featuredUrl,
-        ...photos.map(p => p.url)
-    ].filter(Boolean) as string[];
+            images: getRoomGalleryUrls(room),
+        }))
+        .filter((category) => category.images.length > 0);
 
     const commonAreasCategory = {
         name: "Common Areas",
-        images: commonAreaImages
+        images: propertyPhotos,
     };
 
-    // Combine categories: Common Areas first, then Rooms
     const photoCategories = [
-        ...(commonAreaImages.length > 0 ? [commonAreasCategory] : []),
-        ...roomCategories
+        ...(propertyPhotos.length > 0 ? [commonAreasCategory] : []),
+        ...roomCategories,
     ];
 
     return {
         allImages,
         photoCategories,
-        commonAreaImages
+        commonAreaImages: propertyPhotos,
+        propertyPhotos,
     };
 };
 
@@ -359,16 +351,8 @@ export const sortProperties = (a: Property, b: Property): number => {
     }
 
     // 3. Properties with images
-    const hasImagesA = Boolean(
-        a.fieldData["property-thumbnail"]?.url ||
-        a.fieldData["property-featured-photo"]?.url ||
-        a.fieldData["property-photos"]?.some(p => p.url)
-    );
-    const hasImagesB = Boolean(
-        b.fieldData["property-thumbnail"]?.url ||
-        b.fieldData["property-featured-photo"]?.url ||
-        b.fieldData["property-photos"]?.some(p => p.url)
-    );
+    const hasImagesA = getPropertyPhotoUrls(a).length > 0;
+    const hasImagesB = getPropertyPhotoUrls(b).length > 0;
 
     if (hasImagesA !== hasImagesB) {
         return hasImagesA ? -1 : 1;
