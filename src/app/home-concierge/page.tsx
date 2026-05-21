@@ -14,7 +14,7 @@ import { Footer } from "@landing-pages/home-concierge/components/footer"
 
 export default function Page() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="home-concierge-page min-h-screen bg-background">
       {/* Ticker */}
       <TickerBar />
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
 import { Armchair, ChefHat, ConciergeBell, Wrench, BadgeCheck, DoorOpen } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
@@ -62,82 +62,34 @@ function FeatureCard({
   feature,
   index,
   inView,
-  shouldNudge,
 }: {
   feature: Feature
   index: number
   inView: boolean
-  shouldNudge: boolean
 }) {
-  const [flipped, setFlipped] = useState(false)
-  const [hasNudged, setHasNudged] = useState(false)
   const Icon = feature.icon
-
-  const applyNudge = shouldNudge && !hasNudged && !flipped
-
-  function handleFlip() {
-    setFlipped((f) => !f)
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault()
-      handleFlip()
-    }
-  }
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.4, delay: index * 0.08, ease: "easeOut" }}
-      className="perspective-1000 h-28 cursor-pointer lg:h-auto lg:cursor-default"
-      onClick={handleFlip}
-      role="button"
-      tabIndex={0}
-      onKeyDown={handleKeyDown}
-      aria-label={`${feature.title}: ${feature.description}`}
+      className="flex h-full flex-col rounded-xl border border-border/60 bg-card p-4 shadow-[0_2px_10px_rgba(0,0,0,0.05)] lg:rounded-2xl"
     >
-      <div
-        className={`relative h-full w-full transition-transform duration-500 lg:transform-none ${
-          flipped ? "[transform:rotateY(180deg)]" : ""
-        } ${applyNudge ? "animate-nudge-flip" : ""}`}
-        style={{ transformStyle: "preserve-3d" }}
-        onAnimationEnd={() => {
-          if (applyNudge) setHasNudged(true)
-        }}
-      >
-        {/* Front */}
+      {/* Icon + title — title wraps to its own line when it can't fit beside the icon */}
+      <div className="mb-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 lg:mb-3">
         <div
-          className="absolute inset-0 rounded-xl border border-border/60 bg-card p-4 shadow-[0_2px_10px_rgba(0,0,0,0.05)] lg:relative lg:rounded-2xl lg:p-4 lg:backface-visible"
-          style={{ backfaceVisibility: "hidden" }}
+          className={`flex h-8 w-7 shrink-0 items-center justify-center arch-clip-sm ${feature.bgColor}`}
         >
-          {/* Icon + title on same line */}
-          <div className="mb-2 flex items-center gap-2.5 lg:mb-3">
-            <div
-              className={`flex h-7 w-6 shrink-0 items-center justify-center arch-clip-sm lg:h-8 lg:w-7 ${feature.bgColor}`}
-            >
-              <Icon className={`h-3 w-3 lg:h-3.5 lg:w-3.5 ${feature.iconColor}`} strokeWidth={2} />
-            </div>
-            <h3 className="text-[13px] font-semibold leading-tight text-flent-dark lg:text-sm">
-              {feature.title}
-            </h3>
-          </div>
-          <p className="hidden text-xs leading-relaxed text-muted-foreground lg:block">
-            {feature.description}
-          </p>
+          <Icon className={`h-3.5 w-3.5 ${feature.iconColor}`} strokeWidth={2} />
         </div>
-
-        {/* Back (mobile flip) */}
-        <div
-          className="absolute inset-0 flex items-center rounded-xl border border-border/60 bg-flent-dark p-4 lg:hidden [transform:rotateY(180deg)]"
-          style={{ backfaceVisibility: "hidden" }}
-        >
-          <p className="text-sm leading-relaxed text-white">
-            {feature.description}
-          </p>
-        </div>
+        <h3 className="min-w-0 text-sm font-semibold leading-tight text-flent-dark">
+          {feature.title}
+        </h3>
       </div>
+      <p className="text-xs leading-relaxed text-muted-foreground">
+        {feature.description}
+      </p>
     </motion.div>
   )
 }
@@ -145,13 +97,6 @@ function FeatureCard({
 export function Features() {
   const ref = useRef<HTMLElement>(null)
   const inView = useInView(ref, { once: true, margin: "-100px" })
-  const [shouldNudge, setShouldNudge] = useState(false)
-
-  useEffect(() => {
-    if (!inView) return
-    const timer = setTimeout(() => setShouldNudge(true), 900)
-    return () => clearTimeout(timer)
-  }, [inView])
 
   return (
     <section ref={ref}>
@@ -170,7 +115,6 @@ export function Features() {
             feature={feature}
             index={index}
             inView={inView}
-            shouldNudge={shouldNudge}
           />
         ))}
       </div>
