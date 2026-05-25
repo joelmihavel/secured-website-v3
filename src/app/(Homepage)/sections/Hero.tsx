@@ -116,8 +116,8 @@ export const Hero = ({ properties = [] }: HeroProps) => {
                     <ParallaxImage
                         depth={1}
                         delay={0.35}
-                        className="top-[14%] left-[55%] md:top-[14%] md:left-[75%]"
-                        imgClassName="w-40 h-20 md:w-64 md:h-32 cursor-pointer rounded-xl shadow-lg"
+                        className="top-[80%] left-[60%] md:top-[70%] md:left-[80%]"
+                        imgClassName="w-32 h-32 md:w-48 md:h-60 cursor-pointer rounded-xl shadow-lg"
                         src={heroImages[0]}
                     />
                 )}
@@ -136,7 +136,7 @@ export const Hero = ({ properties = [] }: HeroProps) => {
                     <ParallaxImage
                         depth={2}
                         delay={0.65}
-                        className="hidden md:block top-[5%] left-[64%] md:top-[60%] md:left-[64%]"
+                        className="hidden md:block top-[5%] left-[64%] md:top-[74%] md:left-[58%]"
                         imgClassName="w-32 h-32 md:w-40 md:h-40 cursor-pointer rounded-xl shadow-lg"
                         src={heroImages[4]}
                     />
@@ -155,8 +155,8 @@ export const Hero = ({ properties = [] }: HeroProps) => {
                     <ParallaxImage
                         depth={2}
                         delay={0.95}
-                        className="top-[80%] left-[60%] md:top-[70%] md:left-[80%]"
-                        imgClassName="w-32 h-32 md:w-48 md:h-60 cursor-pointer rounded-xl shadow-lg"
+                        className="top-[14%] left-[55%] md:top-[14%] md:left-[75%]"
+                        imgClassName="w-40 h-20 md:w-64 md:h-32 cursor-pointer rounded-xl shadow-lg"
                         src={heroImages[5]}
                     />
                 )}
