@@ -79,6 +79,11 @@ export function QualificationForm() {
     setPart1Email(email)
     setLoading(false)
     setStep(2)
+
+    // Fire the demand-wizard callback as soon as PII is captured so leads who
+    // bail before Part 2 still land in the rep queue. Part 2 will fire again;
+    // demand-wizard dedupes by phone within a 2-hour pending window.
+    sendCallback({ name, phone, email }).catch(() => {})
   }
 
   async function handlePart2Submit(e: FormEvent<HTMLFormElement>) {
