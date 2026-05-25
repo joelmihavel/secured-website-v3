@@ -16,20 +16,27 @@ export interface CallbackData {
   name: string
   phone: string
   email: string
-  homeType: "room" | "fullhome"
-  bhk: string | null
-  area: string
-  budget: string
-  timeline: string
+  // Qualifier fields — Part 2 only. Omitted when firing from Part 1.
+  homeType?: "room" | "fullhome"
+  bhk?: string | null
+  area?: string
+  budget?: string
+  timeline?: string
 }
 
 /**
  * Fires the Demand Wizard partner callback via our server-side API route.
- * Call this after Part 2 submission — do NOT await in the critical path,
- * the user flow should not be gated on the callback succeeding.
+ * Fire from Part 1 (PII captured) so leads who never finish Part 2 still
+ * land in the rep queue. Fire again from Part 2 — the upstream dedupes by
+ * phone within a 2-hour pending window, so the second call is a safe no-op.
+ *
+ * Fire-and-forget: do NOT await in the user flow's critical path.
  */
 export async function sendCallback(data: CallbackData): Promise<void> {
-  await fetch("/api/callback", {
+  // The route lives under /home-concierge/api/callback — the bare /api/callback
+  // path doesn't exist, so a wrong path here silently 404s (fetch resolves on
+  // non-2xx) and the upstream never sees the lead.
+  const res = await fetch("/home-concierge/api/callback", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -37,4 +44,7 @@ export async function sendCallback(data: CallbackData): Promise<void> {
       utmCampaign: getUtmCampaign(),
     }),
   })
+  if (!res.ok) {
+    console.error("[sendCallback] non-2xx from /home-concierge/api/callback", res.status)
+  }
 }

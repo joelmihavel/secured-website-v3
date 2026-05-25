@@ -85,15 +85,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Webhook not configured" }, { status: 500 })
   }
 
+  // Part 1 fires with PII only; Part 2 fires with the qualifier fields too.
+  // Anything beyond name/phone/email is optional.
   let body: {
     name: string
     phone: string
-    email: string
-    homeType: "room" | "fullhome"
-    bhk: string | null
-    area: string
-    budget: string
-    timeline: string
+    email?: string
+    homeType?: "room" | "fullhome"
+    bhk?: string | null
+    area?: string
+    budget?: string
+    timeline?: string
     utmCampaign?: string
   }
 
@@ -128,9 +130,11 @@ export async function POST(req: NextRequest) {
     const budgetNum = parseBudget(budget)
     if (budgetNum !== undefined) payload.budget = budgetNum
   }
-  const date = moveInDate(timeline)
-  if (date) payload.move_in_date = date
-  payload.requirement_notes = requirementNote(homeType, bhk)
+  if (timeline) {
+    const date = moveInDate(timeline)
+    if (date) payload.move_in_date = date
+  }
+  if (homeType) payload.requirement_notes = requirementNote(homeType, bhk ?? null)
 
   try {
     const res = await fetchWithRetry(
