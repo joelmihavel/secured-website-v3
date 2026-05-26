@@ -1,0 +1,11 @@
+/* Local CSS scope for the renewal landing — keeps the main site's global
+ * styles from leaking in (especially the global border-color rule). */
+
+.renewal-root {
+  font-family: "Plus Jakarta Sans", -apple-system, system-ui, sans-serif;
+  color: #15102E;
+}
+
+.renewal-root * {
+  border-color: revert;
+}
