@@ -173,8 +173,9 @@ export interface Room extends WebflowItem {
     "3-month-cost-2"?: string;
     "6-month-cost-2"?: string;
     "area-sq-ft"?: number;
-    // Deprecated in app — use image-gallery only (field may still exist in CMS).
-    // "feature-image"?: { url: string; alt?: string };
+    // Legacy single image. Older rooms predate image-gallery and only have this.
+    // Used as a fallback when image-gallery is empty (see getRoomGalleryUrls).
+    "feature-image"?: { url: string; alt?: string };
     "image-gallery"?: { url: string; alt?: string }[];
     balcony?: boolean;
     "dedicated-workspace"?: boolean;

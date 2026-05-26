@@ -68,11 +68,20 @@ export function getUpcomingPropertyCardImageUrl(property: Property): string {
     return UPCOMING_CARD_PLACEHOLDER;
 }
 
-/** Ordered room gallery URLs from CMS `image-gallery` (hero = index 0). */
+/**
+ * Ordered room gallery URLs from CMS `image-gallery` (hero = index 0).
+ * Falls back to the legacy single `feature-image` for older rooms that
+ * predate the gallery field and never got their images migrated.
+ */
 export function getRoomGalleryUrls(room: Room): string[] {
-    return (room.fieldData["image-gallery"] ?? [])
+    const gallery = (room.fieldData["image-gallery"] ?? [])
         .map((img) => img.url)
         .filter(Boolean) as string[];
+
+    if (gallery.length > 0) return gallery;
+
+    const featureImage = getWebflowImageUrl(room.fieldData["feature-image"]);
+    return featureImage ? [featureImage] : [];
 }
 
 export const getPropertyImagesData = (property: Property, rooms: Room[]) => {
