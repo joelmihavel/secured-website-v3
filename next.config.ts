@@ -68,8 +68,12 @@ const nextConfig: NextConfig = {
         destination: `${tastemakersDeploy}/tastemakers/:path*`,
       },
       {
+        source: "/SherlocksTrail",
+        destination: "https://ulsoor-campaign-01.vercel.app/",
+      },
+      {
         source: "/SherlocksTrail/:path*",
-        destination: "https://sherlocks-trail.vercel.app/:path*",
+        destination: "https://ulsoor-campaign-01.vercel.app/:path*",
       },
     ];
   },
