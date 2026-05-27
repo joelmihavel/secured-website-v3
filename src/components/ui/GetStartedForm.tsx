@@ -109,6 +109,7 @@ export const GetStartedForm = ({ buttonText = "Let's Get Started" }: { buttonTex
       !!formData.firstname.trim() &&
       !!formData.phone.trim() &&
       !!formData.email.trim() &&
+      !!formData.landlord_lead_property_address.trim() &&
       !!formData.typeofhome &&
       !!formData.expected_rent &&
       !!formData.is_property_vacant_now;
@@ -119,6 +120,17 @@ export const GetStartedForm = ({ buttonText = "Let's Get Started" }: { buttonTex
     });
 
     // Validate required fields
+    if (!formData.landlord_lead_property_address.trim()) {
+      setStatus("error");
+      setErrorMessage("Please enter your property address.");
+      trackOwnersFormSubmitFailed({
+        ...OWNERS_FORM_BASE_PAYLOAD,
+        failure_stage: "client_validation",
+        error_code: "missing_property_address",
+      });
+      return;
+    }
+
     if (!formData.typeofhome) {
       setStatus("error");
       setErrorMessage("Please select the type of home.");
@@ -285,13 +297,14 @@ export const GetStartedForm = ({ buttonText = "Let's Get Started" }: { buttonTex
           htmlFor="landlord_lead_property_address"
           className="block text-sm font-medium text-gray-700 mb-2"
         >
-          Property Address
+          Property Address <span className="text-red-500">*</span>
         </label>
         <input
           ref={autocompleteRef}
           type="text"
           id="landlord_lead_property_address"
           name="landlord_lead_property_address"
+          required
           value={formData.landlord_lead_property_address}
           onChange={handleChange}
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-text-main focus:border-transparent"
