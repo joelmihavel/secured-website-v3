@@ -494,6 +494,7 @@ export type OwnersErrorCode =
   | 'missing_typeofhome'
   | 'missing_expected_rent'
   | 'missing_vacancy_status'
+  | 'missing_property_address'
   | 'hubspot_error'
   | 'unknown';
 
