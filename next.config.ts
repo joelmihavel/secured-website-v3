@@ -67,6 +67,10 @@ const nextConfig: NextConfig = {
         source: "/tastemakers/:path*",
         destination: `${tastemakersDeploy}/tastemakers/:path*`,
       },
+      {
+        source: "/SherlocksTrail/:path*",
+        destination: "https://sherlocks-trail.vercel.app/:path*",
+      },
     ];
   },
   async redirects() {
