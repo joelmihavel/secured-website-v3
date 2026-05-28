@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
+import { FLENT_WHATSAPP_NUMBER } from "./src/constants";
 
-const whatsappNumber = (process.env.WHATSAPP_NUMBER || "").replace(/\D/g, "");
+const whatsappNumber = FLENT_WHATSAPP_NUMBER;
 
 const nextConfig: NextConfig = {
   env: {

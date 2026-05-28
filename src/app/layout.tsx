@@ -47,13 +47,14 @@ import { GoogleMapsProvider } from "./GoogleMapsProvider";
 // ... existing imports
 
 import { TopBanner } from "@/components/layout/TopBanner";
+import { getWhatsAppNumber } from "@/lib/whatsapp";
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const whatsappNumber = (process.env.WHATSAPP_NUMBER || "").replace(/\D/g, "");
+  const whatsappNumber = getWhatsAppNumber();
 
   return (
     <html lang="en">

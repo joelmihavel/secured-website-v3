@@ -16,6 +16,9 @@ export const DEFAULT_INTEREST_MESSAGE =
 export const getPropertyInterestMessage = (name: string): string =>
   `Hey, I am interested in ${name}`;
 
+/** Flent WhatsApp click-to-chat number (E.164 digits, no +). */
+export const FLENT_WHATSAPP_NUMBER = "918904695925";
+
 export const DEMAND_OPS_PHONE = "tel:+918123659925";
 
 export const OCCUPIED_LABEL = "Occupied";

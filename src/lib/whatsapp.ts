@@ -1,3 +1,4 @@
+import { FLENT_WHATSAPP_NUMBER } from "@/constants";
 import { getWaxSessionCode } from "@/lib/wax";
 
 function sanitizeWhatsappNumber(value: string | undefined): string {
@@ -5,9 +6,7 @@ function sanitizeWhatsappNumber(value: string | undefined): string {
 }
 
 export function getWhatsAppNumber(): string {
-  return sanitizeWhatsappNumber(
-    process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || process.env.WHATSAPP_NUMBER
-  );
+  return FLENT_WHATSAPP_NUMBER;
 }
 
 export type WhatsAppLinkFormat = "wa.me" | "api.whatsapp.com";
