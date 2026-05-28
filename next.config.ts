@@ -51,7 +51,19 @@ const nextConfig: NextConfig = {
       process.env.TASTEMAKERS_DEPLOY_URL?.replace(/\/$/, "") ||
       "https://flent-tastemakers.vercel.app";
 
+    const flentRenewalsDeploy =
+      process.env.FLENT_RENEWALS_DEPLOY_URL?.replace(/\/$/, "") ||
+      "https://flent-renewals-two.vercel.app";
+
     return [
+      {
+        source: "/flent-renewals",
+        destination: `${flentRenewalsDeploy}/flent-renewals`,
+      },
+      {
+        source: "/flent-renewals/:path*",
+        destination: `${flentRenewalsDeploy}/flent-renewals/:path*`,
+      },
       {
         source: "/renewal-guide",
         destination: "https://tenant-renewals.vercel.app/",
