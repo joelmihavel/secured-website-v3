@@ -224,7 +224,7 @@ export function RentCalculatorClient({
           "3 months deposit",
           "Maintenance handled by Flent",
           "Designer home, ready to live",
-          "₹5,000 exit fee - that's it",
+          "₹10,000 exit fee - that's it",
           "Wi-Fi & water purifier included",
           "Flatmate matching by Flent",
         ]
@@ -235,7 +235,7 @@ export function RentCalculatorClient({
           "3 months deposit",
           "Maintenance handled by Flent",
           "Designer home, ready to live",
-          "₹5,000 exit fee - that's it",
+          "₹10,000 exit fee - that's it",
           "Wi-Fi & water purifier included",
         ];
 
