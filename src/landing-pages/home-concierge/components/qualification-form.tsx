@@ -12,6 +12,10 @@ import {
   timelineOptions,
 } from "@landing-pages/home-concierge/lib/hubspot"
 import { sendCallback } from "@landing-pages/home-concierge/lib/demand-wizard"
+import { buildWhatsAppApiLink } from "@/lib/whatsapp"
+
+const HOME_CONCIERGE_WHATSAPP_MESSAGE =
+  "Found you via ads, excited to know more about Flent"
 
 function getViewerCount(): number {
   const now = Date.now()
@@ -157,7 +161,7 @@ export function QualificationForm() {
               <div className="mt-6 border-t border-border pt-6">
                 <p className="mb-3 text-sm text-muted-foreground">Can&apos;t wait?</p>
                 <a
-                  href="https://api.whatsapp.com/send/?phone=918904695925&text=Found+you+via+ads,+excited+to+know+more+about+Flent&type=phone_number&app_absent=0"
+                  href={buildWhatsAppApiLink(HOME_CONCIERGE_WHATSAPP_MESSAGE)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-full bg-flent-green px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-flent-green/90"
