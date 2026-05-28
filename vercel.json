@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/flent-renewals",
+      "destination": "https://flent-renewals-two.vercel.app/flent-renewals"
+    },
+    {
       "source": "/flent-renewals/:path*",
       "destination": "https://flent-renewals-two.vercel.app/flent-renewals/:path*"
     }
