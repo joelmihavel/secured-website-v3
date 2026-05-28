@@ -82,11 +82,11 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/SherlocksTrail",
-        destination: "https://ulsoor-campaign-01.vercel.app/",
+        destination: "https://sherlocks-trail.vercel.app/",
       },
       {
         source: "/SherlocksTrail/:path*",
-        destination: "https://ulsoor-campaign-01.vercel.app/:path*",
+        destination: "https://sherlocks-trail.vercel.app/SherlocksTrail/:path*",
       },
     ];
   },
