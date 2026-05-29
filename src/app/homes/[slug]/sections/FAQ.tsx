@@ -93,7 +93,7 @@ const faqCategories: FAQCategory[] = [
                 {
                     id: 14,
                     question: "Are there any move-in fees or move-out fees?",
-                    answer: "Move-in fees vary by gated communities. Not all societies charge a move-in fee, and you will be informed in advance if it applies to your home.\n\nA move-out fee of Rs 5000 is charged and adjusted from your deposit. This covers general wear and tear during your stay."
+                    answer: "Move-in fees vary by gated communities. Not all societies charge a move-in fee, and you will be informed in advance if it applies to your home.\n\nA move-out fee of Rs 10000 is charged and adjusted from your deposit. This covers general wear and tear during your stay."
                 },
                 {
                     id: 15,
