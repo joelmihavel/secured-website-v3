@@ -53,7 +53,7 @@ const nextConfig: NextConfig = {
 
     const flentRenewalsDeploy =
       process.env.FLENT_RENEWALS_DEPLOY_URL?.replace(/\/$/, "") ||
-      "https://flent-renewals-flent.vercel.app";
+      "https://flent-renewals.vercel.app";
 
     return [
       {
