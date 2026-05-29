@@ -79,7 +79,12 @@
         body: JSON.stringify({
           sessionCode: data.sessionCode,
           page: data.landingPage,
-          utmPayload: data.utm
+          utmPayload: data.utm,
+          first_touch_utm_source: data.first_touch_utm_source,
+          first_touch_utm_medium: data.first_touch_utm_medium,
+          first_touch_utm_campaign: data.first_touch_utm_campaign,
+          first_touch_utm_term: data.first_touch_utm_term,
+          first_touch_utm_content: data.first_touch_utm_content
         })
       });
 
@@ -224,6 +229,7 @@
 
     var urlParams = getUrlParams();
     var attribution = getAttributionData();
+    var isFreshRecord = !attribution;
 
     var hasAttribution = Object.values(urlParams).some(function(v) { return v !== null; });
 
@@ -240,12 +246,24 @@
         landingPage: window.location.href,
         firstTouch: attribution ? (attribution.firstTouch || Date.now()) : Date.now(),
         lastTouch: Date.now(),
-        utm: Object.assign({}, attribution ? attribution.utm : {}, filteredParams)
+        utm: Object.assign({}, attribution ? attribution.utm : {}, filteredParams),
+        // First-touch UTM dimensions are locked on the literal first visit of a WAX
+        // session and never overwritten thereafter. utm_source defaults to "organic"
+        // when no UTM is present on the first visit. Migrated records (no prior
+        // first_touch_* fields) intentionally stay undefined — we can't fabricate a
+        // historical first-touch we never observed.
+        first_touch_utm_source: isFreshRecord ? (urlParams.utm_source || 'organic') : attribution.first_touch_utm_source,
+        first_touch_utm_medium: isFreshRecord ? urlParams.utm_medium : attribution.first_touch_utm_medium,
+        first_touch_utm_campaign: isFreshRecord ? urlParams.utm_campaign : attribution.first_touch_utm_campaign,
+        first_touch_utm_term: isFreshRecord ? urlParams.utm_term : attribution.first_touch_utm_term,
+        first_touch_utm_content: isFreshRecord ? urlParams.utm_content : attribution.first_touch_utm_content
       };
 
       saveAttributionData(attribution);
 
-      if (hasAttribution) {
+      // POST on the literal first visit even without UTMs, so organic-only converters
+      // still produce a KV record by the time HubSpot fetches at conversion time.
+      if (hasAttribution || isFreshRecord) {
         sendToApi(attribution);
       }
     }
