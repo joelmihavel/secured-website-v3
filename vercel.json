@@ -1,4 +1,11 @@
 {
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/secured",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/flent-renewals",
