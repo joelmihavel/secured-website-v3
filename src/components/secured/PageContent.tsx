@@ -201,7 +201,7 @@ export function PageContent({ children }: { children: React.ReactNode }) {
       {stage >= 2 && <FloatingParticles />}
       {stage >= 1 && variant === "tenant" && <TickerBanner />}
       {stage >= 3 && <BlobCursor />}
-      {stage >= 2 && variant === "tenant" && <ScrollCreditScore />}
+      {stage >= 2 && variant === "tenant" && <div className="hidden md:block"><ScrollCreditScore /></div>}
       {stage >= 1 && variant === "tenant" && <ParallaxPhone entered={unlocked} />}
       {stage >= 3 && <StarfieldCanvas active={menuOpen} />}
 

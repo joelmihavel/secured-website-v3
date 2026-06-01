@@ -76,11 +76,11 @@ export function SecuredLandingContent() {
 
             <StorySection />
 
-            <div className="h-[80px] md:h-[120px] lg:h-[160px]" />
+            <div className="h-[48px] md:h-[120px] lg:h-[160px]" />
 
             <Commitment data={data.commitment} variant="tenant" />
 
-            <div className="h-[100vh]" />
+            <div className="h-[60vh] md:h-[100vh]" />
 
             <CreditCard data={data.creditCard} />
 
@@ -92,23 +92,23 @@ export function SecuredLandingContent() {
 
             <GettingStarted data={data.gettingStarted} />
 
-            <div className="h-[80px]" />
+            <div className="h-[40px]" />
 
             <TrustSection data={data.trust} />
 
-            <div className="h-[80px]" />
+            <div className="h-[40px]" />
 
             <RentMapSection />
 
-            <div className="h-[80px]" />
+            <div className="h-[40px]" />
 
             <DownloadApp data={DOWNLOAD_APP_DEFAULTS} />
 
-            <div className="h-[80px]" />
+            <div className="h-[40px]" />
 
             <FAQ items={data.faq} />
 
-            <div className="h-[80px]" />
+            <div className="h-[40px]" />
 
             <Stats data={STATS_DEFAULTS} />
           </>

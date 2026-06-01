@@ -240,9 +240,9 @@ export function RentScoreSection() {
         </svg>
 
         {/* Text centered inside */}
-        <div className="relative z-10 flex flex-col items-center gap-4 px-6">
+        <div className="relative z-10 flex flex-col items-center gap-2 px-6 md:gap-4">
           <h2
-            className="max-w-[550px] text-center text-[28px] font-normal leading-[1.2] tracking-[-1px] text-white md:text-[36px] lg:text-[44px] lg:tracking-[-1.5px]"
+            className="max-w-[550px] text-center text-[22px] font-normal leading-[1.2] tracking-[-0.8px] text-white md:text-[36px] lg:text-[44px] lg:tracking-[-1.5px]"
             style={{
               fontFamily: "'Plus Jakarta Sans', sans-serif",
               opacity: textOpacity,
@@ -253,14 +253,14 @@ export function RentScoreSection() {
           </h2>
 
           <span
-            className="text-[72px] font-normal tracking-[-3px] text-white md:text-[96px] lg:text-[110px]"
+            className="w-full text-center text-[56px] font-normal tracking-[-2px] text-white md:text-[96px] lg:text-[110px]"
             style={{ fontFamily: "'Geist Pixel Circle', sans-serif" }}
           >
             {score}
           </span>
 
           <p
-            className="max-w-[440px] text-center text-[13px] font-normal leading-[1.8] text-[#a6a6a6] md:text-[15px] lg:text-[17px] lg:leading-[28px]"
+            className="max-w-[220px] text-center text-[12px] font-normal leading-[1.6] text-[#a6a6a6] md:max-w-[440px] md:text-[15px] md:leading-[1.8] lg:text-[17px] lg:leading-[28px]"
             style={{
               fontFamily: "'Plus Jakarta Sans', sans-serif",
               opacity: subOpacity,

@@ -114,37 +114,76 @@ export function EntryOverlay({ onEnter }: EntryOverlayProps) {
         onTouchStart={handleClick}
       >
         {!exiting && (
-          <div
-            ref={circleRef}
-            className="pointer-events-none fixed"
-            style={{
-              left: -200,
-              top: -200,
-              width: "clamp(140px, 30vw, 200px)",
-              height: "clamp(140px, 30vw, 200px)",
-              transform: "translate(-50%, -50%)",
-              willChange: "left, top",
-            }}
-          >
-            <svg width="100%" height="100%" viewBox="0 0 200 200" fill="none">
-              <circle cx="100" cy="100" r="96" stroke="#ff9a6d" strokeWidth="0.5" opacity="0.6" />
-              <circle cx="100" cy="100" r="80" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
-              <span
-                className="text-[13px] font-normal tracking-[0.1em] text-white/70"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-              >
-                ENTER
-              </span>
-              <span
-                className="text-[15px] font-medium tracking-[-0.3px] text-[#ff9a6d]"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-              >
-                Secured
+          <>
+            {/* Desktop: follows mouse */}
+            <div
+              ref={circleRef}
+              className="pointer-events-none fixed hidden md:block"
+              style={{
+                left: -200,
+                top: -200,
+                width: 200,
+                height: 200,
+                transform: "translate(-50%, -50%)",
+                willChange: "left, top",
+              }}
+            >
+              <svg width="100%" height="100%" viewBox="0 0 200 200" fill="none">
+                <circle cx="100" cy="100" r="96" stroke="#ff9a6d" strokeWidth="0.5" opacity="0.6" />
+                <circle cx="100" cy="100" r="80" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+                <span
+                  className="text-[13px] font-normal tracking-[0.1em] text-white/70"
+                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                >
+                  ENTER
+                </span>
+                <span
+                  className="text-[15px] font-medium tracking-[-0.3px] text-[#ff9a6d]"
+                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                >
+                  Secured
               </span>
             </div>
           </div>
+
+            {/* Mobile: centered, pulsing, always visible */}
+            <div
+              className="pointer-events-none fixed left-1/2 top-1/2 md:hidden"
+              style={{
+                width: 160,
+                height: 160,
+                transform: "translate(-50%, -50%)",
+                animation: "pulse-ring 2s ease-in-out infinite",
+              }}
+            >
+              <style>{`
+                @keyframes pulse-ring {
+                  0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+                  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+                }
+              `}</style>
+              <svg width="100%" height="100%" viewBox="0 0 200 200" fill="none">
+                <circle cx="100" cy="100" r="96" stroke="#ff9a6d" strokeWidth="0.5" opacity="0.6" />
+                <circle cx="100" cy="100" r="80" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+                <span
+                  className="text-[12px] font-normal tracking-[0.1em] text-white/70"
+                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                >
+                  TAP TO
+                </span>
+                <span
+                  className="text-[14px] font-medium tracking-[-0.3px] text-[#ff9a6d]"
+                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                >
+                  Enter Secured
+                </span>
+              </div>
+            </div>
+          </>
         )}
       </div>
     </>

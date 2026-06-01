@@ -16,8 +16,9 @@ function usePhoneScale() {
   useEffect(() => {
     const update = () => {
       const w = window.innerWidth;
-      if (w < 640) setScale(0.5);
-      else if (w < 1024) setScale(0.7);
+      if (w < 400) setScale(0.78);
+      else if (w < 640) setScale(0.85);
+      else if (w < 1024) setScale(0.8);
       else setScale(1);
     };
     update();
@@ -36,6 +37,7 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
     rotX: HERO_ROT_X,
     rotY: HERO_ROT_Y,
     rotZ: HERO_ROT_Z,
+    translateX: 0,
     translateY: 0,
     opacity: 0,
     scale: 1,
@@ -83,6 +85,9 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
     const straightenStart = heroBottom - viewH * 0.8;
     const straightenEnd = heroBottom + viewH * 0.1;
 
+    const isMobileHero = window.innerWidth < 768;
+    const heroShiftX = isMobileHero ? 30 : 0;
+
     if (scrollY < straightenStart) {
       setFloating(true);
       screenDarknessRef.current = 0;
@@ -92,6 +97,7 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
         rotX: HERO_ROT_X,
         rotY: HERO_ROT_Y,
         rotZ: HERO_ROT_Z,
+        translateX: heroShiftX,
         translateY: 0,
         opacity: 1,
         scale: 1,
@@ -110,6 +116,7 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
         rotX: HERO_ROT_X * (1 - t),
         rotY: HERO_ROT_Y * (1 - t),
         rotZ: HERO_ROT_Z * (1 - t),
+        translateX: heroShiftX * (1 - t),
         translateY: 0,
         opacity: 1,
         scale: 1,
@@ -172,17 +179,28 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
         const storyProgress = (scrollY - storyStart) / (storyEnd - storyStart);
         storyProgressRef.current = storyProgress;
 
-        let shiftY = 0;
-        if (storyProgress < 0.53) {
-          shiftY = 0;
-        } else if (storyProgress < 0.62) {
-          const t = (storyProgress - 0.53) / 0.09;
-          shiftY = -viewH * 0.12 * smoothstep(t);
-        } else if (storyProgress < 0.90) {
-          shiftY = -viewH * 0.12;
+        const isMobile = window.innerWidth < 768;
+        const mobileShift = isMobile ? -viewH * 0.32 : 0;
+        const mobileEase = isMobile ? Math.min(1, storyProgress / 0.1) : 0;
+
+        let shiftY: number;
+        if (isMobile) {
+          // Mobile: ease up at start, ease back down at end
+          const easeOut = storyProgress > 0.85 ? smoothstep((storyProgress - 0.85) / 0.15) : 0;
+          shiftY = mobileShift * mobileEase * (1 - easeOut);
         } else {
-          const t = (storyProgress - 0.90) / 0.10;
-          shiftY = -viewH * 0.12 * (1 - smoothstep(t));
+          // Desktop: original up/down shift logic
+          if (storyProgress < 0.53) {
+            shiftY = 0;
+          } else if (storyProgress < 0.62) {
+            const t = (storyProgress - 0.53) / 0.09;
+            shiftY = -viewH * 0.12 * smoothstep(t);
+          } else if (storyProgress < 0.90) {
+            shiftY = -viewH * 0.12;
+          } else {
+            const t = (storyProgress - 0.90) / 0.10;
+            shiftY = -viewH * 0.12 * (1 - smoothstep(t));
+          }
         }
 
         setStyle({
@@ -204,6 +222,16 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
       if (scrollY >= cmtTop - viewH && scrollY <= cmtEnd) {
         const cmtProgress = Math.max(0, (scrollY - (cmtTop - viewH)) / cmtHeight);
         commitmentProgressRef.current = cmtProgress;
+        const isMobileCmt = window.innerWidth < 768;
+        if (isMobileCmt) {
+          setStyle({
+            rotX: 0, rotY: 0, rotZ: 0,
+            translateY: 0,
+            opacity: 0,
+            scale: 1,
+          });
+          return;
+        }
         // Rotate during first 2 cards, hold at 180° for the rest
         const rotY = cmtProgress < 0.333
           ? smoothstep(cmtProgress / 0.333) * 180
@@ -304,7 +332,7 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
         top: "50%",
         width: `${455 * phoneScale}px`,
         height: `${910 * phoneScale}px`,
-        transform: `translate(-50%, -50%) translateY(${entered ? style.translateY : -800}px) scale(${style.scale})`,
+        transform: `translate(-50%, -50%) translateX(${style.translateX || 0}px) translateY(${entered ? style.translateY : -800}px) scale(${style.scale})`,
         opacity: entered ? style.opacity : 0,
         transition: dropDone ? undefined : "transform 0.9s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1)",
         willChange: "transform, opacity",

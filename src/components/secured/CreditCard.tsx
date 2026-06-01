@@ -112,7 +112,7 @@ export function CreditCard({ data }: { data: CreditCardContent }) {
             <div className="absolute bottom-0 left-1/2 top-0 w-px bg-white/[0.04]" />
             <div className="absolute bottom-0 left-3/4 top-0 w-px bg-white/[0.04] hidden lg:block" />
           </div>
-          <div className="relative grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4 lg:gap-5">
+          <div className="relative grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-4 lg:grid-cols-4 lg:gap-5">
             {data.featureCards.map((card, i) => (
               <motion.div
                 key={card.iconKey}
