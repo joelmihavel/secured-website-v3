@@ -130,7 +130,6 @@ export function RentScoreSection() {
       ref={sectionRef}
       className="relative [overflow:clip]"
       style={{ height: "600vh" }}
-      style={{ height: "600vh" }}
     >
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
 
