@@ -25,7 +25,7 @@ export function BlobCursor() {
   >([]);
   const mouseRef = useRef({ x: 0, y: 0 });
   const idleRef = useRef(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const frameRef = useRef<number>(0);
 
   useEffect(() => {
