@@ -130,7 +130,7 @@ function StickyCard({
 function LandlordGettingStarted({ data }: { data: GettingStartedContent }) {
   const STEPS = data.steps;
   return (
-    <section data-section="how-it-works" className="relative bg-[#131313]">
+    <section data-section="how-it-works" className="relative">
       <div className="pointer-events-none absolute inset-0 overflow-hidden px-0 lg:px-[120px]">
         <img
           src="/assets/backgrounds/concentric-circles.svg"
@@ -245,7 +245,7 @@ function TenantGettingStarted({ data }: { data: GettingStartedContent }) {
   }, [stepCount]);
 
   return (
-    <section data-section="how-it-works" className="bg-[#131313]">
+    <section data-section="how-it-works">
       {/* Scroll-pinned container */}
       <div ref={sectionRef} className="relative" style={{ height: `${stepCount * 100}vh` }}>
         <div className="sticky top-0 flex h-screen items-center overflow-hidden">
@@ -311,7 +311,7 @@ function TenantGettingStarted({ data }: { data: GettingStartedContent }) {
                         onClick={() => scrollToStep(i)}
                         className="relative flex-shrink-0 overflow-hidden rounded-2xl border border-white/[0.06] bg-[#1a1a1a] text-left transition-shadow duration-300"
                         style={{
-                          width: 220,
+                          width: "min(220px, 70vw)",
                           scrollSnapAlign: "center",
                           boxShadow: isActive
                             ? "0 8px 24px rgba(255, 154, 109, 0.18)"
@@ -350,7 +350,7 @@ function TenantGettingStarted({ data }: { data: GettingStartedContent }) {
               </div>
 
               {/* Desktop: heading + steps left, phone right */}
-              <div className="hidden items-center lg:flex" style={{ gap: 80 }}>
+              <div className="hidden items-center lg:flex" style={{ gap: "min(80px, 5vw)" }}>
                 {/* Left — heading + step list */}
                 <div className="flex flex-1 flex-col gap-[32px]">
                   <div>

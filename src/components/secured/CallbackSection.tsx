@@ -8,7 +8,7 @@ import type { CallbackContent } from "@/lib/secured/types";
 
 export function CallbackSection({ data }: { data: CallbackContent }) {
   return (
-    <section className="relative bg-[#131313] py-12 md:py-24">
+    <section className="relative py-12 md:py-24">
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.04]"
         aria-hidden="true"

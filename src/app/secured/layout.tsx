@@ -42,7 +42,7 @@ export default function SecuredLayout({
           Hero.tsx, otherwise the browser fails to dedupe and double-fetches. */}
       {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
       <link rel="preload" as="fetch" href="/api/properties" fetchPriority="high" />
-      {children}
+      <div className="bg-[#131313]">{children}</div>
     </>
   );
 }

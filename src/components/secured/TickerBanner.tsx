@@ -1,6 +1,6 @@
 "use client";
 
-const TICKER_TEXT = "1% cashback + ₹1000 extra on timely rent this month.";
+const TICKER_TEXT = "Enjoy 0% convenience fee on your first 6 rent payments via credit card";
 const REPEAT = 8;
 
 export function TickerBanner() {

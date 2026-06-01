@@ -6,7 +6,7 @@ import type { StatsContent } from "@/lib/secured/types";
 
 export function Stats({ data }: { data: StatsContent }) {
   return (
-    <section className="bg-[#131313]">
+    <section className="">
       {/* Stats content */}
       <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
         <div className="py-12 md:py-20 lg:px-[120px] lg:py-[80px]">

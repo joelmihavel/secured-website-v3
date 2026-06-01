@@ -5,85 +5,61 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { useVariant } from "./VariantContext";
 import { RoleSwitcher } from "./RoleSwitcher";
+import { AudioToggle } from "./ScrollAudio";
 
 export function Navbar() {
   const { variant } = useVariant();
-  const [scrolled, setScrolled] = useState(false);
+  const tickerHeight = variant === "tenant" ? 44 : 0;
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const t = setTimeout(() => setShow(true), 200);
+    return () => clearTimeout(t);
   }, []);
 
   return (
     <motion.div
       className="pointer-events-none fixed z-[65] w-full"
-      style={{ top: scrolled ? 30 : 24 }}
-      animate={{ top: scrolled ? 30 : 24 }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
+      style={{ top: tickerHeight }}
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: show ? 1 : 0, y: show ? 0 : -10 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
     >
-        {/* Background — fades in on scroll */}
-        <motion.div
-          className="absolute inset-0 border-b border-white/[0.06] bg-[#0d0d0d]"
-          animate={{ opacity: scrolled ? 1 : 0 }}
-          transition={{ duration: 0.3 }}
-        />
-
-        <motion.div
-          className="relative flex w-full items-center justify-between px-6 md:px-8 lg:px-[240px]"
-          animate={{
-            paddingTop: scrolled ? 12 : variant === "tenant" ? 40 : 24,
-            paddingBottom: scrolled ? 12 : 8,
-          }}
-          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
+      <div className="relative flex w-full items-center justify-between px-6 py-3 md:px-8 lg:px-[120px]">
+        <a
+          href="/"
+          className="pointer-events-auto flex items-center gap-2 3xl:scale-150 4xl:scale-[2] 5xl:scale-[2.8]"
+          style={{ transformOrigin: "left center" }}
         >
-          {/* Logo — morphs from stacked to inline */}
-          <a
-            href="/"
-            className="pointer-events-auto 3xl:scale-150 4xl:scale-[2] 5xl:scale-[2.8]"
-            style={{ transformOrigin: "left center" }}
+          <span
+            className="text-[18px] leading-[1.2] tracking-[-0.5px] text-[#ff9a6d] md:text-[23.8px]"
+            style={{ fontFamily: "var(--font-body)" }}
           >
-            <motion.div
-              className="flex items-end"
-              animate={{
-                flexDirection: scrolled ? "row" as const : "column" as const,
-                alignItems: scrolled ? "center" : "flex-end",
-              }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
+            Secured
+          </span>
+          <div className="flex items-center gap-1">
+            <span
+              className="text-[14px] font-light leading-[1.2] tracking-[-0.6px] text-white md:text-[18.5px]"
+              style={{ fontFamily: "var(--font-ui)" }}
             >
-              <span
-                className="text-[18px] leading-[1.2] tracking-[-0.5px] text-[#ff9a6d] md:text-[23.8px]"
-                style={{ fontFamily: "var(--font-body)" }}
-              >
-                Secured
-              </span>
-              <motion.div
-                className="flex items-center gap-2"
-                animate={{ marginLeft: scrolled ? 8 : 0, marginTop: scrolled ? 0 : 3 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] as const }}
-              >
-                <span
-                  className="text-[16px] font-light leading-[1.2] tracking-[-0.8px] text-white md:text-[22.4px]"
-                  style={{ fontFamily: "var(--font-ui)" }}
-                >
-                  by
-                </span>
-                <Image
-                  src="/assets/icons/flent-wordmark-white.svg"
-                  alt="flent"
-                  width={52}
-                  height={18}
-                  priority
-                  className="h-[14px] w-auto md:h-[18px]"
-                />
-              </motion.div>
-            </motion.div>
-          </a>
+              by
+            </span>
+            <Image
+              src="/assets/icons/flent-wordmark-white.svg"
+              alt="flent"
+              width={52}
+              height={18}
+              priority
+              className="h-[11px] w-auto md:h-[14.5px]"
+            />
+          </div>
+        </a>
 
+        <div className="pointer-events-auto flex items-center gap-4">
+          <AudioToggle />
           <RoleSwitcher />
-      </motion.div>
+        </div>
+      </div>
     </motion.div>
   );
 }

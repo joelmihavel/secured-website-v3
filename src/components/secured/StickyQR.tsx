@@ -42,7 +42,7 @@ export function StickyQR() {
 
   return (
     <div
-      className="fixed bottom-[108px] right-12 z-50 hidden md:flex md:items-center"
+      className="fixed bottom-[108px] right-6 z-50 hidden md:right-8 md:flex md:items-center lg:right-[120px]"
       style={{
         height: 40,
         pointerEvents: visible ? "auto" : "none",

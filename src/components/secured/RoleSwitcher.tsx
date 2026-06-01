@@ -5,8 +5,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useVariant } from "./VariantContext";
 
 const LABEL = {
-  tenant: "I'm a tenant",
-  landlord: "I'm a landlord",
+  tenant: "I'm a Tenant",
+  landlord: "I'm a Landlord",
 } as const;
 
 const REVEAL_EASE = [0.625, 0.05, 0, 1] as const;
@@ -48,21 +48,22 @@ export function RoleSwitcher() {
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex items-center gap-2 rounded-full border border-white/10 bg-[#1a1a1a] px-4 py-1.5 text-sm font-bold leading-5 text-white transition-colors duration-200 hover:border-white/20 md:gap-2.5 md:px-5 md:py-2 md:text-base 3xl:gap-3 3xl:px-7 3xl:py-2.5 3xl:text-lg 4xl:gap-3.5 4xl:px-9 4xl:py-3 4xl:text-xl 5xl:gap-4 5xl:px-11 5xl:py-4 5xl:text-2xl"
+        className="flex items-center gap-[10px] rounded-[50px] bg-[#1a1a1a] px-6 py-2 text-[14px] font-semibold leading-5 text-white transition-colors duration-200 hover:bg-[#222] 3xl:gap-3 3xl:px-7 3xl:py-2.5 3xl:text-lg 4xl:gap-3.5 4xl:px-9 4xl:py-3 4xl:text-xl 5xl:gap-4 5xl:px-11 5xl:py-4 5xl:text-2xl"
+        style={{ boxShadow: "0px -3px 2px 0px #202020, 0px 4px 6px 0px rgba(0,0,0,0.12), 0px 10px 10px 0px rgba(0,0,0,0.12)" }}
       >
         <span>{LABEL[variant]}</span>
         <motion.svg
-          width="10"
-          height="10"
-          viewBox="0 0 10 10"
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
           fill="none"
           aria-hidden
-          className="3xl:h-3 3xl:w-3 4xl:h-4 4xl:w-4 5xl:h-5 5xl:w-5"
+          className="3xl:h-5 3xl:w-5 4xl:h-6 4xl:w-6 5xl:h-7 5xl:w-7"
           animate={{ rotate: open ? 180 : 0 }}
           transition={{ duration: 0.4, ease: TOGGLE_EASE }}
         >
           <path
-            d="M2 4l3 3 3-3"
+            d="M4 6l4 4 4-4"
             stroke="currentColor"
             strokeWidth="1.5"
             strokeLinecap="round"

@@ -57,6 +57,7 @@ export const COMMITMENT_DEFAULTS: CommitmentContent = {
     { text: "cash when you move out", icon: "/assets/dither/icon-moveout.png", iconKey: "moveout-cash", accentText: "Get ₹15,000", tag: "live" },
     { text: "upcoming flent homes", icon: "/assets/dither/icon-renter-profile.png", iconKey: "renter-profile", accentText: "First dibs on", tag: "coming-soon" },
     { text: "@ zero service fee", icon: "/assets/dither/icon-better-homes.png", iconKey: "better-homes", accentText: "Home design", tag: "coming-soon" },
+    { text: "on your first 6 rent payments via credit card", icon: "/assets/dither/icon-zero-fee.png", iconKey: "zero-fee", accentText: "0% convenience fee", tag: "live" },
   ],
   marqueeText1: "Welcome to the right side of renting",
   marqueeText2: "Because responsibility should feel rewarding",
@@ -77,8 +78,8 @@ export const COMMITMENT_LANDLORD_DEFAULTS: CommitmentContent = {
 };
 
 export const CREDIT_CARD_DEFAULTS: CreditCardContent = {
-  heading: "Yes, you can pay rent\nusing your credit card here",
-  subheading: "And yes, you still earn 1% back",
+  heading: "And yes, you can pay rent\nusing your credit card here",
+  subheading: "also, you still earn 1% back and more..*",
   ctaButtonText: "",
   ctaDisclaimer: "",
   featureCards: [

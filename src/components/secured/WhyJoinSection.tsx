@@ -94,7 +94,7 @@ function SolutionItem({ text, index }: { text: string; index: number }) {
 
 export function WhyJoinSection({ data }: { data: WhyJoinContent }) {
   return (
-    <section className="relative bg-[#131313] py-12 md:py-24">
+    <section className="relative py-12 md:py-24">
       <SectionWrapper className="relative z-10">
         <div className="mx-auto max-w-[560px] md:max-w-[640px] xl:max-w-[720px] 3xl:max-w-[900px] 4xl:max-w-[1100px] 5xl:max-w-[1500px]">
           {/* Problems */}

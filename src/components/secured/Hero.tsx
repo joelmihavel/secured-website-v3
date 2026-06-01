@@ -2,8 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { APIProvider, useMapsLibrary } from "@vis.gl/react-google-maps";
-import { motion, useScroll, useTransform } from "framer-motion";
-import Image from "next/image";
+import { motion } from "framer-motion";
 import { Button } from "./ui/Button";
 import { useAsciiGlitch } from "./useAsciiGlitch";
 import type { HeroContent } from "@/lib/secured/types";
@@ -11,124 +10,190 @@ import { getSecuredSupabase } from "@/lib/secured/supabase";
 import { downloadAppCta } from "@/lib/secured/cta";
 import { buildLandlordWhatsAppApiLink } from "@/lib/whatsapp";
 
+
 const LANDLORD_CALLBACK_MESSAGE =
   "Hi! I'm a landlord and I'd like a callback about Flent Secured.";
 
-/* ── iPhone Frame (shared) ── */
-const FRAME = "/assets/illustrations/iphone-frame";
+/* ── Typing K's hook with glitch effect ── */
+const GLITCH_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*";
 
-function IPhoneFrame({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={`relative ${className}`} style={{ aspectRatio: "335 / 682" }}>
-      <div className="absolute" style={{ inset: "0 0.46% 0 0.68%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/bezel.svg`} /></div>
-      <div className="absolute" style={{ inset: "0 0.46% 0 0.68%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/bezel-stroke.svg`} /></div>
-      <div className="absolute" style={{ inset: "0.67% 1.82% 0.67% 2.05%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/glass.svg`} /></div>
-      <div className="absolute" style={{ inset: "0.67% 1.82% 0.67% 2.05%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/glass-stroke.svg`} /></div>
-      <div className="absolute" style={{ inset: "0.73% 39.64% 98.94% 39.41%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/speaker.svg`} /></div>
-      <div className="absolute" style={{ inset: "0.67% 39.52% 98.88% 39.29%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/speaker-stroke.svg`} /></div>
-      <div className="absolute overflow-hidden" style={{ inset: "2.02% 4.56% 2.02% 4.78%", borderRadius: "10.5% / 5.2%" }}>{children}</div>
-      <div className="absolute" style={{ inset: "28.33% 0 60.58% 99.32%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/buttons-right.svg`} /></div>
-      <div className="absolute" style={{ inset: "20.04% 99.09% 55.66% 0" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/buttons-left.svg`} /></div>
-      <div className="absolute" style={{ inset: "0.11% 0.68% 0.11% 0.91%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/antenna.svg`} /></div>
-      <div className="absolute" style={{ inset: "3.58% 36.22% 92.16% 35.99%" }}><img alt="" loading="lazy" className="absolute block h-full w-full" src={`${FRAME}/dynamic-island.svg`} /></div>
-    </div>
-  );
+function useTypingKs(startDelay: number) {
+  const [display, setDisplay] = useState("");
+  const [started, setStarted] = useState(false);
+  const containerRef = useRef<HTMLSpanElement>(null);
+  const maxRef = useRef(60);
+  const countRef = useRef(0);
+  const settledRef = useRef("");
+  const rafRef = useRef<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setStarted(true), startDelay);
+    return () => clearTimeout(timer);
+  }, [startDelay]);
+
+  useEffect(() => {
+    if (!started) return;
+
+    function typeNext() {
+      if (countRef.current >= maxRef.current) return;
+      countRef.current += 1;
+      const glitchDuration = 50;
+      const glitchStart = performance.now();
+
+      function animateGlitch(now: number) {
+        const elapsed = now - glitchStart;
+        const settled = settledRef.current;
+        const trailingCount = countRef.current - settled.length;
+
+        if (elapsed >= glitchDuration) {
+          settledRef.current = "k".repeat(countRef.current);
+          setDisplay(settledRef.current);
+          const speed = 15 + Math.random() * 10;
+          timerRef.current = setTimeout(typeNext, speed);
+          return;
+        }
+
+        let trailing = "";
+        for (let i = 0; i < trailingCount; i++) {
+          trailing += GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
+        }
+        setDisplay(settled + trailing);
+        rafRef.current = requestAnimationFrame(animateGlitch);
+      }
+
+      rafRef.current = requestAnimationFrame(animateGlitch);
+    }
+
+    typeNext();
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [started]);
+
+  return { display, containerRef };
 }
 
-/* ── Tenant Hero — Figma v1.2 layout ── */
+/* ── Tenant Hero — v3 layout ── */
 
 function TenantHero({ data }: { data: HeroContent }) {
-  const phoneRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: phoneRef,
-    offset: ["start end", "end start"],
-  });
-  const rotateX = useTransform(scrollYProgress, [0.1, 0.45], [45, 0]);
-  const phoneScale = useTransform(scrollYProgress, [0.1, 0.45], [0.92, 1]);
-  const phoneOpacity = useTransform(scrollYProgress, [0.05, 0.25], [0, 1]);
+  const [textReady, setTextReady] = useState(false);
+  const [scrollDrift, setScrollDrift] = useState(0);
+  const { display: ks, containerRef: kRef } = useTypingKs(2400);
+  const heroRef = useRef<HTMLElement>(null);
 
-  const fullHeading = `${data.headingPrefix}${data.headingHighlight}`;
-  const { display: glitchedHeading, triggerGlitch } = useAsciiGlitch(fullHeading);
-  const prefixLen = data.headingPrefix.length;
+  useEffect(() => {
+    const t = setTimeout(() => setTextReady(true), 1200);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const hero = heroRef.current;
+        if (!hero) return;
+        const viewH = window.innerHeight;
+        const heroBottom = hero.offsetTop + hero.offsetHeight;
+        const start = heroBottom - viewH * 0.8;
+        const end = heroBottom;
+        const scrollY = window.scrollY;
+        if (scrollY < start) {
+          setScrollDrift(0);
+        } else if (scrollY > end) {
+          setScrollDrift(1);
+        } else {
+          setScrollDrift((scrollY - start) / (end - start));
+        }
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("scroll", onScroll); };
+  }, []);
 
   return (
-    <section data-section="hero" className="relative bg-[#131313]">
-      {/* Background textures — same as preloader */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-0 top-0 h-full w-[70%] opacity-[0.4] lg:w-[579px] lg:opacity-[0.6]">
-          <img alt="" aria-hidden="true" src="/assets/backgrounds/hero-texture-left.svg" className="h-full w-full object-cover" />
-        </div>
-        <div className="absolute right-0 top-0 hidden h-full w-[591px] opacity-[0.2] lg:block">
-          <img alt="" aria-hidden="true" src="/assets/backgrounds/hero-texture-right.png" className="h-full w-full object-cover" />
-        </div>
-      </div>
+    <section ref={heroRef} data-section="hero" className="relative min-h-screen overflow-hidden bg-transparent">
+      <div className="relative mx-auto w-full">
+        <div className="relative flex min-h-[100vh] flex-col justify-end px-6 pb-20 md:px-12 md:pb-24 lg:px-[120px] lg:pb-[120px]">
 
-      <div className="relative z-10 mx-auto w-full px-6 md:px-12 lg:px-[120px]">
-        <div className="flex flex-col items-center px-0 pt-40 md:pt-36 lg:px-[120px] lg:pt-[228px]">
-          {/* Centered text content */}
-          <div className="flex max-w-[700px] flex-col items-center gap-6 text-center xl:max-w-[800px] 3xl:max-w-[1000px] 4xl:max-w-[1200px] 5xl:max-w-[1600px]">
-            <div className="flex flex-col items-center gap-3">
-              <motion.h1
-                className="cursor-default text-[40px] font-normal leading-none tracking-[-2px] text-white md:text-[52px] lg:text-[64px] 3xl:text-[80px] 4xl:text-[96px] 5xl:text-[128px]"
-                style={{ fontFamily: "var(--font-ui)" }}
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] as const }}
-                onMouseEnter={triggerGlitch}
-                onTouchStart={triggerGlitch}
-              >
-                {glitchedHeading.slice(0, prefixLen)}
-                <span className="text-[#ff9a6d]">{glitchedHeading.slice(prefixLen)}</span>
-              </motion.h1>
-
-              <motion.p
-                className="text-[20px] leading-[1.4] tracking-[-1px] text-[#797979] md:text-[24px] lg:text-[28px] 3xl:text-[34px] 4xl:text-[42px] 5xl:text-[56px]"
-                style={{ fontFamily: "var(--font-ui)" }}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.15 }}
-              >
-                {data.subheading}
-              </motion.p>
-            </div>
-
+          {/* Main heading — left aligned, IN FRONT of phone (z-20) */}
+          <div
+            className="relative z-20"
+            style={{ transform: `translateX(${-scrollDrift * 120}vw)` }}
+          >
             <motion.p
-              className="text-base leading-[1.8] tracking-[-0.32px] text-[#656565] 3xl:text-lg 4xl:text-xl 5xl:text-2xl"
-              style={{ fontFamily: "var(--font-ui)", whiteSpace: "pre-line" }}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.3 }}
+              className="whitespace-nowrap text-[36px] font-normal leading-[1.35] tracking-[-2.8px] text-white sm:text-[48px] md:text-[72px] lg:text-[90px]"
+              style={{ fontFamily: "var(--font-ui)" }}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: textReady ? 1 : 0, y: textReady ? 0 : 30 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             >
-              {data.description}
+              Earn
             </motion.p>
+            <div className="relative">
+              {/* Ghost text — appears with main text, blurs and fades on scroll */}
+              <p
+                className="pointer-events-none absolute inset-0 whitespace-nowrap text-[36px] font-normal leading-[1.35] tracking-[-2.8px] text-[#ff9a6d] sm:text-[48px] md:text-[72px] lg:text-[90px]"
+                style={{
+                  fontFamily: "var(--font-ui)",
+                  filter: `blur(${scrollDrift * 20}px)`,
+                  opacity: textReady ? Math.max(0, 0.16 * (1 - scrollDrift * 2)) : 0,
+                  transform: `translateX(${scrollDrift * 120}vw)`,
+                  transition: "opacity 0.8s ease",
+                }}
+                aria-hidden="true"
+              >
+                <span ref={kRef}>1% back{ks}</span>
+              </p>
+              {/* Main "1% back" at full opacity */}
+              <p
+                className="relative whitespace-nowrap text-[36px] font-normal leading-[1.35] tracking-[-2.8px] text-[#ff9a6d] sm:text-[48px] md:text-[72px] lg:text-[90px]"
+                style={{
+                  fontFamily: "var(--font-ui)",
+                  opacity: textReady ? 1 : 0,
+                  transition: "opacity 0.8s ease",
+                }}
+              >
+                1% back
+              </p>
+            </div>
+          </div>
 
-            <motion.div
-              className="w-full max-w-[400px] 3xl:max-w-[480px] 4xl:max-w-[560px] 5xl:max-w-[720px]"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.45 }}
+          {/* "On every timely rent payment" — slides left with heading */}
+          <div
+            className="relative z-20"
+            style={{ transform: `translateX(${-scrollDrift * 120}vw)` }}
+          >
+            <motion.p
+              className="mt-4 max-w-[300px] whitespace-pre-line text-[20px] font-normal leading-[1.4] tracking-[-1px] text-[#d2d2d2] sm:mt-6 sm:max-w-[400px] sm:text-[28px] md:mt-8 md:text-[36px] lg:text-[40px] lg:leading-[56px]"
+              style={{ fontFamily: "var(--font-ui)" }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: textReady ? 1 : 0, y: textReady ? 0 : 20 }}
+              transition={{ duration: 0.7, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
             >
-              <Button fullWidth onClick={downloadAppCta}>
-                {data.ctaButtonText}
-              </Button>
-            </motion.div>
+              {"On every timely\nrent payment"}
+            </motion.p>
           </div>
 
-          {/* Phone below — scroll-triggered tilt animation */}
-          <div ref={phoneRef} className="mt-12 md:mt-16 lg:mt-20 pb-16 md:pb-24 lg:pb-[120px]" style={{ perspective: 1200 }}>
-            <motion.div style={{ rotateX, scale: phoneScale, opacity: phoneOpacity }}>
-              <IPhoneFrame className="w-[260px] md:w-[300px] lg:w-[335px] 3xl:w-[400px] 4xl:w-[500px] 5xl:w-[680px]">
-                <Image
-                  src="/assets/screens/app-home.png"
-                  alt="Secured app"
-                  fill
-                  className="object-fill"
-                  sizes="(max-width: 768px) 260px, (max-width: 1024px) 300px, 335px"
-                  priority
-                />
-              </IPhoneFrame>
-            </motion.div>
+          {/* Right-side subheading — slides right */}
+          <div
+            className="absolute right-6 top-[42%] z-20 hidden sm:block md:right-12 lg:right-[120px]"
+            style={{ transform: `translateX(${scrollDrift * 120}vw) translateY(-50%)` }}
+          >
+            <motion.p
+              className="max-w-[320px] text-right text-[20px] font-normal leading-[1.4] tracking-[-1px] text-[#656565] md:max-w-[380px] md:text-[24px] lg:text-[28px] lg:leading-[40px]"
+              style={{ fontFamily: "var(--font-ui)" }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: textReady ? 1 : 0, y: textReady ? 0 : 20 }}
+              transition={{ duration: 0.7, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {"Because habits like yours\nshould be rewarded,\nnot overlooked."}
+            </motion.p>
           </div>
+
         </div>
       </div>
     </section>
@@ -143,22 +208,13 @@ function LandlordHero({ data }: { data: HeroContent }) {
   const prefixLen = data.headingPrefix.length;
 
   return (
-    <section data-section="hero" className="relative bg-[#131313]">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute left-0 top-0 h-full w-[70%] opacity-[0.4] lg:w-[579px] lg:opacity-[0.6]">
-          <img alt="" aria-hidden="true" src="/assets/backgrounds/hero-texture-left.svg" className="h-full w-full object-cover" />
-        </div>
-        <div className="absolute right-0 top-0 hidden h-full w-[591px] opacity-[0.2] lg:block">
-          <img alt="" aria-hidden="true" src="/assets/backgrounds/hero-texture-right.png" className="h-full w-full object-cover" />
-        </div>
-      </div>
-
+    <section data-section="hero" className="relative min-h-screen bg-transparent">
       <div className="relative z-10 mx-auto w-full px-6 md:px-12 lg:px-[120px]">
-        <div className="flex flex-col items-center px-0 pt-40 md:pt-36 lg:px-[120px] lg:pt-[228px]">
+        <div className="flex min-h-screen flex-col items-center justify-center px-0">
           <div className="flex max-w-[700px] flex-col items-center gap-6 text-center xl:max-w-[800px]">
             <div className="flex flex-col items-center gap-3">
               <motion.h1
-                className="cursor-default text-[40px] font-normal leading-none tracking-[-2px] text-white md:text-[52px] lg:text-[64px]"
+                className="cursor-default text-[32px] font-normal leading-none tracking-[-2px] text-white sm:text-[40px] md:text-[52px] lg:text-[64px]"
                 style={{ fontFamily: "var(--font-ui)" }}
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -171,7 +227,7 @@ function LandlordHero({ data }: { data: HeroContent }) {
               </motion.h1>
 
               <motion.p
-                className="text-[20px] leading-[1.4] tracking-[-1px] text-[#797979] md:text-[24px] lg:text-[28px]"
+                className="text-[16px] leading-[1.4] tracking-[-1px] text-[#797979] sm:text-[20px] md:text-[24px] lg:text-[28px]"
                 style={{ fontFamily: "var(--font-ui)" }}
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -685,8 +741,8 @@ export function RentMapSection() {
       ref={sectionRef}
       id="rent-map"
       data-section="rent-map"
-      className="relative z-[31] flex w-full flex-col overflow-hidden bg-[#131313]"
-      style={{ height: "100vh", minHeight: 700 }}
+      className="relative z-[31] flex w-full flex-col overflow-hidden"
+      style={{ height: "100vh", minHeight: 500 }}
       onPointerDownCapture={engageMap}
       onFocusCapture={engageMap}
     >
@@ -851,7 +907,7 @@ function BuildingPopup({ building, x, y, onClose }: { building: BuildingData; x:
 
   return (
     <div className="absolute z-[500]" style={{ left: x, top: y - 12, transform: "translate(-50%, -100%)", animation: "popupFadeIn 0.2s ease-out" }} onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
-      <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#161616] shadow-[0_12px_40px_rgba(0,0,0,0.5)]" style={{ width: 220 }}>
+      <div className="relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#161616] shadow-[0_12px_40px_rgba(0,0,0,0.5)]" style={{ width: "min(220px, 80vw)" }}>
         <div className="flex items-center justify-between px-4 pt-3">
           <p className="text-[10px] font-semibold uppercase tracking-[0.8px] text-white/60" style={{ fontFamily: "var(--font-ui)" }}>{building.area} · {building.bhk}</p>
           <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="flex h-5 w-5 items-center justify-center rounded-full bg-white/[0.1] text-white/60 transition-colors hover:text-white" style={{ fontSize: 11, lineHeight: 1 }}>×</button>

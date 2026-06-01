@@ -196,7 +196,7 @@ export function CoverageSection({ data }: { data: CoverageContent }) {
   const hasPoints = data.points && data.points.length > 0;
 
   return (
-    <section className="relative bg-[#131313]">
+    <section className="relative">
       {/* Heading */}
       <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
         <div className="py-12 md:py-16 lg:px-[120px] lg:pb-[64px] lg:pt-[64px]">
@@ -248,7 +248,7 @@ export function CoverageSection({ data }: { data: CoverageContent }) {
       {/* Detail cards — 3-column grid */}
       {hasDetailCards && (
         <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:gap-0">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {data.detailCards!.map((card, i) => (
               <DetailCard key={i} text={card.text} highlight={card.highlight} iconKey={card.iconKey} index={i} />
             ))}
@@ -269,30 +269,33 @@ function DetailCard({ text, highlight, iconKey, index }: { text: string; highlig
   return (
     <motion.div
       ref={ref}
-      className="flex flex-col gap-4 border-[0.3px] border-[#4d4d4d] p-5 md:p-6 lg:-ml-[0.3px] lg:-mt-[0.3px] lg:px-[48px] lg:py-[48px]"
+      className="relative flex flex-col overflow-hidden rounded-2xl"
+      style={{ background: "#161616", border: "1px solid rgba(255,255,255,0.06)" }}
       initial={{ opacity: 0, y: 24 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
       transition={{ duration: 0.5, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] as const }}
     >
       {Icon && (
-        <div className="aspect-[4/3] w-full">
-          {isInView && <Icon className="h-full w-full" />}
+        <div className="relative flex flex-1 items-center justify-center overflow-hidden px-8 pt-8" style={{ minHeight: 200 }}>
+          {isInView && <Icon className="h-full w-full" visible />}
         </div>
       )}
-      <p
-        className="text-center text-[16px] font-normal leading-[24px] text-white"
-        style={{ fontFamily: "var(--font-ui)" }}
-      >
-        {highlight && parts.length > 1 ? (
-          <>
-            {parts[0]}
-            <span className="text-[#ff9a6d]">{highlight}</span>
-            {parts[1]}
-          </>
-        ) : (
-          text
-        )}
-      </p>
+      <div className="px-6 pb-7 pt-4 text-center">
+        <p
+          className="text-[14px] font-normal leading-[1.5] text-[#808080]"
+          style={{ fontFamily: "var(--font-ui)" }}
+        >
+          {highlight && parts.length > 1 ? (
+            <>
+              {parts[0]}
+              <span className="text-[#ff9a6d]">{highlight}</span>
+              {parts[1]}
+            </>
+          ) : (
+            text
+          )}
+        </p>
+      </div>
     </motion.div>
   );
 }

@@ -2,7 +2,7 @@
 
 export function HorizontalDivider() {
   return (
-    <div className="w-full bg-[#131313]">
+    <div className="w-full">
       <div className="mx-auto w-full px-[120px]">
         <img
           src="/assets/figma/horizontal-divider.svg"

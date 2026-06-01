@@ -3,6 +3,12 @@
 import { useEffect, useRef } from "react";
 import { useVariant } from "./VariantContext";
 import { TickerBanner } from "./TickerBanner";
+import { BlobCursor } from "./BlobCursor";
+import { ScrollCreditScore } from "./ScrollCreditScore";
+import { ParallaxPhone } from "./ParallaxPhone";
+import CosmicBackground from "./CosmicBackground";
+import { FloatingParticles } from "./FloatingParticles";
+import { useAudio } from "./ScrollAudio";
 
 const VERT = `
 attribute vec2 a_position;
@@ -177,28 +183,36 @@ function StarfieldCanvas({ active }: { active: boolean }) {
 
 export function PageContent({ children }: { children: React.ReactNode }) {
   const { menuOpen, variant } = useVariant();
+  const { unlocked } = useAudio();
 
   return (
-    <div className="relative">
-      {variant === "tenant" && <TickerBanner />}
-      <StarfieldCanvas active={menuOpen} />
+    <div className="relative" style={{ cursor: unlocked ? "none" : undefined }}>
+      <CosmicBackground />
+      {unlocked && <FloatingParticles />}
+      {unlocked && variant === "tenant" && <TickerBanner />}
+      {unlocked && <BlobCursor />}
+      {unlocked && variant === "tenant" && <ScrollCreditScore />}
+      {unlocked && variant === "tenant" && <ParallaxPhone entered={unlocked} />}
+      {unlocked && <StarfieldCanvas active={menuOpen} />}
 
-      {/* Page content */}
-      <div
-        style={{
-          transform: menuOpen ? "scale(0.97) translateY(8px)" : "scale(1) translateY(0px)",
-          transformOrigin: "top center",
-          borderRadius: menuOpen ? "16px" : "0px",
-          transition:
-            "transform 0.7s cubic-bezier(0.77, 0, 0.175, 1), border-radius 0.7s cubic-bezier(0.77, 0, 0.175, 1)",
-          willChange: "transform",
-          overflow: menuOpen ? "hidden" : undefined,
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        {children}
-      </div>
+      {/* Page content — only mount after entry */}
+      {unlocked && (
+        <div
+          style={{
+            transform: menuOpen ? "scale(0.97) translateY(8px)" : "scale(1) translateY(0px)",
+            transformOrigin: "top center",
+            borderRadius: menuOpen ? "16px" : "0px",
+            transition:
+              "transform 0.7s cubic-bezier(0.77, 0, 0.175, 1), border-radius 0.7s cubic-bezier(0.77, 0, 0.175, 1)",
+            willChange: "transform",
+            overflow: menuOpen ? "hidden" : undefined,
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          {children}
+        </div>
+      )}
     </div>
   );
 }

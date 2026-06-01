@@ -48,7 +48,7 @@ function FAQItem({ question, answer, index }: { question: string; answer: string
   return (
     <FadeIn delay={0.05 * index}>
       <div
-        className={`rounded-[16px] p-5 transition-colors duration-300 md:p-6 lg:p-[32px] ${
+        className={`rounded-[16px] p-4 transition-colors duration-300 sm:p-5 md:p-6 lg:p-[32px] ${
           isOpen
             ? "bg-[#cc7b57]"
             : "bg-[#1a1a1a] hover:bg-[#242424]"
@@ -108,7 +108,7 @@ function FAQItem({ question, answer, index }: { question: string; answer: string
 
 export function FAQ({ items }: { items: FaqItem[] }) {
   return (
-    <section className="bg-[#131313]">
+    <section className="">
       <div className="h-[60px] md:h-[80px] lg:h-[120px]" />
 
       {/* Header — left-aligned */}

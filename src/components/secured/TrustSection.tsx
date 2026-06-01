@@ -49,7 +49,7 @@ export function TrustSection({ data, variant = "tenant" }: { data: TrustContent;
   if (variant === "landlord") {
     const parts = data.heading.split(/(one event away from disruption)/i);
     return (
-      <section className="relative bg-[#131313]">
+      <section className="relative">
         <div className="h-[100px]" />
 
         <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
@@ -98,32 +98,28 @@ export function TrustSection({ data, variant = "tenant" }: { data: TrustContent;
   const headingParts = data.heading.split(/(INR 20 crores\+)/i);
 
   return (
-    <section className="relative bg-[#131313]">
+    <section className="relative">
       <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
         <div className="py-12 md:py-20 lg:pt-[152px] lg:pb-[64px]">
           <div className="lg:px-[120px]">
             <div className="flex flex-col items-center gap-3 text-center lg:gap-[12px]">
               <motion.h2
                 ref={headingRef}
-                className="text-[32px] leading-[1.2] tracking-[-1px] text-white md:text-[40px] lg:text-[48px] lg:leading-[64px] lg:tracking-[-2px]"
-                style={{ fontFamily: "var(--font-ui)" }}
+                className="text-[32px] font-normal leading-[1.2] tracking-[-1px] text-white md:text-[40px] lg:text-[48px] lg:leading-[1.3] lg:tracking-[-2px]"
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={headingInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.6 }}
               >
-                {headingParts.map((part, i) =>
-                  /INR 20 crores\+/i.test(part) ? (
-                    <span key={i} className="text-[#ff9a6d]">{part}</span>
-                  ) : (
-                    <span key={i}>{part}</span>
-                  )
-                )}
+                <span className="text-[#ff9a6d]">INR 20 crores+ worth</span>
+                <br />
+                of rent processed so far
               </motion.h2>
 
               <SlideUp delay={0.1}>
                 <p
-                  className="text-[20px] leading-[1.4] tracking-[-0.5px] text-[#A6A6A6] md:text-[24px] lg:text-[28px] lg:leading-[40px] lg:tracking-[-1px]"
-                  style={{ fontFamily: "var(--font-ui)" }}
+                  className="text-[20px] font-normal leading-[1.4] tracking-[-0.5px] text-[#A6A6A6] md:text-[24px] lg:text-[28px] lg:leading-[40px] lg:tracking-[-1px]"
+                  style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
                 >
                   {data.description}
                 </p>

@@ -6,7 +6,7 @@ import type { DownloadAppContent } from "@/lib/secured/types";
 
 export function DownloadApp({ data }: { data: DownloadAppContent }) {
   return (
-    <section id="download-app" className="relative bg-[#131313]">
+    <section id="download-app" className="relative">
       <div className="h-[60px] md:h-[80px] lg:h-[120px]" />
 
       <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
@@ -36,11 +36,11 @@ export function DownloadApp({ data }: { data: DownloadAppContent }) {
           <div className="relative z-10 lg:px-[120px]">
             {/* Mobile: stacked centered */}
             <div className="flex flex-col items-center gap-6 px-6 py-12 text-center md:py-16 lg:hidden">
-              <div className="flex h-[180px] w-[180px] flex-shrink-0 items-center justify-center rounded-2xl border border-white/[0.06] bg-[#1a1a1a]">
+              <div className="flex h-[140px] w-[140px] flex-shrink-0 items-center justify-center rounded-2xl border border-white/[0.06] bg-[#1a1a1a] sm:h-[180px] sm:w-[180px]">
                 <img
                   src="/assets/logos/qr-code.svg"
                   alt="Download QR code"
-                  className="h-[160px] w-[160px]"
+                  className="h-[120px] w-[120px] sm:h-[160px] sm:w-[160px]"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = "none";
                   }}
@@ -100,7 +100,7 @@ export function DownloadApp({ data }: { data: DownloadAppContent }) {
             </div>
 
             {/* Desktop: QR left, text + buttons right — block centered as a unit */}
-            <div className="hidden items-center justify-center gap-[80px] py-[80px] lg:flex">
+            <div className="hidden items-center justify-center gap-12 py-[80px] lg:flex xl:gap-[80px]">
               <div className="flex h-[240px] w-[240px] flex-shrink-0 items-center justify-center rounded-2xl border border-white/[0.06] bg-[#1a1a1a]">
                 <img
                   src="/assets/logos/qr-code.svg"

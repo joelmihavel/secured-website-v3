@@ -27,7 +27,7 @@ export function InviteTenant() {
   };
 
   return (
-    <section className="overflow-hidden bg-[#131313]">
+    <section className="overflow-hidden">
       <div className="mx-auto w-full px-6 md:px-12 lg:px-[120px]">
         <div className="py-16 md:py-24 lg:px-[120px] lg:py-[72px]">
           <div className="flex flex-col items-center text-center">
@@ -65,7 +65,7 @@ export function InviteTenant() {
               transition={{ duration: 0.5, delay: 0.3 }}
             >
               {/* Cityscape background — behind the form card */}
-              <div className="pointer-events-none absolute inset-x-[-400px] bottom-[-80px] top-[-60px] flex items-center justify-center overflow-hidden">
+              <div className="pointer-events-none absolute inset-x-[-150px] bottom-[-80px] top-[-60px] flex items-center justify-center overflow-hidden md:inset-x-[-400px]">
                 <img
                   src="/assets/backgrounds/cityscape-dithered.webp"
                   alt=""
