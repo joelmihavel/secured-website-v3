@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-
 interface EntryOverlayProps {
   onEnter: () => void;
 }
@@ -11,6 +9,7 @@ export function EntryOverlay({ onEnter }: EntryOverlayProps) {
   const [visible, setVisible] = useState(true);
   const [exiting, setExiting] = useState(false);
   const circleRef = useRef<HTMLDivElement>(null);
+  const rippleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -42,29 +41,79 @@ export function EntryOverlay({ onEnter }: EntryOverlayProps) {
     };
   }, []);
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
     if (exiting) return;
+    const clientX = "touches" in e ? e.touches[0]?.clientX ?? 0 : e.clientX;
+    const clientY = "touches" in e ? e.touches[0]?.clientY ?? 0 : e.clientY;
+
     setExiting(true);
     document.body.style.overflow = "";
     document.body.style.cursor = "";
     onEnter();
-    setTimeout(() => setVisible(false), 1000);
+
+    // Position and trigger the expanding ripple
+    const ripple = rippleRef.current;
+    if (ripple) {
+      const maxDist = Math.ceil(Math.sqrt(
+        Math.max(clientX, window.innerWidth - clientX) ** 2 +
+        Math.max(clientY, window.innerHeight - clientY) ** 2
+      ));
+      const size = maxDist * 2.2;
+      ripple.style.left = `${clientX}px`;
+      ripple.style.top = `${clientY}px`;
+      ripple.style.width = `${size}px`;
+      ripple.style.height = `${size}px`;
+      ripple.style.marginLeft = `${-size / 2}px`;
+      ripple.style.marginTop = `${-size / 2}px`;
+    }
+
+    setTimeout(() => setVisible(false), 1100);
   };
 
   if (!visible) return null;
 
   return (
-    <AnimatePresence>
-      {!exiting ? (
-        <motion.div
-          key="overlay"
-          className="fixed inset-0 z-[9998] cursor-none"
-          style={{ backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", background: "rgba(13,13,13,0.5)" }}
-          onClick={handleClick}
-          onTouchStart={handleClick}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        >
+    <>
+      <style>{`
+        @keyframes ripple-expand {
+          0% { transform: scale(0); opacity: 1; }
+          70% { opacity: 1; }
+          100% { transform: scale(1); opacity: 0; }
+        }
+      `}</style>
+
+      {/* Dark tint — cosmic bg from PageContent shows through since it's at z-0 fixed */}
+      <div
+        className="fixed inset-0 z-[9997]"
+        style={{
+          background: "rgba(0,0,0,0.15)",
+          opacity: exiting ? 0 : 1,
+          transition: "opacity 0.8s ease",
+        }}
+      />
+
+      {/* Expanding ripple circle on click */}
+      <div
+        ref={rippleRef}
+        className="fixed z-[9997] rounded-full pointer-events-none"
+        style={{
+          background: "radial-gradient(circle, rgba(255,154,109,0.3) 0%, rgba(255,154,109,0.1) 40%, transparent 70%)",
+          transform: "scale(0)",
+          animation: exiting ? "ripple-expand 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards" : "none",
+        }}
+      />
+
+      {/* Clickable layer + cursor */}
+      <div
+        className="fixed inset-0 z-[9999] cursor-none"
+        style={{
+          opacity: exiting ? 0 : 1,
+          transition: "opacity 0.6s ease 0.3s",
+        }}
+        onClick={handleClick}
+        onTouchStart={handleClick}
+      >
+        {!exiting && (
           <div
             ref={circleRef}
             className="pointer-events-none fixed"
@@ -96,17 +145,8 @@ export function EntryOverlay({ onEnter }: EntryOverlayProps) {
               </span>
             </div>
           </div>
-        </motion.div>
-      ) : (
-        <motion.div
-          key="overlay-exit"
-          className="fixed inset-0 z-[9998] pointer-events-none"
-          style={{ backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", background: "rgba(13,13,13,0.5)" }}
-          initial={{ opacity: 1 }}
-          animate={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        />
-      )}
-    </AnimatePresence>
+        )}
+      </div>
+    </>
   );
 }

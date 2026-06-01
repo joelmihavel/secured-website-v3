@@ -116,13 +116,11 @@ export function SecuredLandingContent() {
 
         {variant === "landlord" && (
           <>
-            <HorizontalDivider />
             <TrustSection data={data.trust} variant="landlord" />
             <Commitment data={data.commitment} variant="landlord" />
-            <div className="h-[100px] bg-[#131313]" />
+            <div className="h-[100px]" />
             <CoverageSection data={COVERAGE_LANDLORD_DEFAULTS} />
-            <CreditCard data={data.creditCard} />
-            <div className="h-[100px] bg-[#131313]" />
+            <div className="h-[100px]" />
             <GettingStarted data={data.gettingStarted} variant="landlord" />
             <InviteTenant />
             <FAQ items={data.faq} />

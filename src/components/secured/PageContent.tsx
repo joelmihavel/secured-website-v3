@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useVariant } from "./VariantContext";
 import { TickerBanner } from "./TickerBanner";
 import { BlobCursor } from "./BlobCursor";
@@ -184,16 +184,26 @@ function StarfieldCanvas({ active }: { active: boolean }) {
 export function PageContent({ children }: { children: React.ReactNode }) {
   const { menuOpen, variant } = useVariant();
   const { unlocked } = useAudio();
+  const [stage, setStage] = useState(0);
+
+  useEffect(() => {
+    if (!unlocked) return;
+    // Stagger mounting: stage 1 immediately, stage 2 after 200ms, stage 3 after 500ms
+    setStage(1);
+    const t2 = setTimeout(() => setStage(2), 200);
+    const t3 = setTimeout(() => setStage(3), 500);
+    return () => { clearTimeout(t2); clearTimeout(t3); };
+  }, [unlocked]);
 
   return (
     <div className="relative" style={{ cursor: unlocked ? "none" : undefined }}>
       <CosmicBackground />
-      {unlocked && <FloatingParticles />}
-      {unlocked && variant === "tenant" && <TickerBanner />}
-      {unlocked && <BlobCursor />}
-      {unlocked && variant === "tenant" && <ScrollCreditScore />}
-      {unlocked && variant === "tenant" && <ParallaxPhone entered={unlocked} />}
-      {unlocked && <StarfieldCanvas active={menuOpen} />}
+      {stage >= 2 && <FloatingParticles />}
+      {stage >= 1 && variant === "tenant" && <TickerBanner />}
+      {stage >= 3 && <BlobCursor />}
+      {stage >= 2 && variant === "tenant" && <ScrollCreditScore />}
+      {stage >= 1 && variant === "tenant" && <ParallaxPhone entered={unlocked} />}
+      {stage >= 3 && <StarfieldCanvas active={menuOpen} />}
 
       {/* Page content — only mount after entry */}
       {unlocked && (

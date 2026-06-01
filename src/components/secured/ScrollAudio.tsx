@@ -39,9 +39,10 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   const startAudio = useCallback(() => {
     if (unlocked) return;
-    setUnlocked(true);
     const audio = getAudio();
     audio.play().then(() => setPlaying(true)).catch(() => {});
+    // Delay unlocking so the circle expand animation plays before components mount
+    setTimeout(() => setUnlocked(true), 1100);
   }, [unlocked]);
 
 
@@ -57,6 +58,11 @@ export function AudioToggle() {
   const { playing, toggle } = useAudio();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef(0);
+  const playingRef = useRef(playing);
+
+  useEffect(() => {
+    playingRef.current = playing;
+  }, [playing]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -83,7 +89,7 @@ export function AudioToggle() {
         const x = (i * (barW + gap) + 2) * 2;
         let barH: number;
 
-        if (playing) {
+        if (playingRef.current) {
           barH = (0.3 + 0.7 * Math.abs(Math.sin(t + phases[i]))) * H * 1.6;
         } else {
           barH = 4;
@@ -99,7 +105,7 @@ export function AudioToggle() {
 
     rafRef.current = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [playing]);
+  }, []);
 
   return (
     <button

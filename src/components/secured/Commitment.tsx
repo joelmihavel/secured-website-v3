@@ -47,8 +47,12 @@ function CardShell({
       className="relative flex flex-col overflow-hidden rounded-2xl h-[380px] md:h-[420px] lg:h-[460px] min-h-[360px] md:min-h-[400px] lg:min-h-[420px]"
       style={{
         transform: `translateY(${translateY}px)`,
-        background: "#161616",
-        border: "1px solid rgba(255,255,255,0.06)",
+        background: "linear-gradient(145deg, rgba(40,40,40,0.7) 0%, rgba(20,20,20,0.85) 50%, rgba(30,30,30,0.7) 100%)",
+        backdropFilter: "blur(16px) saturate(1.3)",
+        WebkitBackdropFilter: "blur(16px) saturate(1.3)",
+        border: "1px solid rgba(255,255,255,0.1)",
+        boxShadow: "0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12), inset 1px 0 0 rgba(255,255,255,0.06), inset 0 -1px 0 rgba(0,0,0,0.3)",
+        backgroundImage: "linear-gradient(145deg, rgba(40,40,40,0.7) 0%, rgba(20,20,20,0.85) 50%, rgba(30,30,30,0.7) 100%), linear-gradient(to bottom right, rgba(255,255,255,0.07) 0%, transparent 40%, transparent 60%, rgba(255,255,255,0.03) 100%)",
       }}
     >
       {/* Illustration area — top portion */}

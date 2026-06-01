@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import confetti from "canvas-confetti";
+import type { CreateTypes } from "canvas-confetti";
 
 const SCORE_MAX = 900;
 const MINOR_TICKS = 60;
@@ -31,8 +32,11 @@ const INNER_STROKE = 32;
 
 export function RentScoreSection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const confettiCanvasRef = useRef<HTMLCanvasElement>(null);
+  const confettiInstanceRef = useRef<CreateTypes | null>(null);
   const [progress, setProgress] = useState(0);
-  const [autoAngle, setAutoAngle] = useState(0);
+  const autoAngleRef = useRef(0);
+  const bgSvgRef = useRef<SVGSVGElement>(null);
   const rafRef = useRef(0);
 
   const update = useCallback(() => {
@@ -61,7 +65,21 @@ export function RentScoreSection() {
     let t = 0;
     const tick = () => {
       t += 0.3;
-      setAutoAngle(t);
+      autoAngleRef.current = t;
+      const svg = bgSvgRef.current;
+      if (svg) {
+        const circles = svg.querySelectorAll("circle");
+        circles.forEach((circle, idx) => {
+          if (idx >= BG_RINGS.length) return;
+          const ring = BG_RINGS[idx];
+          const circ = 2 * Math.PI * ring.r;
+          const rotation = t * ring.speed * 0.01 * ring.direction;
+          const dashLen = circ * (0.15 + Math.sin(t * 0.005 * ring.speed) * 0.1);
+          const gapLen = circ * 0.08;
+          circle.setAttribute("transform", `rotate(${rotation} ${BG_CX} ${BG_CX})`);
+          circle.setAttribute("stroke-dasharray", `${dashLen} ${gapLen} ${dashLen * 0.6} ${gapLen * 1.5}`);
+        });
+      }
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
@@ -77,43 +95,35 @@ export function RentScoreSection() {
   const [locked, setLocked] = useState(false);
 
   useEffect(() => {
-    if (score >= 900 && !firedRef.current) {
+    if (confettiCanvasRef.current && !confettiInstanceRef.current) {
+      confettiInstanceRef.current = confetti.create(confettiCanvasRef.current, { resize: true });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (score >= 900 && !firedRef.current && confettiInstanceRef.current) {
       firedRef.current = true;
-
-      // Lock scroll
-      setLocked(true);
-      const scrollY = window.scrollY;
-      const lockScroll = () => window.scrollTo(0, scrollY);
-      window.addEventListener("scroll", lockScroll);
-
+      const fire = confettiInstanceRef.current;
       const colors = ["#ff9a6d", "#ffcbb0", "#ffffff", "#ff7b47"];
       const end = Date.now() + 2500;
 
       (function frame() {
-        confetti({
+        fire({
           particleCount: 3,
           angle: 60,
           spread: 55,
           origin: { x: 0, y: 0.6 },
           colors,
-          zIndex: 9999,
         });
-        confetti({
+        fire({
           particleCount: 3,
           angle: 120,
           spread: 55,
           origin: { x: 1, y: 0.6 },
           colors,
-          zIndex: 9999,
         });
         if (Date.now() < end) requestAnimationFrame(frame);
       })();
-
-      // Unlock after confetti finishes
-      setTimeout(() => {
-        window.removeEventListener("scroll", lockScroll);
-        setLocked(false);
-      }, 3000);
     }
     if (score < 850) firedRef.current = false;
   }, [score]);
@@ -132,32 +142,31 @@ export function RentScoreSection() {
       style={{ height: "600vh" }}
     >
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden">
+        {/* Confetti canvas — scoped to this section */}
+        <canvas
+          ref={confettiCanvasRef}
+          className="pointer-events-none absolute inset-0 z-[50]"
+          style={{ width: "100%", height: "100%" }}
+        />
 
         {/* Layer 1: Background auto-spinning rings — bleeds off-screen */}
         <svg
+          ref={bgSvgRef}
           className="absolute"
           style={{ width: "150vmax", height: "150vmax" }}
           viewBox={`0 0 ${BG_SVG} ${BG_SVG}`}
         >
-          {BG_RINGS.map((ring, idx) => {
-            const circ = 2 * Math.PI * ring.r;
-            const rotation = autoAngle * ring.speed * 0.01 * ring.direction;
-            const dashLen = circ * (0.15 + Math.sin(autoAngle * 0.005 * ring.speed) * 0.1);
-            const gapLen = circ * 0.08;
-            return (
-              <circle
-                key={idx}
-                cx={BG_CX} cy={BG_CX} r={ring.r}
-                fill="none"
-                stroke="#ff9a6d"
-                strokeOpacity={ring.opacity}
-                strokeWidth={ring.stroke}
-                strokeDasharray={`${dashLen} ${gapLen} ${dashLen * 0.6} ${gapLen * 1.5}`}
-                strokeLinecap="round"
-                transform={`rotate(${rotation} ${BG_CX} ${BG_CX})`}
-              />
-            );
-          })}
+          {BG_RINGS.map((ring, idx) => (
+            <circle
+              key={idx}
+              cx={BG_CX} cy={BG_CX} r={ring.r}
+              fill="none"
+              stroke="#ff9a6d"
+              strokeOpacity={ring.opacity}
+              strokeWidth={ring.stroke}
+              strokeLinecap="round"
+            />
+          ))}
         </svg>
 
         {/* Layer 2: Foreground scroll rings + chronograph — fits in viewport */}

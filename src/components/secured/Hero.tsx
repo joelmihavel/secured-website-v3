@@ -267,6 +267,19 @@ function LandlordHero({ data }: { data: HeroContent }) {
           <div className="pb-16 md:pb-24 lg:pb-[120px]" />
         </div>
       </div>
+
+      {/* City skyline background image */}
+      <div
+        className="absolute inset-x-0 bottom-0 z-0 h-[50%] opacity-40"
+        style={{
+          backgroundImage: "url('/assets/backgrounds/landlord-hero-bg.webp')",
+          backgroundSize: "cover",
+          backgroundPosition: "center bottom",
+          backgroundRepeat: "no-repeat",
+          maskImage: "linear-gradient(to bottom, transparent 0%, black 40%)",
+          WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 40%)",
+        }}
+      />
     </section>
   );
 }

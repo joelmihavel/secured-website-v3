@@ -43,6 +43,12 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
   const rafRef = useRef(0);
   const phoneScale = usePhoneScale();
 
+  const heroRef = useRef<HTMLElement | null>(null);
+  const ribbonRef = useRef<HTMLElement | null>(null);
+  const storyRef = useRef<HTMLElement | null>(null);
+  const commitmentRef = useRef<HTMLElement | null>(null);
+  const creditCardRef = useRef<HTMLElement | null>(null);
+
   const screenDarknessRef = useRef(0);
   const showSplashRef = useRef(false);
   const splashProgressRef = useRef(0);
@@ -57,8 +63,17 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
     return () => { clearTimeout(t); clearTimeout(t2); };
   }, [entryUnlocked]);
 
+  // Cache section elements once so we don't querySelector every scroll frame
+  useEffect(() => {
+    heroRef.current = document.querySelector("[data-section='hero']");
+    ribbonRef.current = document.querySelector("[data-section='ribbon-transition']");
+    storyRef.current = document.querySelector("[data-section='story']");
+    commitmentRef.current = document.querySelector("[data-section='commitment']");
+    creditCardRef.current = document.querySelector("[data-section='credit-card']");
+  }, []);
+
   const update = useCallback(() => {
-    const hero = document.querySelector("[data-section='hero']") as HTMLElement | null;
+    const hero = heroRef.current;
     if (!hero) return;
 
     const scrollY = window.scrollY;
@@ -102,7 +117,7 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
       return;
     }
 
-    const ribbon = document.querySelector("[data-section='ribbon-transition']") as HTMLElement | null;
+    const ribbon = ribbonRef.current;
     if (ribbon) {
       const ribbonTop = ribbon.offsetTop;
       const ribbonHeight = ribbon.offsetHeight;
@@ -146,7 +161,7 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
     }
 
     storyProgressRef.current = 0;
-    const story = document.querySelector("[data-section='story']") as HTMLElement | null;
+    const story = storyRef.current;
     if (story) {
       const storyTop = story.offsetTop;
       const storyHeight = story.offsetHeight;
@@ -181,7 +196,7 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
     }
 
     commitmentProgressRef.current = 0;
-    const commitment = document.querySelector("[data-section='commitment']") as HTMLElement | null;
+    const commitment = commitmentRef.current;
     if (commitment) {
       const cmtTop = commitment.offsetTop;
       const cmtHeight = commitment.offsetHeight;
@@ -204,7 +219,7 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
     }
 
     creditCardProgressRef.current = 0;
-    const creditCard = document.querySelector("[data-section='credit-card']") as HTMLElement | null;
+    const creditCard = creditCardRef.current;
     const phoneHalfH = 455 * phoneScale;
 
     if (creditCard && commitment) {
