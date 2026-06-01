@@ -147,6 +147,7 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
 
         setStyle({
           rotX: 0, rotY: 0, rotZ: 0,
+          translateX: 0,
           translateY: 0,
           opacity: 1,
           scale: 1,
@@ -205,6 +206,7 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
 
         setStyle({
           rotX: 0, rotY: 0, rotZ: 0,
+          translateX: 0,
           translateY: shiftY,
           opacity: 1,
           scale: 1,
@@ -226,6 +228,7 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
         if (isMobileCmt) {
           setStyle({
             rotX: 0, rotY: 0, rotZ: 0,
+          translateX: 0,
             translateY: 0,
             opacity: 0,
             scale: 1,
@@ -238,6 +241,7 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
           : 180;
         setStyle({
           rotX: 0, rotY, rotZ: 0,
+          translateX: 0,
           translateY: 0,
           opacity: 1,
           scale: 1,
@@ -261,6 +265,7 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
         const rotY = 180 * (1 - smoothstep(flipProgress));
         setStyle({
           rotX: 0, rotY, rotZ: 0,
+          translateX: 0,
           translateY: -viewH * 0.18 * smoothstep(flipProgress),
           opacity: 1,
           scale: 1,
@@ -279,6 +284,7 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
         const scrollPast = Math.max(0, scrollY - lockPoint);
         setStyle({
           rotX: 0, rotY: 0, rotZ: 0,
+          translateX: 0,
           translateY: -viewH * 0.18 - scrollPast,
           opacity: 1,
           scale: 1,
@@ -290,6 +296,7 @@ export function ParallaxPhone({ entered: entryUnlocked = false }: { entered?: bo
       if (scrollY > ccEnd) {
         setStyle({
           rotX: 0, rotY: 0, rotZ: 0,
+          translateX: 0,
           translateY: -viewH * 0.18,
           opacity: 0,
           scale: 1,
